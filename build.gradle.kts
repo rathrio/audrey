@@ -10,8 +10,8 @@ repositories {
 }
 
 dependencies {
-    compile("org.graalvm.truffle:truffle-api:1.0.0-rc9")
-    testCompile("junit", "junit", "4.12")
+    implementation("org.graalvm.truffle:truffle-api:1.0.0-rc9")
+    testImplementation("junit", "junit", "4.12")
 }
 
 configure<JavaPluginConvention> {

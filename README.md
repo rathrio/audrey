@@ -27,22 +27,22 @@ directory. Say, for example, your GraalVM installation can be found at
 `/Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home`, you should be able to do the
 following from this project's root folder.
 
-```bash
-# Create an audrey folder in tools
-mkdir /Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home/jre/tools/audrey
+Create a folder named "audrey" in tools:
 
-# Place the JAR in there
+```bash
+mkdir /Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home/jre/tools/audrey
+```
+
+Place the JAR in there:
+
+```
 cp build/libs/audrey-1.0-SNAPSHOT.jar /Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home/jre/tools/audrey/
 ```
 
-Alternatively, create a symbolic link in order to have GraalVM load the most
-recent build here:
+or create a symbolic link in order to have GraalVM load the most recent JAR
+built with `./gradlew build`:
 
 ```bash
-# Create an audrey folder in tools
-mkdir /Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home/jre/tools/audrey
-
-# Create a link in tools that points to the JAR in ./build/libs
 ln -s /path/to/audrey/build/libs/audrey-1.0-SNAPSHOT.jar /Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home/jre/tools/audrey/audrey.jar
 ```
 

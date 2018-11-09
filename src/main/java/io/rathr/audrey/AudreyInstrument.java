@@ -4,23 +4,27 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
 import com.oracle.truffle.api.source.SourceSection;
+import org.graalvm.options.OptionDescriptors;
 
 import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
-@Registration(id = Instrument.ID, services = Object.class)
-public final class Instrument extends TruffleInstrument {
+@Registration(id = AudreyInstrument.ID, name = "Audrey", services = {Object.class})
+public final class AudreyInstrument extends TruffleInstrument {
 
     public static final String ID = "audrey";
-
     private static final String RUBY_MIME_TYPE = "application/x-ruby";
 
     @Override
     protected void onCreate(Env env) {
+        if (!env.getOptions().get(AudreyCLI.ENABLED)) {
+            return;
+        }
+
         final SourceFilter sourceFilter = SourceFilter.newBuilder().includeInternal(false).build();
         final SourceSectionFilter.Builder builder = SourceSectionFilter.newBuilder();
         final SourceSectionFilter filter = builder.sourceFilter(sourceFilter)
                 .tagIs(StandardTags.CallTag.class)
-                .mimeTypeIs(RUBY_MIME_TYPE)
+//                .mimeTypeIs(RUBY_MIME_TYPE)
                 .build();
 
         Instrumenter instrumenter = env.getInstrumenter();
@@ -33,8 +37,13 @@ public final class Instrument extends TruffleInstrument {
             @TruffleBoundary
             private void handleOnReturnValue(VirtualFrame frame, Object result) {
                 final SourceSection sourceSection = context.getInstrumentedSourceSection();
-                System.out.println(sourceSection.getSource().toString());
+                System.out.println(sourceSection.getCharacters().toString());
             }
         });
+    }
+
+    @Override
+    protected OptionDescriptors getOptionDescriptors() {
+        return new AudreyCLIOptionDescriptors();
     }
 }

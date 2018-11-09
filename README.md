@@ -45,3 +45,18 @@ mkdir /Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home/jre/tools/audrey
 # Create a link in tools that points to the JAR in ./build/libs
 ln -s /path/to/audrey/build/libs/audrey-1.0-SNAPSHOT.jar /Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home/jre/tools/audrey/audrey.jar
 ```
+
+Setting up sample projects
+--------------------------
+
+To pull some sample projects to test Audrey with:
+
+```bash
+git submodule update --init --recursive
+```
+
+To update them:
+
+```bash
+git submodule update --recursive --remote
+```

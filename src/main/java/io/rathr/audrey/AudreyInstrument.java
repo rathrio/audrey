@@ -24,7 +24,6 @@ public final class AudreyInstrument extends TruffleInstrument {
         final SourceSectionFilter.Builder builder = SourceSectionFilter.newBuilder();
         final SourceSectionFilter filter = builder.sourceFilter(sourceFilter)
                 .tagIs(StandardTags.CallTag.class)
-//                .mimeTypeIs(RUBY_MIME_TYPE)
                 .build();
 
         Instrumenter instrumenter = env.getInstrumenter();
@@ -36,8 +35,23 @@ public final class AudreyInstrument extends TruffleInstrument {
 
             @TruffleBoundary
             private void handleOnReturnValue(VirtualFrame frame, Object result) {
-                final SourceSection sourceSection = context.getInstrumentedSourceSection();
-                System.out.println(sourceSection.getCharacters().toString());
+                if (result == null) {
+                    return;
+                }
+
+                final boolean isSimple = (
+                    result instanceof String
+                        || result instanceof Integer
+                        || result instanceof Double
+                        || result instanceof Boolean
+                );
+
+                final String string = isSimple
+                    ? result.toString()
+                    : env.toString(env.findLanguage(result), result);
+
+//                final SourceSection sourceSection = context.getInstrumentedSourceSection();
+                System.out.println(string);
             }
         });
     }

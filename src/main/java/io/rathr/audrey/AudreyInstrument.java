@@ -12,10 +12,14 @@ import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 public final class AudreyInstrument extends TruffleInstrument {
 
     public static final String ID = "audrey";
+
     private static final String RUBY_MIME_TYPE = "application/x-ruby";
 
+    private static final Class CALL_TAG = StandardTags.CallTag.class;
+    private static final Class ROOT_TAG = StandardTags.RootTag.class;
+
     @Override
-    protected void onCreate(Env env) {
+    protected void onCreate(TruffleInstrument.Env env) {
         if (!env.getOptions().get(AudreyCLI.ENABLED)) {
             return;
         }
@@ -23,7 +27,7 @@ public final class AudreyInstrument extends TruffleInstrument {
         final SourceFilter sourceFilter = SourceFilter.newBuilder().includeInternal(false).build();
         final SourceSectionFilter.Builder builder = SourceSectionFilter.newBuilder();
         final SourceSectionFilter filter = builder.sourceFilter(sourceFilter)
-                .tagIs(StandardTags.CallTag.class)
+                .tagIs(ROOT_TAG)
                 .build();
 
         Instrumenter instrumenter = env.getInstrumenter();
@@ -35,23 +39,39 @@ public final class AudreyInstrument extends TruffleInstrument {
 
             @TruffleBoundary
             private void handleOnReturnValue(VirtualFrame frame, Object result) {
-                if (result == null) {
-                    return;
-                }
 
-                final boolean isSimple = (
-                    result instanceof String
-                        || result instanceof Integer
-                        || result instanceof Double
-                        || result instanceof Boolean
-                );
 
-                final String string = isSimple
-                    ? result.toString()
-                    : env.toString(env.findLanguage(result), result);
+//                final Object[] arguments = frame.getArguments();
+//                if (arguments.length == 0) {
+//                    return;
+//                }
 
 //                final SourceSection sourceSection = context.getInstrumentedSourceSection();
-                System.out.println(string);
+//                final String languageId = sourceSection.getSource().getLanguage();
+//
+//                System.out.println(sourceSection + "\n");
+//                System.out.println("Returned: " + getString(languageId, result) + "\n\n");
+//                System.out.println("First arg: " + firstArg + "\n\n");
+            }
+
+
+            /**
+             * @return guest language string representation of object.
+             */
+            @TruffleBoundary
+            private String getString(String languageId, Object object) {
+                if (isSimple(object)) {
+                    return object.toString();
+                }
+
+                return env.toString(env.getLanguages().get(languageId), object);
+            }
+
+            private boolean isSimple(Object object) {
+                return object instanceof String
+                    || object instanceof Integer
+                    || object instanceof Double
+                    || object instanceof Boolean;
             }
         });
     }

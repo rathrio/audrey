@@ -49,7 +49,24 @@ ln -s /path/to/audrey/build/libs/audrey-1.0-SNAPSHOT.jar /Users/radi/graalvm-ee-
 Setting up sample projects
 --------------------------
 
-To pull some sample projects to test Audrey with:
+The `project` directory contains sub folders for each Truffle language to test
+with. By default you should find a simple test project for each of them, e.g.
+
+```
+projects/javascript
+└── test_project
+  └── ...
+
+projects/ruby
+└── test_project
+  └── ...
+
+projects/r
+└── test_project
+  └── ...
+```
+
+To pull additional sample projects to test Audrey with:
 
 ```bash
 git submodule update --init --recursive

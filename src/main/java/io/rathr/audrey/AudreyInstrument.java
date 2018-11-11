@@ -61,14 +61,6 @@ public final class AudreyInstrument extends TruffleInstrument {
             @TruffleBoundary
             private void handleOnReturnValue(VirtualFrame frame, Object result) {
                 final FrameDescriptor descriptor = frame.getFrameDescriptor();
-//                final List<? extends FrameSlot> slots = descriptor.getSlots();
-//                slots.forEach(slot -> {
-//                    System.out.println("slot name: " + slot.getIdentifier());
-//
-//                    final Object value = frame.getValue(slot);
-//                    final String string = getString("ruby", value);
-//                    System.out.println("slot value: " + string + "\n");
-//                });
 
                 final SourceSection sourceSection = context.getInstrumentedSourceSection();
                 final String languageId = sourceSection.getSource().getLanguage();
@@ -78,12 +70,22 @@ public final class AudreyInstrument extends TruffleInstrument {
                 System.out.println("internal: " + source.isInternal());
 
                 if (descriptor.getSize() > 0) {
-                    final Object[] arguments = frame.getArguments();
-                    Arrays.asList(arguments).forEach(arg -> {
-                        final String string = getString(languageId, arg);
-                        System.out.println("argument: " + string);
+                    final List<? extends FrameSlot> slots = descriptor.getSlots();
+                    slots.forEach(slot -> {
+                        System.out.println("arg name: " + slot.getIdentifier());
+
+                        final Object value = frame.getValue(slot);
+                        final String string = getString(languageId, value);
+                        System.out.println("arg value: " + string);
                     });
                     System.out.println("\n");
+
+//                    final Object[] arguments = frame.getArguments();
+//                    Arrays.asList(arguments).forEach(arg -> {
+//                        final String string = getString(languageId, arg);
+//                        System.out.println("argument: " + string);
+//                    });
+//                    System.out.println("\n");
                 }
 
                 if (result != null) {

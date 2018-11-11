@@ -5,6 +5,8 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
+import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.source.SourceSection;
 import org.graalvm.options.OptionDescriptors;
 
 import java.util.Arrays;
@@ -16,8 +18,6 @@ import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 public final class AudreyInstrument extends TruffleInstrument {
 
     public static final String ID = "audrey";
-
-    private static final String RUBY_MIME_TYPE = "application/x-ruby";
 
     private static final Class CALL_TAG = StandardTags.CallTag.class;
     private static final Class ROOT_TAG = StandardTags.RootTag.class;
@@ -42,11 +42,6 @@ public final class AudreyInstrument extends TruffleInstrument {
             }
 
             @Override
-            protected void onInputValue(VirtualFrame frame, EventContext inputContext, int inputIndex, Object inputValue) {
-                handleOnInputValue(frame, inputContext, inputIndex, inputValue);
-            }
-
-            @Override
             protected void onReturnValue(VirtualFrame frame, Object result) {
                 handleOnReturnValue(frame, result);
             }
@@ -65,7 +60,7 @@ public final class AudreyInstrument extends TruffleInstrument {
 
             @TruffleBoundary
             private void handleOnReturnValue(VirtualFrame frame, Object result) {
-//                final FrameDescriptor descriptor = frame.getFrameDescriptor();
+                final FrameDescriptor descriptor = frame.getFrameDescriptor();
 //                final List<? extends FrameSlot> slots = descriptor.getSlots();
 //                slots.forEach(slot -> {
 //                    System.out.println("slot name: " + slot.getIdentifier());
@@ -75,35 +70,26 @@ public final class AudreyInstrument extends TruffleInstrument {
 //                    System.out.println("slot value: " + string + "\n");
 //                });
 
+                final SourceSection sourceSection = context.getInstrumentedSourceSection();
+                final String languageId = sourceSection.getSource().getLanguage();
+                final Source source = sourceSection.getSource();
 
+                System.out.println("source: " + source.getName());
+                System.out.println("internal: " + source.isInternal());
 
-                final Object[] arguments = frame.getArguments();
-                Arrays.asList(arguments).forEach(arg -> {
-                    final String string = getString("ruby", arg);
-                    System.out.println("arg " + string + "\n");
-                });
+                if (descriptor.getSize() > 0) {
+                    final Object[] arguments = frame.getArguments();
+                    Arrays.asList(arguments).forEach(arg -> {
+                        final String string = getString(languageId, arg);
+                        System.out.println("argument: " + string);
+                    });
+                    System.out.println("\n");
+                }
 
-
-//                if (arguments.length == 0) {
-//                    return;
-//                }
-
-//                final SourceSection sourceSection = context.getInstrumentedSourceSection();
-//                final String languageId = sourceSection.getSource().getLanguage();
-//
-//                System.out.println(sourceSection + "\n");
-//                System.out.println("Returned: " + getString(languageId, result) + "\n\n");
-//                System.out.println("First arg: " + firstArg + "\n\n");
-            }
-
-            @TruffleBoundary
-            private void handleOnInputValue(VirtualFrame frame, EventContext inputContext, int inputIndex, Object inputValue) {
-                System.out.println("GOT HERE");
-//                if (inputValue == null) {
-//                    return;
-//                }
-//
-//                System.out.println(getString("ruby", inputValue));
+                if (result != null) {
+                    final String string = getString(languageId, result);
+                    System.out.println("return: " + string + "\n");
+                }
             }
 
 

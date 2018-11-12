@@ -5,6 +5,8 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import org.graalvm.options.OptionDescriptors;
@@ -22,6 +24,19 @@ public final class AudreyInstrument extends TruffleInstrument {
     private static final Class CALL_TAG = StandardTags.CallTag.class;
     private static final Class ROOT_TAG = StandardTags.RootTag.class;
 
+    private static String extractRootName(Node instrumentedNode) {
+        RootNode rootNode = instrumentedNode.getRootNode();
+        if (rootNode != null) {
+            if (rootNode.getName() == null) {
+                return rootNode.toString();
+            } else {
+                return rootNode.getName();
+            }
+        } else {
+            return "<Unknown>";
+        }
+    }
+
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
         if (!env.getOptions().get(AudreyCLI.ENABLED)) {
@@ -36,10 +51,6 @@ public final class AudreyInstrument extends TruffleInstrument {
 
         Instrumenter instrumenter = env.getInstrumenter();
         instrumenter.attachExecutionEventFactory(filter, context -> new ExecutionEventNode() {
-            @Override
-            protected void onEnter(VirtualFrame frame) {
-                handleOnEnter(frame);
-            }
 
             @Override
             protected void onReturnValue(VirtualFrame frame, Object result) {
@@ -47,20 +58,10 @@ public final class AudreyInstrument extends TruffleInstrument {
             }
 
             @TruffleBoundary
-            private void handleOnEnter(VirtualFrame frame) {
-//                final FrameDescriptor descriptor = frame.getFrameDescriptor();
-//                final List<? extends FrameSlot> slots = descriptor.getSlots();
-//                slots.forEach(slot -> {
-//                    Object value = frame.getValue(slot);
-//                    System.out.println(slot.getIdentifier());
-//                    final String string = getString("ruby", value);
-//                    System.out.println(string);
-//                });
-            }
-
-            @TruffleBoundary
             private void handleOnReturnValue(VirtualFrame frame, Object result) {
                 final FrameDescriptor descriptor = frame.getFrameDescriptor();
+                final Node instrumentedNode = context.getInstrumentedNode();
+                System.out.println("Root node: " + extractRootName(instrumentedNode));
 
                 final SourceSection sourceSection = context.getInstrumentedSourceSection();
                 final String languageId = sourceSection.getSource().getLanguage();
@@ -72,20 +73,21 @@ public final class AudreyInstrument extends TruffleInstrument {
                 if (descriptor.getSize() > 0) {
                     final List<? extends FrameSlot> slots = descriptor.getSlots();
                     slots.forEach(slot -> {
-                        System.out.println("arg name: " + slot.getIdentifier());
+                        System.out.println("slot name: " + slot.getIdentifier());
 
                         final Object value = frame.getValue(slot);
                         final String string = getString(languageId, value);
-                        System.out.println("arg value: " + string);
+                        System.out.println("slot value: " + string);
                     });
-                    System.out.println("\n");
 
-//                    final Object[] arguments = frame.getArguments();
-//                    Arrays.asList(arguments).forEach(arg -> {
-//                        final String string = getString(languageId, arg);
-//                        System.out.println("argument: " + string);
-//                    });
-//                    System.out.println("\n");
+                    final Object[] arguments = frame.getArguments();
+                    Arrays.asList(arguments).forEach(arg -> {
+                        final String string = getString(languageId, arg);
+                        System.out.println("arg: " + string);
+                    });
+
+
+                    System.out.println("\n");
                 }
 
                 if (result != null) {

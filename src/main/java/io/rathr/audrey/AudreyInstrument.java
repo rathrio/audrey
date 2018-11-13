@@ -20,7 +20,7 @@ import java.util.List;
 
 import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
-@Registration(id = AudreyInstrument.ID, name = "Audrey", services = {Object.class})
+@Registration(id = AudreyInstrument.ID, name = "Audrey")
 public final class AudreyInstrument extends TruffleInstrument {
 
     public static final String ID = "audrey";

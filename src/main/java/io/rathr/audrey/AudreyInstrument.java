@@ -12,11 +12,13 @@ import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import org.graalvm.options.OptionDescriptors;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
@@ -47,7 +49,18 @@ public final class AudreyInstrument extends TruffleInstrument {
             return;
         }
 
-        final SourceFilter sourceFilter = SourceFilter.newBuilder().includeInternal(false).build();
+        final SourceFilter sourceFilter = SourceFilter.newBuilder()
+            .includeInternal(false)
+            .sourceIs(source -> {
+                final String pathFilter = env.getOptions().get(AudreyCLI.FILTER_PATH);
+                if (pathFilter.isEmpty()) {
+                    return true;
+                }
+
+                return source.getName().toLowerCase().contains(pathFilter.toLowerCase());
+            })
+            .build();
+
         final SourceSectionFilter.Builder builder = SourceSectionFilter.newBuilder();
         final SourceSectionFilter filter = builder.sourceFilter(sourceFilter)
             .tagIs(ROOT_TAG)
@@ -70,13 +83,14 @@ public final class AudreyInstrument extends TruffleInstrument {
             private void handleOnEnter(VirtualFrame frame) {
                 final FrameDescriptor descriptor = frame.getFrameDescriptor();
                 final Node instrumentedNode = context.getInstrumentedNode();
-                System.out.println("Root node: " + extractRootName(instrumentedNode));
 
                 final SourceSection sourceSection = context.getInstrumentedSourceSection();
                 final String languageId = sourceSection.getSource().getLanguage();
 
-
                 if (descriptor.getSize() > 0) {
+                    System.out.println("Root node: " + extractRootName(instrumentedNode));
+                    System.out.println("Source section: " + sourceSection);
+
                     final List<? extends FrameSlot> slots = descriptor.getSlots();
                     slots.forEach(slot -> {
                         System.out.println("slot name: " + slot.getIdentifier());

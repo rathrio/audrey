@@ -21,7 +21,7 @@ end
 GRAALVM = Pathname.new(ENV.fetch('GRAALVM'))
 GRAAL_RUBY = GRAALVM.join('bin', 'ruby')
 GRAAL_JS = GRAALVM.join('bin', 'js')
-GRAAL_R = GRAALVM.join('bin', 'RScript')
+GRAAL_R = GRAALVM.join('bin', 'Rscript')
 
 options = {}
 option_parser = OptionParser.new do |opts|

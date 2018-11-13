@@ -10,4 +10,6 @@ public class AudreyCLI {
     @Option(name = "", help = "Enable Audrey (default: false).", category = OptionCategory.USER)
     static final OptionKey<Boolean> ENABLED = new OptionKey<>(false);
 
+    @Option(name = "FilterPath", help = "Only instrument files that match this path.", category = OptionCategory.USER)
+    static final OptionKey<String> FILTER_PATH = new OptionKey<>("");
 }

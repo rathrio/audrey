@@ -35,6 +35,10 @@ option_parser = OptionParser.new do |opts|
   opts.on('-d', '--debug', "Wait for IntelliJ's debugger to attach") do
     options[:debug] = true
   end
+
+  opts.on('--disable-audrey', 'Skip instrumentation with Audrey') do
+    options[:disable_audrey] = true
+  end
 end
 
 option_parser.parse!
@@ -44,7 +48,8 @@ if ARGV.empty?
   exit
 end
 
-args = %w[--jvm --audrey]
+args = %w[--jvm]
+args << '--audrey' unless options[:disable_audrey]
 
 if options[:debug]
   args << '--jvm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005'

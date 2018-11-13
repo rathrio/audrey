@@ -1,0 +1,66 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Wrapper script for running simple programs with Audrey enabled. Link this to
+# some place in your PATH to be able to run "audrey-run" from anywhere.
+
+require 'optparse'
+require 'pathname'
+
+if ENV['GRAALVM'].nil?
+  puts <<~MSG
+    Please provide the path to your GraalVM installation in the $GRAALVM environment variable, e.g.:
+
+        export GRAALVM=/Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home
+
+  MSG
+
+  exit
+end
+
+GRAALVM = Pathname.new(ENV.fetch('GRAALVM'))
+GRAAL_RUBY = GRAALVM.join('bin', 'ruby')
+GRAAL_JS = GRAALVM.join('bin', 'js')
+GRAAL_R = GRAALVM.join('bin', 'RScript')
+
+options = {}
+option_parser = OptionParser.new do |opts|
+  opts.banner = 'Usage: audrey-run program.(rb|js|R)'
+
+  opts.on('-h', '--help', 'Show this message') do
+    puts opts
+    exit
+  end
+
+  opts.on('-d', '--debug', "Wait for IntelliJ's debugger to attach") do
+    options[:debug] = true
+  end
+end
+
+option_parser.parse!
+
+if ARGV.empty?
+  puts option_parser.help
+  exit
+end
+
+args = %w[--jvm --audrey]
+
+if options[:debug]
+  args << '--jvm.agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005'
+end
+
+graal_executable = case File.extname(ARGF.path)
+                   when /\.rb$/i
+                     GRAAL_RUBY
+                   when /\.js$/i
+                     GRAAL_JS
+                   when /\.r$/i
+                     GRAAL_R
+                   else
+                     raise 'Cannot infer Truffle language from file name'
+                   end
+
+cmd = "#{graal_executable} #{args.join(' ')} #{ARGF.path}"
+puts cmd
+system cmd

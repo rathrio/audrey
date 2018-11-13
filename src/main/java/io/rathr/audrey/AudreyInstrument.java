@@ -3,11 +3,15 @@ package io.rathr.audrey;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrumentation.*;
+import com.oracle.truffle.api.instrumentation.ExecutionEventNode;
+import com.oracle.truffle.api.instrumentation.Instrumenter;
+import com.oracle.truffle.api.instrumentation.SourceFilter;
+import com.oracle.truffle.api.instrumentation.SourceSectionFilter;
+import com.oracle.truffle.api.instrumentation.StandardTags;
+import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import org.graalvm.options.OptionDescriptors;
 
@@ -24,7 +28,7 @@ public final class AudreyInstrument extends TruffleInstrument {
     private static final Class CALL_TAG = StandardTags.CallTag.class;
     private static final Class ROOT_TAG = StandardTags.RootTag.class;
 
-    private static String extractRootName(Node instrumentedNode) {
+    private static String extractRootName(final Node instrumentedNode) {
         RootNode rootNode = instrumentedNode.getRootNode();
         if (rootNode != null) {
             if (rootNode.getName() == null) {
@@ -46,29 +50,31 @@ public final class AudreyInstrument extends TruffleInstrument {
         final SourceFilter sourceFilter = SourceFilter.newBuilder().includeInternal(false).build();
         final SourceSectionFilter.Builder builder = SourceSectionFilter.newBuilder();
         final SourceSectionFilter filter = builder.sourceFilter(sourceFilter)
-                .tagIs(ROOT_TAG)
-                .build();
+            .tagIs(ROOT_TAG)
+            .build();
 
         Instrumenter instrumenter = env.getInstrumenter();
         instrumenter.attachExecutionEventFactory(filter, context -> new ExecutionEventNode() {
 
             @Override
-            protected void onReturnValue(VirtualFrame frame, Object result) {
-                handleOnReturnValue(frame, result);
+            protected void onEnter(VirtualFrame frame) {
+                handleOnEnter(frame.materialize());
             }
 
+//            @Override
+//            protected void onReturnValue(VirtualFrame frame, Object result) {
+//                handleOnReturnValue(frame, result);
+//            }
+
             @TruffleBoundary
-            private void handleOnReturnValue(VirtualFrame frame, Object result) {
+            private void handleOnEnter(VirtualFrame frame) {
                 final FrameDescriptor descriptor = frame.getFrameDescriptor();
                 final Node instrumentedNode = context.getInstrumentedNode();
                 System.out.println("Root node: " + extractRootName(instrumentedNode));
 
                 final SourceSection sourceSection = context.getInstrumentedSourceSection();
                 final String languageId = sourceSection.getSource().getLanguage();
-                final Source source = sourceSection.getSource();
 
-                System.out.println("source: " + source.getName());
-                System.out.println("internal: " + source.isInternal());
 
                 if (descriptor.getSize() > 0) {
                     final List<? extends FrameSlot> slots = descriptor.getSlots();
@@ -89,12 +95,46 @@ public final class AudreyInstrument extends TruffleInstrument {
 
                     System.out.println("\n");
                 }
-
-                if (result != null) {
-                    final String string = getString(languageId, result);
-                    System.out.println("return: " + string + "\n");
-                }
             }
+
+//            @TruffleBoundary
+//            private void handleOnReturnValue(VirtualFrame frame, Object result) {
+//                final FrameDescriptor descriptor = frame.getFrameDescriptor();
+//                final Node instrumentedNode = context.getInstrumentedNode();
+//                System.out.println("Root node: " + extractRootName(instrumentedNode));
+//
+//                final SourceSection sourceSection = context.getInstrumentedSourceSection();
+//                final String languageId = sourceSection.getSource().getLanguage();
+//                final Source source = sourceSection.getSource();
+//
+//                System.out.println("source: " + source.getName());
+//                System.out.println("internal: " + source.isInternal());
+//
+//                if (descriptor.getSize() > 0) {
+//                    final List<? extends FrameSlot> slots = descriptor.getSlots();
+//                    slots.forEach(slot -> {
+//                        System.out.println("slot name: " + slot.getIdentifier());
+//
+//                        final Object value = frame.getValue(slot);
+//                        final String string = getString(languageId, value);
+//                        System.out.println("slot value: " + string);
+//                    });
+//
+//                    final Object[] arguments = frame.getArguments();
+//                    Arrays.asList(arguments).forEach(arg -> {
+//                        final String string = getString(languageId, arg);
+//                        System.out.println("arg: " + string);
+//                    });
+//
+//
+//                    System.out.println("\n");
+//                }
+//
+//                if (result != null) {
+//                    final String string = getString(languageId, result);
+//                    System.out.println("return: " + string + "\n");
+//                }
+//            }
 
 
             /**

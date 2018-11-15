@@ -3,13 +3,9 @@ package io.rathr.audrey;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrumentation.ExecutionEventNode;
-import com.oracle.truffle.api.instrumentation.Instrumenter;
-import com.oracle.truffle.api.instrumentation.SourceFilter;
-import com.oracle.truffle.api.instrumentation.SourceSectionFilter;
-import com.oracle.truffle.api.instrumentation.StandardTags;
-import com.oracle.truffle.api.instrumentation.TruffleInstrument;
+import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
+import com.oracle.truffle.api.nodes.LanguageInfo;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
@@ -26,18 +22,7 @@ import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 @Registration(id = AudreyInstrument.ID, name = "Audrey")
 public final class AudreyInstrument extends TruffleInstrument {
 
-    public static final class Sample {
-        final String value;
-        final String type;
-
-        public Sample(String value, String type) {
-            this.value = value;
-            this.type = type;
-        }
-    }
-
     public static final String ID = "audrey";
-
     private static final Class CALL_TAG = StandardTags.CallTag.class;
     private static final Class ROOT_TAG = StandardTags.RootTag.class;
 
@@ -58,6 +43,14 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            sampleMap.forEach((sourceSection, samples) -> {
+                System.out.println(sourceSection + ":");
+                samples.forEach(sample -> System.out.print(sample.value + ", "));
+                System.out.println();
+            });
+        }));
+
         if (!env.getOptions().get(AudreyCLI.ENABLED)) {
             return;
         }
@@ -87,10 +80,6 @@ public final class AudreyInstrument extends TruffleInstrument {
 //                handleOnEnter(frame);
 //            }
 
-            @Override
-            protected void onReturnValue(VirtualFrame frame, Object result) {
-                handleOnReturnValue(frame, result);
-            }
 
             @TruffleBoundary
             private void handleOnEnter(VirtualFrame frame) {
@@ -124,14 +113,24 @@ public final class AudreyInstrument extends TruffleInstrument {
                 }
             }
 
+            @Override
+            protected void onReturnValue(VirtualFrame frame, Object result) {
+                handleOnReturnValue(frame, result);
+            }
+
             @TruffleBoundary
             private void handleOnReturnValue(VirtualFrame frame, Object result) {
                 final SourceSection sourceSection = context.getInstrumentedSourceSection();
                 final String languageId = sourceSection.getSource().getLanguage();
 
                 if (result != null) {
-                    final String string = getString(languageId, result);
-                    final Sample sample = new Sample(string, "return");
+                    final String value = getString(languageId, result);
+                    final Object metaObject = env.findMetaObject(getLanguageInfo(languageId), result);
+                    final Sample sample = new Sample(
+                        value,
+                        metaObject.toString(),
+                        "return"
+                    );
 
                     sampleMap.computeIfAbsent(sourceSection, section -> ConcurrentHashMap.newKeySet());
                     sampleMap.get(sourceSection).add(sample);
@@ -142,13 +141,16 @@ public final class AudreyInstrument extends TruffleInstrument {
             /**
              * @return guest language string representation of object.
              */
-            @TruffleBoundary
             private String getString(String languageId, Object object) {
                 if (isSimple(object)) {
                     return object.toString();
                 }
 
-                return env.toString(env.getLanguages().get(languageId), object);
+                return env.toString(getLanguageInfo(languageId), object);
+            }
+
+            private LanguageInfo getLanguageInfo(String languageId) {
+                return env.getLanguages().get(languageId);
             }
 
             private boolean isSimple(Object object) {
@@ -163,5 +165,23 @@ public final class AudreyInstrument extends TruffleInstrument {
     @Override
     protected OptionDescriptors getOptionDescriptors() {
         return new AudreyCLIOptionDescriptors();
+    }
+
+    public static final class Sample {
+        final String identifier = "";
+        final String metaObject;
+        final String value;
+        final Category category;
+
+        public Sample(String value, String metaObject, String category) {
+            this.value = value;
+            this.metaObject = metaObject;
+            this.category = Category.valueOf(category.trim().toUpperCase());
+        }
+
+        enum Category {
+            RETURN,
+            ARGUMENT;
+        }
     }
 }

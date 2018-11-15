@@ -12,4 +12,7 @@ public class AudreyCLI {
 
     @Option(name = "FilterPath", help = "Only instrument files that match this path.", category = OptionCategory.USER)
     static final OptionKey<String> FILTER_PATH = new OptionKey<>("");
+
+    @Option(name = "OutputPath", help = "Where to output samples (default: .audrey in the current directory).", category = OptionCategory.USER)
+    static final OptionKey<String> OUTPUT_PATH = new OptionKey<>(".audrey");
 }

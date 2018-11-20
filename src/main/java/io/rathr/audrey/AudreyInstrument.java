@@ -70,15 +70,16 @@ public final class AudreyInstrument extends TruffleInstrument {
         final SourceSectionFilter.Builder builder = SourceSectionFilter.newBuilder();
         final SourceSectionFilter filter = builder.sourceFilter(sourceFilter)
             .tagIs(ROOT_TAG)
+//            .tagIs(CALL_TAG)
             .build();
 
         Instrumenter instrumenter = env.getInstrumenter();
         instrumenter.attachExecutionEventFactory(filter, context -> new ExecutionEventNode() {
 
-//            @Override
-//            protected void onEnter(VirtualFrame frame) {
-//                handleOnEnter(frame);
-//            }
+            @Override
+            protected void onEnter(VirtualFrame frame) {
+                handleOnEnter(frame);
+            }
 
 
             @TruffleBoundary
@@ -113,29 +114,61 @@ public final class AudreyInstrument extends TruffleInstrument {
                 }
             }
 
-            @Override
-            protected void onReturnValue(VirtualFrame frame, Object result) {
-                handleOnReturnValue(frame, result);
-            }
-
-            @TruffleBoundary
-            private void handleOnReturnValue(VirtualFrame frame, Object result) {
-                final SourceSection sourceSection = context.getInstrumentedSourceSection();
-                final String languageId = sourceSection.getSource().getLanguage();
-
-                if (result != null) {
-                    final String value = getString(languageId, result);
-                    final Object metaObject = env.findMetaObject(getLanguageInfo(languageId), result);
-                    final Sample sample = new Sample(
-                        value,
-                        metaObject.toString(),
-                        "return"
-                    );
-
-                    sampleMap.computeIfAbsent(sourceSection, section -> ConcurrentHashMap.newKeySet());
-                    sampleMap.get(sourceSection).add(sample);
-                }
-            }
+//            @Override
+//            protected void onReturnValue(VirtualFrame frame, Object result) {
+//                handleOnReturnValue(frame, result);
+//            }
+//
+//            @TruffleBoundary
+//            private void handleOnReturnValue(VirtualFrame frame, Object result) {
+//                final FrameDescriptor descriptor = frame.getFrameDescriptor();
+//                final Node instrumentedNode = context.getInstrumentedNode();
+//
+//                final SourceSection sourceSection = context.getInstrumentedSourceSection();
+//                final String languageId = sourceSection.getSource().getLanguage();
+//
+//                if (descriptor.getSize() > 0) {
+//                    System.out.println("Root node: " + extractRootName(instrumentedNode));
+//                    System.out.println("Source section: " + sourceSection);
+//
+//                    final List<? extends FrameSlot> slots = descriptor.getSlots();
+//                    slots.forEach(slot -> {
+//                        System.out.println("slot name: " + slot.getIdentifier());
+//
+//                        final Object value = frame.getValue(slot);
+//                        final String string = getString(languageId, value);
+//                        System.out.println("slot value: " + string);
+//                    });
+//
+//                    final Object[] arguments = frame.getArguments();
+//                    Arrays.asList(arguments).forEach(arg -> {
+//                        final String string = getString(languageId, arg);
+//                        System.out.println("arg: " + string);
+//                    });
+//
+//
+//                    System.out.println("\n");
+//                }
+//            }
+//
+//            @TruffleBoundary
+//            private void handleOnReturnValue(VirtualFrame frame, Object result) {
+//                final SourceSection sourceSection = context.getInstrumentedSourceSection();
+//                final String languageId = sourceSection.getSource().getLanguage();
+//
+//                if (result != null) {
+//                    final String value = getString(languageId, result);
+//                    final Object metaObject = env.findMetaObject(getLanguageInfo(languageId), result);
+//                    final Sample sample = new Sample(
+//                        value,
+//                        metaObject.toString(),
+//                        "return"
+//                    );
+//
+//                    sampleMap.computeIfAbsent(sourceSection, section -> ConcurrentHashMap.newKeySet());
+//                    sampleMap.get(sourceSection).add(sample);
+//                }
+//            }
 
 
             /**

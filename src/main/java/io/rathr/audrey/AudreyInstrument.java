@@ -1,10 +1,12 @@
 package io.rathr.audrey;
 
+import com.oracle.truffle.api.Scope;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
+import com.oracle.truffle.api.interop.*;
 import com.oracle.truffle.api.nodes.LanguageInfo;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
@@ -91,7 +93,35 @@ public final class AudreyInstrument extends TruffleInstrument {
                 final String languageId = sourceSection.getSource().getLanguage();
 
                 if (descriptor.getSize() > 0) {
+
                     System.out.println("Root node: " + extractRootName(instrumentedNode));
+
+                    Iterable<Scope> scopes = env.findLocalScopes(instrumentedNode, frame);
+
+                    for (Scope scope : scopes) {
+                        TruffleObject arguments = (TruffleObject) scope.getArguments();
+                        if (arguments == null) {
+                            continue;
+                        }
+
+                        try {
+                            boolean xExists = KeyInfo.isExisting(ForeignAccess.sendKeyInfo(Message.KEY_INFO.createNode(),
+                                arguments, "x"));
+
+                            System.out.println("Does x exist according to KeyInfo?: " + xExists);
+
+                            Object x = ForeignAccess.sendRead(Message.READ.createNode(), arguments, "x");
+                            Object y = ForeignAccess.sendRead(Message.READ.createNode(), arguments, "y");
+
+                            System.out.println("Argument x extracted from scope: " + getString(languageId, x));
+                            System.out.println("Argument y extracted from scope: " + getString(languageId, y));
+                        } catch (UnknownIdentifierException e) {
+                            e.printStackTrace();
+                        } catch (UnsupportedMessageException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                     System.out.println("Source section: " + sourceSection);
 
                     final List<? extends FrameSlot> slots = descriptor.getSlots();

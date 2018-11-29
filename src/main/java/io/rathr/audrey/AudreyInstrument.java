@@ -1,26 +1,20 @@
 package io.rathr.audrey;
 
 import com.oracle.truffle.api.Scope;
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
-import com.oracle.truffle.api.interop.ForeignAccess;
-import com.oracle.truffle.api.interop.Message;
-import com.oracle.truffle.api.interop.TruffleObject;
-import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.interop.*;
 import com.oracle.truffle.api.nodes.LanguageInfo;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import org.graalvm.options.OptionDescriptors;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.IntStream;
 
 import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
@@ -31,6 +25,9 @@ public final class AudreyInstrument extends TruffleInstrument {
     private static final Class CALL_TAG = StandardTags.CallTag.class;
     private static final Class STATEMENT_TAG = StandardTags.StatementTag.class;
     private static final Class ROOT_TAG = StandardTags.RootTag.class;
+
+    private static final Node READ_NODE = Message.READ.createNode();
+    private static final Node KEYS_NODE = Message.KEYS.createNode();
 
     private Map<SourceSection, Set<Sample>> sampleMap = new ConcurrentHashMap<>();
 
@@ -61,13 +58,13 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
-//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-//            sampleMap.forEach((sourceSection, samples) -> {
-//                System.out.println(sourceSection + ":");
-//                samples.forEach(sample -> System.out.print(sample.value + ", "));
-//                System.out.println();
-//            });
-//        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            sampleMap.forEach((sourceSection, samples) -> {
+                System.out.println(sourceSection + ":");
+                samples.forEach(sample -> System.out.print(sample.value + ", "));
+                System.out.println();
+            });
+        }));
 
         if (!env.getOptions().get(AudreyCLI.ENABLED)) {
             return;
@@ -86,15 +83,19 @@ public final class AudreyInstrument extends TruffleInstrument {
             .build();
 
         final SourceSectionFilter.Builder builder = SourceSectionFilter.newBuilder();
+
+        // Filter for language agnostic statement source sections.
         final SourceSectionFilter statementFilter = builder.sourceFilter(sourceFilter)
             .tagIs(STATEMENT_TAG)
             .build();
 
+        // Filter for language agnostic "root" sections. We're only interested in "callable" constructs though,
+        // e.g. methods in Ruby or functions in JS.
         final SourceSectionFilter rootFilter = builder.sourceFilter(sourceFilter)
             .tagIs(ROOT_TAG)
             .build();
 
-        Instrumenter instrumenter = env.getInstrumenter();
+        final Instrumenter instrumenter = env.getInstrumenter();
         final InstrumentationContext instrumentationContext = new InstrumentationContext();
 
         instrumenter.attachExecutionEventFactory(rootFilter, context -> new ExecutionEventNode() {
@@ -118,59 +119,50 @@ public final class AudreyInstrument extends TruffleInstrument {
 
             @TruffleBoundary
             private void handleOnEnter(final VirtualFrame frame) {
-                final FrameDescriptor descriptor = frame.getFrameDescriptor();
                 final Node instrumentedNode = context.getInstrumentedNode();
 
                 final SourceSection sourceSection = context.getInstrumentedSourceSection();
                 final String languageId = sourceSection.getSource().getLanguage();
 
                 final Scope scope = env.findLocalScopes(instrumentedNode, frame).iterator().next();
-                final Object variables = scope.getVariables();
+                final TruffleObject variables = (TruffleObject) scope.getVariables();
 
                 try {
-                    final TruffleObject keys = ForeignAccess.sendKeys(
-                        Message.KEYS.createNode(),
-                        (TruffleObject) variables
-                    );
+                    final TruffleObject keys = getKeys(variables);
+                    final int keySize = getSize(keys);
+                    if (keySize == 0) {
+                        return;
+                    }
 
-                    System.out.println("hi");
+                    IntStream.range(0, keySize).forEach(index -> {
+                        try {
+                            final String identifier = (String) read(keys, index);
 
+                            // TODO: Introduce a proper blacklist.
+                            if (identifier.equals("(self)")) {
+                                // Skip iteration because we don't care about these values.
+                                return;
+                            }
+
+                            final Object valueObject = read(variables, identifier);
+                            final Object metaObject = env.findMetaObject(getLanguageInfo(languageId), valueObject);
+
+                            final Sample sample = new Sample(
+                                identifier,
+                                getString(languageId, valueObject),
+                                getString(languageId, metaObject),
+                                "STATEMENT"
+                            );
+
+                            sampleMap.computeIfAbsent(sourceSection, section -> ConcurrentHashMap.newKeySet());
+                            sampleMap.get(sourceSection).add(sample);
+                        } catch (UnknownIdentifierException | UnsupportedMessageException e) {
+                            e.printStackTrace();
+                        }
+                    });
                 } catch (UnsupportedMessageException e) {
                     e.printStackTrace();
                 }
-
-
-//                if (descriptor.getSize() > 0) {
-//
-//                    System.out.println("Root node: " + extractRootName(instrumentedNode));
-//
-//                    Iterable<Scope> scopes = env.findLocalScopes(instrumentedNode, frame);
-//
-//                    for (Scope scope : scopes) {
-//                        final Object variables = scope.getVariables();
-//                        System.out.println("slkjfdslkjf");
-//                    }
-//
-//                    System.out.println("Source section: " + sourceSection);
-//
-//                    final List<? extends FrameSlot> slots = descriptor.getSlots();
-//                    slots.forEach(slot -> {
-//                        System.out.println("slot name: " + slot.getIdentifier());
-//
-//                        final Object value = frame.getValue(slot);
-//                        final String string = getString(languageId, value);
-//                        System.out.println("slot value: " + string);
-//                    });
-//
-//                    final Object[] arguments = frame.getArguments();
-//                    Arrays.asList(arguments).forEach(arg -> {
-//                        final String string = getString(languageId, arg);
-//                        System.out.println("arg: " + string);
-//                    });
-//
-//
-//                    System.out.println("\n");
-//                }
             }
 
 //            @Override
@@ -212,6 +204,18 @@ public final class AudreyInstrument extends TruffleInstrument {
                 }
 
                 return env.toString(getLanguageInfo(languageId), object);
+            }
+
+            private int getSize(final TruffleObject keys) throws UnsupportedMessageException {
+                return ((Number) ForeignAccess.sendGetSize(Message.GET_SIZE.createNode(), keys)).intValue();
+            }
+
+            private TruffleObject getKeys(final TruffleObject variables) throws UnsupportedMessageException {
+                return ForeignAccess.sendKeys(KEYS_NODE, variables);
+            }
+
+            private Object read(final TruffleObject object, final Object identifier) throws UnsupportedMessageException, UnknownIdentifierException {
+                return ForeignAccess.sendRead(READ_NODE, object, identifier);
             }
 
             private LanguageInfo getLanguageInfo(String languageId) {

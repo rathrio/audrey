@@ -52,12 +52,6 @@ public final class AudreyInstrument extends TruffleInstrument {
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
 //        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-//            executor.shutdown();
-//            try {
-//                executor.awaitTermination(60, TimeUnit.MILLISECONDS);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
 //            storage.toString();
 //            System.out.println("HEY MA LOOK");
 //        }));

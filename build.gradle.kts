@@ -18,7 +18,8 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.5")
 
     // Redis Client
-    implementation("redis.clients:jedis:2.9.0")
+//    implementation("redis.clients:jedis:2.9.0")
+    implementation("io.lettuce:lettuce-core:5.1.3.RELEASE")
 
     testImplementation("junit", "junit", "4.12")
 }

@@ -12,10 +12,12 @@ import com.oracle.truffle.api.source.SourceSection;
 import io.rathr.audrey.storage.InMemorySampleStorage;
 import io.rathr.audrey.storage.Sample;
 import io.rathr.audrey.storage.SampleStorage;
+import io.rathr.audrey.storage.StorageTask;
 import org.graalvm.options.OptionDescriptors;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
@@ -32,8 +34,8 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     private final SampleStorage storage = new InMemorySampleStorage();
 
-    
-    private final ExecutorService executor = Executors.newFixedThreadPool(4);
+    private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
+    private final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
 
     private static String extractRootName(final Node instrumentedNode) {
         RootNode rootNode = instrumentedNode.getRootNode();
@@ -52,6 +54,12 @@ public final class AudreyInstrument extends TruffleInstrument {
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            executor.shutdown();
+            try {
+                executor.awaitTermination(60, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             storage.toString();
             System.out.println("HEY MA LOOK");
         }));
@@ -144,7 +152,7 @@ public final class AudreyInstrument extends TruffleInstrument {
                                 extractRootName(instrumentedNode)
                             );
 
-                            storage.add(sample);
+                            executor.execute(new StorageTask(storage, sample));
                         } catch (UnknownIdentifierException | UnsupportedMessageException e) {
                             e.printStackTrace();
                         }

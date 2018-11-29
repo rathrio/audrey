@@ -17,6 +17,9 @@ dependencies {
     // JSON
     implementation("com.google.code.gson:gson:2.8.5")
 
+    // Redis Client
+    implementation("redis.clients:jedis:2.9.0")
+
     testImplementation("junit", "junit", "4.12")
 }
 

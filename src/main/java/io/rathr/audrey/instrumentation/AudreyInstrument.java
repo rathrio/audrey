@@ -9,10 +9,7 @@ import com.oracle.truffle.api.nodes.LanguageInfo;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
-import io.rathr.audrey.storage.InMemorySampleStorage;
-import io.rathr.audrey.storage.Sample;
-import io.rathr.audrey.storage.SampleStorage;
-import io.rathr.audrey.storage.StorageTask;
+import io.rathr.audrey.storage.*;
 import org.graalvm.options.OptionDescriptors;
 
 import java.util.concurrent.ExecutorService;
@@ -32,7 +29,8 @@ public final class AudreyInstrument extends TruffleInstrument {
     private static final Node READ_NODE = Message.READ.createNode();
     private static final Node KEYS_NODE = Message.KEYS.createNode();
 
-    private final SampleStorage storage = new InMemorySampleStorage();
+//    private final SampleStorage storage = new InMemorySampleStorage();
+    private final SampleStorage storage = new RedisSampleStorage();
 
     private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
     private final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
@@ -53,16 +51,16 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            executor.shutdown();
-            try {
-                executor.awaitTermination(60, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            storage.toString();
-            System.out.println("HEY MA LOOK");
-        }));
+//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//            executor.shutdown();
+//            try {
+//                executor.awaitTermination(60, TimeUnit.MILLISECONDS);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            storage.toString();
+//            System.out.println("HEY MA LOOK");
+//        }));
 
         if (!env.getOptions().get(AudreyCLI.ENABLED)) {
             return;
@@ -152,7 +150,8 @@ public final class AudreyInstrument extends TruffleInstrument {
                                 extractRootName(instrumentedNode)
                             );
 
-                            executor.execute(new StorageTask(storage, sample));
+//                            executor.execute(() -> storage.add(sample));
+                            storage.add(sample);
                         } catch (UnknownIdentifierException | UnsupportedMessageException e) {
                             e.printStackTrace();
                         }

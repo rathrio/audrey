@@ -14,18 +14,23 @@ public final class Sample {
                   final String value,
                   final String metaObject,
                   final String category,
-                  final SourceSection sourceSection) {
+                  final SourceSection sourceSection,
+                  final String rootNodeId) {
 
         this.identifier = identifier;
         this.value = value;
         this.metaObject = metaObject;
         this.category = Category.valueOf(category.trim().toUpperCase());
         this.sourceSection = sourceSection;
-        this.rootNodeId = "";
+        this.rootNodeId = rootNodeId;
     }
 
     public SourceSection getSourceSection() {
         return sourceSection;
+    }
+
+    public String getRootNodeId() {
+        return rootNodeId;
     }
 
     enum Category {

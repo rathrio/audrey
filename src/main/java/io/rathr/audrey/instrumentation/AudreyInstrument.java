@@ -14,6 +14,8 @@ import io.rathr.audrey.storage.Sample;
 import io.rathr.audrey.storage.SampleStorage;
 import org.graalvm.options.OptionDescriptors;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
@@ -30,7 +32,11 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     private final SampleStorage storage = new InMemorySampleStorage();
 
-    private static String extractRootName(final RootNode rootNode) {
+    private final ExecutorService executor = Executors.newFixedThreadPool(4);
+
+    private static String extractRootName(final Node instrumentedNode) {
+        RootNode rootNode = instrumentedNode.getRootNode();
+
         if (rootNode != null) {
             if (rootNode.getName() == null) {
                 return rootNode.toString();
@@ -39,18 +45,6 @@ public final class AudreyInstrument extends TruffleInstrument {
             }
         } else {
             return "<Unknown>";
-        }
-    }
-
-    class InstrumentationContext {
-        private String rootId;
-
-        public String getRootId() {
-            return rootId;
-        }
-
-        public void setRootId(final String rootId) {
-            this.rootId = rootId;
         }
     }
 
@@ -77,21 +71,14 @@ public final class AudreyInstrument extends TruffleInstrument {
             })
             .build();
 
+        final Instrumenter instrumenter = env.getInstrumenter();
         final SourceSectionFilter.Builder builder = SourceSectionFilter.newBuilder();
 
-        // Filter for language agnostic statement source sections.
-        final SourceSectionFilter statementFilter = builder.sourceFilter(sourceFilter)
-            .tagIs(STATEMENT_TAG)
-            .build();
-
-        // Filter for language agnostic "root" sections. We're only interested in "callable" constructs though,
-        // e.g. methods in Ruby or functions in JS.
-        final SourceSectionFilter rootFilter = builder.sourceFilter(sourceFilter)
-            .tagIs(ROOT_TAG)
-            .build();
-
-        final Instrumenter instrumenter = env.getInstrumenter();
-//        final InstrumentationContext instrumentationContext = new InstrumentationContext();
+//        // Filter for language agnostic "root" sections. We're only interested in "callable" constructs though,
+//        // e.g. methods in Ruby or functions in JS.
+//        final SourceSectionFilter rootFilter = builder.sourceFilter(sourceFilter)
+//            .tagIs(ROOT_TAG)
+//            .build();
 //
 //        instrumenter.attachExecutionEventFactory(rootFilter, context -> new ExecutionEventNode() {
 //            @Override
@@ -101,17 +88,21 @@ public final class AudreyInstrument extends TruffleInstrument {
 //
 //            @TruffleBoundary
 //            private void handleOnEnter() {
-//                final Node instrumentedNode = context.getInstrumentedNode();
+////                final Node instrumentedNode = context.getInstrumentedNode();
 //                System.out.println("got here");
 //            }
 //        });
+
+        // Filter for language agnostic statement source sections.
+        final SourceSectionFilter statementFilter = builder.sourceFilter(sourceFilter)
+            .tagIs(STATEMENT_TAG)
+            .build();
 
         instrumenter.attachExecutionEventFactory(statementFilter, context -> new ExecutionEventNode() {
             @Override
             protected void onEnter(final VirtualFrame frame) {
                 handleOnEnter(frame);
             }
-
 
             @TruffleBoundary
             private void handleOnEnter(final VirtualFrame frame) {
@@ -148,7 +139,8 @@ public final class AudreyInstrument extends TruffleInstrument {
                                 getString(languageId, valueObject),
                                 getString(languageId, metaObject),
                                 "STATEMENT",
-                                sourceSection
+                                sourceSection,
+                                extractRootName(instrumentedNode)
                             );
 
                             storage.add(sample);

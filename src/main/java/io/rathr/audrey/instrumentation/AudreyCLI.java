@@ -1,4 +1,4 @@
-package io.rathr.audrey;
+package io.rathr.audrey.instrumentation;
 
 import com.oracle.truffle.api.Option;
 import org.graalvm.options.OptionCategory;

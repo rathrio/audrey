@@ -1,4 +1,4 @@
-package io.rathr.audrey;
+package io.rathr.audrey.instrumentation;
 
 import com.oracle.truffle.api.Scope;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -9,11 +9,11 @@ import com.oracle.truffle.api.nodes.LanguageInfo;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
+import io.rathr.audrey.storage.InMemorySampleStorage;
+import io.rathr.audrey.storage.Sample;
+import io.rathr.audrey.storage.SampleStorage;
 import org.graalvm.options.OptionDescriptors;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
@@ -22,17 +22,15 @@ import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 public final class AudreyInstrument extends TruffleInstrument {
 
     public static final String ID = "audrey";
-    private static final Class CALL_TAG = StandardTags.CallTag.class;
     private static final Class STATEMENT_TAG = StandardTags.StatementTag.class;
     private static final Class ROOT_TAG = StandardTags.RootTag.class;
 
     private static final Node READ_NODE = Message.READ.createNode();
     private static final Node KEYS_NODE = Message.KEYS.createNode();
 
-    private Map<SourceSection, Set<Sample>> sampleMap = new ConcurrentHashMap<>();
+    private final SampleStorage storage = new InMemorySampleStorage();
 
-    private static String extractRootName(final Node instrumentedNode) {
-        RootNode rootNode = instrumentedNode.getRootNode();
+    private static String extractRootName(final RootNode rootNode) {
         if (rootNode != null) {
             if (rootNode.getName() == null) {
                 return rootNode.toString();
@@ -45,25 +43,21 @@ public final class AudreyInstrument extends TruffleInstrument {
     }
 
     class InstrumentationContext {
-        private boolean enteringRoot = false;
+        private String rootId;
 
-        public boolean isEnteringRoot() {
-            return enteringRoot;
+        public String getRootId() {
+            return rootId;
         }
 
-        public void setEnteringRoot(final boolean enteringRoot) {
-            this.enteringRoot = enteringRoot;
+        public void setRootId(final String rootId) {
+            this.rootId = rootId;
         }
     }
 
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            sampleMap.forEach((sourceSection, samples) -> {
-                System.out.println(sourceSection + ":");
-                samples.forEach(sample -> System.out.print(sample.value + ", "));
-                System.out.println();
-            });
+            System.out.println("HEY MA LOOK");
         }));
 
         if (!env.getOptions().get(AudreyCLI.ENABLED)) {
@@ -96,19 +90,20 @@ public final class AudreyInstrument extends TruffleInstrument {
             .build();
 
         final Instrumenter instrumenter = env.getInstrumenter();
-        final InstrumentationContext instrumentationContext = new InstrumentationContext();
-
-        instrumenter.attachExecutionEventFactory(rootFilter, context -> new ExecutionEventNode() {
-            @Override
-            protected void onEnter(final VirtualFrame frame) {
-                handleOnEnter();
-            }
-
-            @TruffleBoundary
-            private void handleOnEnter() {
-                instrumentationContext.setEnteringRoot(true);
-            }
-        });
+//        final InstrumentationContext instrumentationContext = new InstrumentationContext();
+//
+//        instrumenter.attachExecutionEventFactory(rootFilter, context -> new ExecutionEventNode() {
+//            @Override
+//            protected void onEnter(final VirtualFrame frame) {
+//                handleOnEnter();
+//            }
+//
+//            @TruffleBoundary
+//            private void handleOnEnter() {
+//                final Node instrumentedNode = context.getInstrumentedNode();
+//                System.out.println("got here");
+//            }
+//        });
 
         instrumenter.attachExecutionEventFactory(statementFilter, context -> new ExecutionEventNode() {
             @Override
@@ -120,6 +115,7 @@ public final class AudreyInstrument extends TruffleInstrument {
             @TruffleBoundary
             private void handleOnEnter(final VirtualFrame frame) {
                 final Node instrumentedNode = context.getInstrumentedNode();
+                System.out.println("hi there");
 
                 final SourceSection sourceSection = context.getInstrumentedSourceSection();
                 final String languageId = sourceSection.getSource().getLanguage();
@@ -151,11 +147,11 @@ public final class AudreyInstrument extends TruffleInstrument {
                                 identifier,
                                 getString(languageId, valueObject),
                                 getString(languageId, metaObject),
-                                "STATEMENT"
+                                "STATEMENT",
+                                sourceSection
                             );
 
-                            sampleMap.computeIfAbsent(sourceSection, section -> ConcurrentHashMap.newKeySet());
-                            sampleMap.get(sourceSection).add(sample);
+                            storage.add(sample);
                         } catch (UnknownIdentifierException | UnsupportedMessageException e) {
                             e.printStackTrace();
                         }
@@ -163,47 +159,6 @@ public final class AudreyInstrument extends TruffleInstrument {
                 } catch (UnsupportedMessageException e) {
                     e.printStackTrace();
                 }
-            }
-
-//            @Override
-//            protected void onReturnValue(VirtualFrame frame, Object result) {
-//                handleOnReturnValue(frame, result);
-//            }
-//
-//            @TruffleBoundary
-//            private void handleOnReturnValue(VirtualFrame frame, Object result) {
-//                if (result == null) {
-//                    return;
-//                }
-//
-//                final SourceSection sourceSection = context.getInstrumentedSourceSection();
-//                final String languageId = sourceSection.getSource().getLanguage();
-//
-//                final String value = getString(languageId, result);
-//                final Object metaObject = env.findMetaObject(getLanguageInfo(languageId), result);
-//
-//                final Node instrumentedNode = context.getInstrumentedNode();
-//
-//                final Sample sample = new Sample(
-//                    value,
-//                    getString(languageId, metaObject),
-//                    "return",
-//                    extractRootName(instrumentedNode)
-//                );
-//
-//                sampleMap.computeIfAbsent(sourceSection, section -> ConcurrentHashMap.newKeySet());
-//                sampleMap.get(sourceSection).add(sample);
-//            }
-
-            /**
-             * @return guest language string representation of object.
-             */
-            private String getString(String languageId, Object object) {
-                if (isSimple(object)) {
-                    return object.toString();
-                }
-
-                return env.toString(getLanguageInfo(languageId), object);
             }
 
             private int getSize(final TruffleObject keys) throws UnsupportedMessageException {
@@ -220,6 +175,17 @@ public final class AudreyInstrument extends TruffleInstrument {
 
             private LanguageInfo getLanguageInfo(String languageId) {
                 return env.getLanguages().get(languageId);
+            }
+
+            /**
+             * @return guest language string representation of object.
+             */
+            private String getString(String languageId, Object object) {
+                if (isSimple(object)) {
+                    return object.toString();
+                }
+
+                return env.toString(getLanguageInfo(languageId), object);
             }
 
             private boolean isSimple(Object object) {

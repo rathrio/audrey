@@ -38,4 +38,30 @@ public final class Sample {
         ARGUMENT,
         STATEMENT;
     }
+
+    @Override
+    public String toString() {
+        StringBuffer result = new StringBuffer("{ ");
+        result.append("identifier: ");
+        result.append(identifier);
+        result.append(", ");
+
+        result.append("value: ");
+        result.append(value);
+        result.append(", ");
+
+        result.append("type: ");
+        result.append(metaObject);
+        result.append(", ");
+
+        result.append("source: ");
+        result.append(sourceSection);
+        result.append(", ");
+
+        result.append("rootId: ");
+        result.append(rootNodeId);
+        result.append(" }");
+
+        return result.toString();
+    }
 }

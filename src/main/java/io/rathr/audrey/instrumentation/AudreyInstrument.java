@@ -32,6 +32,7 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     private final SampleStorage storage = new InMemorySampleStorage();
 
+    
     private final ExecutorService executor = Executors.newFixedThreadPool(4);
 
     private static String extractRootName(final Node instrumentedNode) {

@@ -10,7 +10,6 @@ public final class RedisSampleStorage implements SampleStorage {
     private final StatefulRedisConnection<String, String> connection = client.connect();
     private final RedisAsyncCommands<String, String> async = connection.async();
 
-
     @Override
     public void add(final Sample sample) {
         async.sadd(sample.getRootNodeId(), sample.toString());

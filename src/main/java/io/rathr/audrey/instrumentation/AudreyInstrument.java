@@ -11,6 +11,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import io.rathr.audrey.storage.*;
 import org.graalvm.options.OptionDescriptors;
+import org.graalvm.options.OptionKey;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,8 +30,7 @@ public final class AudreyInstrument extends TruffleInstrument {
     private static final Node READ_NODE = Message.READ.createNode();
     private static final Node KEYS_NODE = Message.KEYS.createNode();
 
-//    private final SampleStorage storage = new InMemorySampleStorage();
-    private final SampleStorage storage = new RedisSampleStorage();
+    private SampleStorage storage;
 
     private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
     private final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
@@ -59,6 +59,19 @@ public final class AudreyInstrument extends TruffleInstrument {
         if (!env.getOptions().get(AudreyCLI.ENABLED)) {
             return;
         }
+
+        final String storageType = env.getOptions().get(AudreyCLI.STORAGE).toLowerCase();
+        switch (storageType) {
+            case "in_memory":
+                storage = new InMemorySampleStorage();
+                break;
+            case "redis":
+                storage = new RedisSampleStorage();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown storage type: " + storageType);
+        }
+
 
         final SourceFilter sourceFilter = SourceFilter.newBuilder()
             .includeInternal(false)

@@ -13,6 +13,8 @@ import io.rathr.audrey.storage.*;
 import org.graalvm.options.OptionDescriptors;
 import org.graalvm.options.OptionKey;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +37,8 @@ public final class AudreyInstrument extends TruffleInstrument {
     private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
     private final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
 
+    private static final String[] IDENTIFIER_BLACKLIST = { "(self)" };
+
     private static String extractRootName(final Node instrumentedNode) {
         RootNode rootNode = instrumentedNode.getRootNode();
 
@@ -51,10 +55,10 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
-//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-//            storage.toString();
-//            System.out.println("HEY MA LOOK");
-//        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            storage.toString();
+            System.out.println("HEY MA LOOK");
+        }));
 
         if (!env.getOptions().get(AudreyCLI.ENABLED)) {
             return;
@@ -140,7 +144,7 @@ public final class AudreyInstrument extends TruffleInstrument {
                             final String identifier = (String) read(keys, index);
 
                             // TODO: Introduce a proper blacklist.
-                            if (identifier.equals("(self)")) {
+                            if (Arrays.stream(IDENTIFIER_BLACKLIST).anyMatch(identifier::equals)) {
                                 // Skip iteration because we don't care about these values.
                                 return;
                             }

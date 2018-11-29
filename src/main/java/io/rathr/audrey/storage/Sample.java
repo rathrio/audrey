@@ -6,7 +6,7 @@ public final class Sample {
     private final String identifier;
     private final String metaObject;
     private final String value;
-    private final String rootNodeIdentifier;
+    private final String rootNodeId;
     private final Category category;
     private final SourceSection sourceSection;
 
@@ -21,7 +21,7 @@ public final class Sample {
         this.metaObject = metaObject;
         this.category = Category.valueOf(category.trim().toUpperCase());
         this.sourceSection = sourceSection;
-        this.rootNodeIdentifier = "";
+        this.rootNodeId = "";
     }
 
     public SourceSection getSourceSection() {

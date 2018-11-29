@@ -57,6 +57,7 @@ public final class AudreyInstrument extends TruffleInstrument {
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            storage.toString();
             System.out.println("HEY MA LOOK");
         }));
 
@@ -115,7 +116,6 @@ public final class AudreyInstrument extends TruffleInstrument {
             @TruffleBoundary
             private void handleOnEnter(final VirtualFrame frame) {
                 final Node instrumentedNode = context.getInstrumentedNode();
-                System.out.println("hi there");
 
                 final SourceSection sourceSection = context.getInstrumentedSourceSection();
                 final String languageId = sourceSection.getSource().getLanguage();

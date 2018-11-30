@@ -1,6 +1,7 @@
 package io.rathr.audrey.instrumentation;
 
 import com.oracle.truffle.api.Scope;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
@@ -135,11 +136,11 @@ public final class AudreyInstrument extends TruffleInstrument {
         instrumenter.attachExecutionEventFactory(statementFilter, context -> new ExecutionEventNode() {
             @Override
             protected void onEnter(final VirtualFrame frame) {
-                handleOnEnter(frame);
+                handleOnEnter(frame.materialize());
             }
 
             @TruffleBoundary
-            private void handleOnEnter(final VirtualFrame frame) {
+            private void handleOnEnter(final MaterializedFrame frame) {
                 final Node instrumentedNode = context.getInstrumentedNode();
 
                 // If we're entering a root node, let the instrumentation context know, so that the samples

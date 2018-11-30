@@ -65,4 +65,9 @@ public final class Sample {
 
         return result.toString();
     }
+
+    public String getId() {
+        final String sourceName = sourceSection.getSource().getName();
+        return sourceName + ":\"" + rootNodeId + "\"";
+    }
 }

@@ -7,12 +7,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class InMemorySampleStorage implements SampleStorage {
-    private final Map<SourceSection, Set<Sample>> sampleMap = new ConcurrentHashMap<>();
+    private final Map<String, Set<Sample>> sampleMap = new ConcurrentHashMap<>();
 
     @Override
     public void add(final Sample sample) {
-        sampleMap.computeIfAbsent(sample.getSourceSection(), section -> ConcurrentHashMap.newKeySet());
-        sampleMap.get(sample.getSourceSection()).add(sample);
+        sampleMap.computeIfAbsent(sample.getId(), section -> ConcurrentHashMap.newKeySet());
+        sampleMap.get(sample.getId()).add(sample);
     }
 
     @Override

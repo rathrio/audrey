@@ -44,7 +44,7 @@ public final class Sample {
         // TODO: Use GSON instead of this poor man's approach.
         StringBuffer result = new StringBuffer("{ ");
         result.append("identifier: ");
-        result.append("\"" + identifier + "\"");
+        result.append("\"").append(identifier).append("\"");
         result.append(", ");
 
         result.append("value: ");
@@ -52,15 +52,15 @@ public final class Sample {
         result.append(", ");
 
         result.append("type: ");
-        result.append("\"" + metaObject + "\"");
+        result.append("\"").append(metaObject).append("\"");
         result.append(", ");
 
         result.append("source: ");
-        result.append("\"" + sourceSection + "\"");
+        result.append("\"").append(sourceSection).append("\"");
         result.append(", ");
 
         result.append("rootId: ");
-        result.append("\"" + rootNodeId + "\"");
+        result.append("\"").append(rootNodeId).append("\"");
         result.append(" }");
 
         return result.toString();
@@ -68,6 +68,6 @@ public final class Sample {
 
     public String getId() {
         final String sourceName = sourceSection.getSource().getName();
-        return sourceName + ":\"" + rootNodeId + "\"";
+        return "audrey:" + sourceName + ":\"" + rootNodeId + "\"";
     }
 }

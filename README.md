@@ -14,36 +14,17 @@ Prerequisites
 Building
 --------
 
-Build a JAR with:
+Make sure that you export an environment variable `GRAALVM` that points to your
+GraalVM home folder, e.g.
 
 ```bash
-./gradlew build
+export GRAALVM=/Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home
 ```
 
-This should have generated a JAR at `build/libs/audrey-1.0-SNAPSHOT`.
-
-To let your GraalVM installation know about Audrey, place it in the jre tools
-directory. Say, for example, your GraalVM installation can be found at
-`/Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home`, you should be able to do the
-following from this project's root folder.
-
-Create a folder named "audrey" in tools:
+You can then build and install Audrey with:
 
 ```bash
-mkdir /Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home/jre/tools/audrey
-```
-
-Place the JAR in there:
-
-```
-cp build/libs/audrey-1.0-SNAPSHOT.jar /Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home/jre/tools/audrey/
-```
-
-or create a symbolic link in order to have GraalVM load the most recent JAR
-built with `./gradlew build`:
-
-```bash
-ln -s /path/to/audrey/build/libs/audrey-1.0-SNAPSHOT.jar /Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home/jre/tools/audrey/audrey.jar
+./gradlew install
 ```
 
 Setting up sample projects

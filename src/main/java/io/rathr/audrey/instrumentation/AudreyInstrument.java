@@ -35,9 +35,6 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     private SampleStorage storage;
 
-    private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
-    private final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
-
     private static final String[] IDENTIFIER_BLACKLIST = {"(self)"};
 
     private static String extractRootName(final Node instrumentedNode) {
@@ -161,7 +158,6 @@ public final class AudreyInstrument extends TruffleInstrument {
                                 extractRootName(instrumentedNode)
                             );
 
-//                            executor.execute(() -> storage.add(sample));
                             storage.add(sample);
                         } catch (UnknownIdentifierException | UnsupportedMessageException e) {
                             e.printStackTrace();

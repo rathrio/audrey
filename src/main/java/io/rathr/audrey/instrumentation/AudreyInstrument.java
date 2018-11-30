@@ -108,32 +108,11 @@ public final class AudreyInstrument extends TruffleInstrument {
         final Instrumenter instrumenter = env.getInstrumenter();
         final SourceSectionFilter.Builder builder = SourceSectionFilter.newBuilder();
 
-        // Filter for language agnostic "root" sections. We're only interested in "callable" constructs though,
-        // e.g. methods in Ruby or functions in JS.
-//        final SourceSectionFilter rootFilter = builder.sourceFilter(sourceFilter)
-//            .tagIs(ROOT_TAG)
-//            .build();
-//
-//        instrumenter.attachExecutionEventFactory(rootFilter, context -> new ExecutionEventNode() {
-//            @Override
-//            protected void onEnter(final VirtualFrame frame) {
-//                handleOnEnter();
-//            }
-//
-//            @TruffleBoundary
-//            private void handleOnEnter() {
-//                final Node instrumentedNode = context.getInstrumentedNode();
-//                final String rootNodeId = extractRootName(instrumentedNode);
-//                instrumentationContext.enter(rootNodeId);
-//            }
-//        });
-
-        // Filter for language agnostic statement source sections.
-        final SourceSectionFilter statementFilter = builder.sourceFilter(sourceFilter)
+        final SourceSectionFilter sourceSectionFilter = builder.sourceFilter(sourceFilter)
             .tagIs(STATEMENT_TAG, ROOT_TAG)
             .build();
 
-        instrumenter.attachExecutionEventFactory(statementFilter, context -> new ExecutionEventNode() {
+        instrumenter.attachExecutionEventFactory(sourceSectionFilter, context -> new ExecutionEventNode() {
             @Override
             protected void onEnter(final VirtualFrame frame) {
                 handleOnEnter(frame.materialize());

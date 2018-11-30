@@ -37,8 +37,10 @@ task("install") {
     val graalvmHome = System.getenv("GRAALVM")
     mkdir("$graalvmHome/jre/tools/audrey")
 
-    copy {
-        from("build/libs/")
-        into("$graalvmHome/jre/tools/audrey/")
+    doLast {
+        copy {
+            from("build/libs/")
+            into("$graalvmHome/jre/tools/audrey/")
+        }
     }
 }

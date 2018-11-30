@@ -9,8 +9,8 @@ public final class InMemorySampleStorage implements SampleStorage {
 
     @Override
     public void add(final Sample sample) {
-        sampleMap.computeIfAbsent(sample.getId(), section -> ConcurrentHashMap.newKeySet());
-        sampleMap.get(sample.getId()).add(sample);
+        sampleMap.computeIfAbsent(sample.getRootNodeId(), section -> ConcurrentHashMap.newKeySet());
+        sampleMap.get(sample.getRootNodeId()).add(sample);
     }
 
     @Override

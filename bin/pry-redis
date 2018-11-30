@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bundler/inline'
+
+gemfile do
+  source 'https://rubygems.org'
+  gem 'oj'
+  gem 'pry'
+  gem 'redis'
+end
+
+require 'pry'
+require 'redis'
+require 'oj'
+
+redis = Redis.new
+samples = redis.smembers('audrey_samples').map { |sample_json| Oj.load(sample_json) }
+
+require 'pry'; binding.pry
+puts 'Goodbye'

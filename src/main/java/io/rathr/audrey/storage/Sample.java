@@ -1,5 +1,6 @@
 package io.rathr.audrey.storage;
 
+import com.google.gson.Gson;
 import com.oracle.truffle.api.source.SourceSection;
 
 public final class Sample {
@@ -8,7 +9,14 @@ public final class Sample {
     private final String value;
     private final String rootNodeId;
     private final Category category;
-    private final SourceSection sourceSection;
+
+    private final String source;
+    private final int sourceLine;
+    private final int sourceIndex;
+    private final int sourceLength;
+    private final CharSequence sourceCharacters;
+
+    private static final Gson GSON = new Gson();
 
     public Sample(final String identifier,
                   final String value,
@@ -21,15 +29,16 @@ public final class Sample {
         this.value = value;
         this.metaObject = metaObject;
         this.category = Category.valueOf(category.trim().toUpperCase());
-        this.sourceSection = sourceSection;
         this.rootNodeId = rootNodeId;
+
+        this.source = sourceSection.getSource().getName();
+        this.sourceLine = sourceSection.getStartLine();
+        this.sourceIndex = sourceSection.getCharIndex();
+        this.sourceLength = sourceSection.getCharLength();
+        this.sourceCharacters = sourceSection.getCharacters();
     }
 
-    public SourceSection getSourceSection() {
-        return sourceSection;
-    }
-
-    public String getRootNodeId() {
+    public final String getRootNodeId() {
         return rootNodeId;
     }
 
@@ -40,34 +49,11 @@ public final class Sample {
     }
 
     @Override
-    public String toString() {
-        // TODO: Use GSON instead of this poor man's approach.
-        StringBuffer result = new StringBuffer("{ ");
-        result.append("identifier: ");
-        result.append("\"").append(identifier).append("\"");
-        result.append(", ");
-
-        result.append("value: ");
-        result.append(value);
-        result.append(", ");
-
-        result.append("type: ");
-        result.append("\"").append(metaObject).append("\"");
-        result.append(", ");
-
-        result.append("source: ");
-        result.append("\"").append(sourceSection).append("\"");
-        result.append(", ");
-
-        result.append("rootId: ");
-        result.append("\"").append(rootNodeId).append("\"");
-        result.append(" }");
-
-        return result.toString();
+    public final String toString() {
+        return toJson();
     }
 
-    public String getId() {
-        final String sourceName = sourceSection.getSource().getName();
-        return "audrey:" + sourceName + ":\"" + rootNodeId + "\"";
+    public final String toJson() {
+        return GSON.toJson(this);
     }
 }

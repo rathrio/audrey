@@ -32,6 +32,8 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     private SampleStorage storage;
 
+    private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
+
     private static final String[] IDENTIFIER_BLACKLIST = {"(self)"};
 
     private static String extractRootName(final Node instrumentedNode) {
@@ -48,13 +50,30 @@ public final class AudreyInstrument extends TruffleInstrument {
         }
     }
 
+    private final class InstrumentationContext {
+        private String rootNodeId = "<Unknown>";
+        private boolean enteringRoot = false;
+
+        public String getRootNodeId() {
+            return rootNodeId;
+        }
+
+        public boolean isEnteringRoot() {
+            return enteringRoot;
+        }
+
+        public void enter(final String rootNodeId) {
+            this.rootNodeId = rootNodeId;
+            this.enteringRoot = true;
+        }
+
+        public void enterRootBody() {
+            this.enteringRoot = false;
+        }
+    }
+
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
-//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-//            storage.toString();
-//            System.out.println("HEY MA LOOK");
-//        }));
-
         if (!env.getOptions().get(AudreyCLI.ENABLED)) {
             return;
         }
@@ -71,6 +90,8 @@ public final class AudreyInstrument extends TruffleInstrument {
                 throw new IllegalArgumentException("Unknown storage type: " + storageType);
         }
 
+        final InstrumentationContext instrumentationContext = new InstrumentationContext();
+
         final SourceFilter sourceFilter = SourceFilter.newBuilder()
             .includeInternal(false)
             .sourceIs(source -> {
@@ -86,8 +107,8 @@ public final class AudreyInstrument extends TruffleInstrument {
         final Instrumenter instrumenter = env.getInstrumenter();
         final SourceSectionFilter.Builder builder = SourceSectionFilter.newBuilder();
 
-//        // Filter for language agnostic "root" sections. We're only interested in "callable" constructs though,
-//        // e.g. methods in Ruby or functions in JS.
+        // Filter for language agnostic "root" sections. We're only interested in "callable" constructs though,
+        // e.g. methods in Ruby or functions in JS.
 //        final SourceSectionFilter rootFilter = builder.sourceFilter(sourceFilter)
 //            .tagIs(ROOT_TAG)
 //            .build();
@@ -100,8 +121,9 @@ public final class AudreyInstrument extends TruffleInstrument {
 //
 //            @TruffleBoundary
 //            private void handleOnEnter() {
-////                final Node instrumentedNode = context.getInstrumentedNode();
-//                System.out.println("got here");
+//                final Node instrumentedNode = context.getInstrumentedNode();
+//                final String rootNodeId = extractRootName(instrumentedNode);
+//                instrumentationContext.enter(rootNodeId);
 //            }
 //        });
 
@@ -122,6 +144,7 @@ public final class AudreyInstrument extends TruffleInstrument {
 
                 final SourceSection sourceSection = context.getInstrumentedSourceSection();
                 final String languageId = sourceSection.getSource().getLanguage();
+                final LanguageInfo languageInfo = getLanguageInfo(languageId);
 
                 final Scope scope = env.findLocalScopes(instrumentedNode, frame).iterator().next();
                 final TruffleObject variables = (TruffleObject) scope.getVariables();
@@ -143,12 +166,12 @@ public final class AudreyInstrument extends TruffleInstrument {
                             }
 
                             final Object valueObject = read(variables, identifier);
-                            final Object metaObject = env.findMetaObject(getLanguageInfo(languageId), valueObject);
+                            final Object metaObject = env.findMetaObject(languageInfo, valueObject);
 
                             final Sample sample = new Sample(
                                 identifier,
-                                getString(languageId, valueObject),
-                                getString(languageId, metaObject),
+                                getString(languageInfo, valueObject),
+                                getString(languageInfo, metaObject),
                                 "STATEMENT",
                                 sourceSection,
                                 extractRootName(instrumentedNode)
@@ -183,12 +206,12 @@ public final class AudreyInstrument extends TruffleInstrument {
             /**
              * @return guest language string representation of object.
              */
-            private String getString(String languageId, Object object) {
+            private String getString(LanguageInfo languageInfo, Object object) {
                 if (isSimple(object)) {
                     return object.toString();
                 }
 
-                return env.toString(getLanguageInfo(languageId), object);
+                return env.toString(languageInfo, object);
             }
 
             private boolean isSimple(Object object) {

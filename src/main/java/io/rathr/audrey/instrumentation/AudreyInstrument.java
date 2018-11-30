@@ -16,9 +16,6 @@ import io.rathr.audrey.storage.SampleStorage;
 import org.graalvm.options.OptionDescriptors;
 
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
@@ -140,7 +137,6 @@ public final class AudreyInstrument extends TruffleInstrument {
                         try {
                             final String identifier = (String) read(keys, index);
 
-                            // TODO: Introduce a proper blacklist.
                             if (Arrays.asList(IDENTIFIER_BLACKLIST).contains(identifier)) {
                                 // Skip iteration because we don't care about these values.
                                 return;

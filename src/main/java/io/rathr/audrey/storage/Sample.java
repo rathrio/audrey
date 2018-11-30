@@ -10,6 +10,8 @@ public final class Sample {
     private final String rootNodeId;
     private final Category category;
 
+    // Extracted from the source section and stored in primitive fields here so that we don't have to write a custom
+    // GSON adapter for source sections, i.e. GSON.toJson(this) just works™.
     private final String source;
     private final int sourceLine;
     private final int sourceIndex;

@@ -225,6 +225,10 @@ public final class AudreyInstrument extends TruffleInstrument {
 
             @TruffleBoundary
             private void handleOnReturn(final Object result) {
+                if (!context.hasTag(ROOT_TAG)) {
+                    return;
+                }
+
                 final SourceSection sourceSection = context.getInstrumentedSourceSection();
                 final String languageId = sourceSection.getSource().getLanguage();
                 final LanguageInfo languageInfo = getLanguageInfo(languageId);

@@ -12,7 +12,7 @@ public final class RedisSampleStorage implements SampleStorage {
 
     @Override
     public void add(final Sample sample) {
-        async.sadd(sample.getRootNodeId(), sample.toString());
+        async.sadd(sample.getId(), sample.toString());
     }
 
     @Override

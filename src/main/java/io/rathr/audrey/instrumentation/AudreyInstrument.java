@@ -9,12 +9,13 @@ import com.oracle.truffle.api.nodes.LanguageInfo;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
-import io.rathr.audrey.storage.*;
+import io.rathr.audrey.storage.InMemorySampleStorage;
+import io.rathr.audrey.storage.RedisSampleStorage;
+import io.rathr.audrey.storage.Sample;
+import io.rathr.audrey.storage.SampleStorage;
 import org.graalvm.options.OptionDescriptors;
-import org.graalvm.options.OptionKey;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +38,7 @@ public final class AudreyInstrument extends TruffleInstrument {
     private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
     private final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
 
-    private static final String[] IDENTIFIER_BLACKLIST = { "(self)" };
+    private static final String[] IDENTIFIER_BLACKLIST = {"(self)"};
 
     private static String extractRootName(final Node instrumentedNode) {
         RootNode rootNode = instrumentedNode.getRootNode();
@@ -55,10 +56,10 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            storage.toString();
-            System.out.println("HEY MA LOOK");
-        }));
+//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//            storage.toString();
+//            System.out.println("HEY MA LOOK");
+//        }));
 
         if (!env.getOptions().get(AudreyCLI.ENABLED)) {
             return;
@@ -75,7 +76,6 @@ public final class AudreyInstrument extends TruffleInstrument {
             default:
                 throw new IllegalArgumentException("Unknown storage type: " + storageType);
         }
-
 
         final SourceFilter sourceFilter = SourceFilter.newBuilder()
             .includeInternal(false)
@@ -144,7 +144,7 @@ public final class AudreyInstrument extends TruffleInstrument {
                             final String identifier = (String) read(keys, index);
 
                             // TODO: Introduce a proper blacklist.
-                            if (Arrays.stream(IDENTIFIER_BLACKLIST).anyMatch(identifier::equals)) {
+                            if (Arrays.asList(IDENTIFIER_BLACKLIST).contains(identifier)) {
                                 // Skip iteration because we don't care about these values.
                                 return;
                             }

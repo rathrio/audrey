@@ -218,6 +218,30 @@ public final class AudreyInstrument extends TruffleInstrument {
                 }
             }
 
+            @Override
+            protected void onReturnValue(final VirtualFrame frame, final Object result) {
+                handleOnReturn(result);
+            }
+
+            @TruffleBoundary
+            private void handleOnReturn(final Object result) {
+                final SourceSection sourceSection = context.getInstrumentedSourceSection();
+                final String languageId = sourceSection.getSource().getLanguage();
+                final LanguageInfo languageInfo = getLanguageInfo(languageId);
+                final Object metaObject = env.findMetaObject(languageInfo, result);
+
+                final Sample sample = new Sample(
+                    null,
+                    getString(languageInfo, result),
+                    getString(languageInfo, metaObject),
+                    "RETURN",
+                    sourceSection,
+                    instrumentationContext.getRootNodeId()
+                );
+
+                storage.add(sample);
+            }
+
             private int getSize(final TruffleObject keys) throws UnsupportedMessageException {
                 return ((Number) ForeignAccess.sendGetSize(Message.GET_SIZE.createNode(), keys)).intValue();
             }

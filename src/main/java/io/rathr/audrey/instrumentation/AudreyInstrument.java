@@ -34,7 +34,7 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
 
-    private static final String[] IDENTIFIER_BLACKLIST = {"(self)"};
+    private static final String[] IDENTIFIER_BLACKLIST = {"(self)", "rubytruffle_temp"};
 
     private static String extractRootName(final Node instrumentedNode) {
         RootNode rootNode = instrumentedNode.getRootNode();
@@ -67,8 +67,8 @@ public final class AudreyInstrument extends TruffleInstrument {
             this.enteringRoot = true;
         }
 
-        public void enterRootBody() {
-            this.enteringRoot = false;
+        public void setEnteringRoot(final boolean flag) {
+            this.enteringRoot = flag;
         }
     }
 
@@ -129,7 +129,7 @@ public final class AudreyInstrument extends TruffleInstrument {
 
         // Filter for language agnostic statement source sections.
         final SourceSectionFilter statementFilter = builder.sourceFilter(sourceFilter)
-            .tagIs(STATEMENT_TAG)
+            .tagIs(STATEMENT_TAG, ROOT_TAG)
             .build();
 
         instrumenter.attachExecutionEventFactory(statementFilter, context -> new ExecutionEventNode() {
@@ -142,15 +142,39 @@ public final class AudreyInstrument extends TruffleInstrument {
             private void handleOnEnter(final VirtualFrame frame) {
                 final Node instrumentedNode = context.getInstrumentedNode();
 
+                // If we're entering a root node, let the instrumentation context know, so that the samples
+                // extracted from the following statement in the root body can be marked as argument samples.
+                if (context.hasTag(ROOT_TAG)) {
+                    final String rootNodeId = extractRootName(instrumentedNode);
+                    instrumentationContext.enter(rootNodeId);
+                    return;
+                }
+
+                String _sampleCategory = "STATEMENT";
+                if (context.hasTag(STATEMENT_TAG) && instrumentationContext.isEnteringRoot()) {
+                    _sampleCategory = "ARGUMENT";
+                }
+                final String sampleCategory = _sampleCategory;
+
+                // TODO: Introduce CLI flag for this.
+                // Ensures that we only extract variables from the first statement in a root node (i.e. arguments).
+                if (!sampleCategory.equals("ARGUMENT")) {
+                    return;
+                }
+
                 final SourceSection sourceSection = context.getInstrumentedSourceSection();
                 final String languageId = sourceSection.getSource().getLanguage();
                 final LanguageInfo languageInfo = getLanguageInfo(languageId);
 
                 final Scope scope = env.findLocalScopes(instrumentedNode, frame).iterator().next();
+
+                // NOTE that getVariables will return ALL local variables in this scope, not just the ones that have
+                // been defined at this point of execution. I guess they've been extracted in a semantic analysis
+                // step beforehand.
                 final TruffleObject variables = (TruffleObject) scope.getVariables();
 
                 try {
-                    final TruffleObject keys = getKeys(variables);
+                    final TruffleObject keys = getKeys((TruffleObject) scope.getVariables());
                     final int keySize = getSize(keys);
                     if (keySize == 0) {
                         return;
@@ -160,7 +184,7 @@ public final class AudreyInstrument extends TruffleInstrument {
                         try {
                             final String identifier = (String) read(keys, index);
 
-                            if (Arrays.asList(IDENTIFIER_BLACKLIST).contains(identifier)) {
+                            if (Arrays.stream(IDENTIFIER_BLACKLIST).anyMatch(identifier::contains)) {
                                 // Skip iteration because we don't care about these values.
                                 return;
                             }
@@ -172,9 +196,9 @@ public final class AudreyInstrument extends TruffleInstrument {
                                 identifier,
                                 getString(languageInfo, valueObject),
                                 getString(languageInfo, metaObject),
-                                "STATEMENT",
+                                sampleCategory,
                                 sourceSection,
-                                extractRootName(instrumentedNode)
+                                instrumentationContext.getRootNodeId()
                             );
 
                             storage.add(sample);
@@ -184,6 +208,12 @@ public final class AudreyInstrument extends TruffleInstrument {
                     });
                 } catch (UnsupportedMessageException e) {
                     e.printStackTrace();
+                } finally {
+                    // If we just extracted argument samples, let the following event know that we're done with
+                    // arguments.
+                    if (sampleCategory.equals("ARGUMENT")) {
+                        instrumentationContext.setEnteringRoot(false);
+                    }
                 }
             }
 

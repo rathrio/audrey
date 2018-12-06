@@ -7,8 +7,6 @@
     "import-name": false,
     "eofline": false,
     "max-line-length": [true, 110],
-    "object-literal-key-quotes": false,
-    "object-literal-shorthand": false,
     "no-this-assignment": false
   },
   "rulesDirectory": []

@@ -5,6 +5,7 @@ class Dog
     @name = name
   end
 
+  # @param person [String]
   def bark_at(person)
     "Wuff, #{person}, wuff!"
   end

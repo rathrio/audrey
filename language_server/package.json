@@ -1,0 +1,17 @@
+{
+  "name": "language_server",
+  "version": "1.0.0",
+  "description": "Audrey Language Server",
+  "author": "Rathesan Iyadurai",
+  "license": "MIT",
+  "scripts": {
+    "compile": "tsc"
+  },
+  "dependencies": {
+    "vscode-languageserver": "^5.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^3.2.1",
+    "@types/node": "^10.12.12"
+  }
+}

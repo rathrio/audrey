@@ -1,3 +1,6 @@
 [submodule "projects/ruby/punch"]
 	path = projects/ruby/punch
 	url = git@github.com:rathrio/punch.git
+[submodule "language_servers/solargraph"]
+	path = language_servers/solargraph
+	url = git@github.com:rathrio/solargraph.git

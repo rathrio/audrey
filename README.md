@@ -10,6 +10,7 @@ Prerequisites
 * [Java](https://www.java.com/en/download/) (optional if you want to use GraalVM
     to build Audrey)
 * [Gradle](https://gradle.org/install/)
+* [Ruby >= 2.5](https://www.ruby-lang.org/en/documentation/installation/) and [Bundler](https://bundler.io) (for running some tools and language servers)
 
 Building
 --------

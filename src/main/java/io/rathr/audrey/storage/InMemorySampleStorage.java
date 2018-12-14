@@ -14,6 +14,9 @@ public final class InMemorySampleStorage implements SampleStorage {
     }
 
     @Override
+    public void registerProject(final Project project) {}
+
+    @Override
     public void clear() {
         sampleMap.clear();
     }

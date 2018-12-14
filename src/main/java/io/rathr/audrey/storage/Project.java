@@ -1,4 +1,4 @@
-package io.rathr.audrey.instrumentation;
+package io.rathr.audrey.storage;
 
 public final class Project {
     private final String id;

@@ -8,4 +8,16 @@ public final class Project {
         this.id = id;
         this.rootPath = rootPath;
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getRootPath() {
+        return rootPath;
+    }
+
+    public boolean contains(final String path) {
+        return path.startsWith(rootPath);
+    }
 }

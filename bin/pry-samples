@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-# frozen_string_literal: true
 
 require 'bundler/inline'
 
@@ -14,8 +13,23 @@ require 'pry'
 require 'redis'
 require 'oj'
 
+class Sample
+  attr_reader :identifier, :meta_object, :value, :root_node_id, :category
+
+  def initialize(hash)
+    @identifier = hash['identifier']
+    @meta_object = hash.fetch('metaObject')
+    @value = hash.fetch('value')
+    @root_node_id = hash.fetch('rootNodeId')
+    @category = hash.fetch('category')
+    freeze
+  end
+end
+
 redis = Redis.new
-samples = redis.smembers('audrey_samples').map { |sample_json| Oj.load(sample_json) }
+samples = redis
+  .smembers('audrey_samples')
+  .map { |sample_json| Sample.new(Oj.load(sample_json)) }
 
 require 'pry'; binding.pry
 puts 'Goodbye'

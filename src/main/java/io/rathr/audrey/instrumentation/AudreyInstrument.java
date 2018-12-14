@@ -36,6 +36,7 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
 
+    // Don't store samples with the following identifier.
     private static final String[] IDENTIFIER_BLACKLIST = {"(self)", "rubytruffle_temp"};
 
     private static String extractRootName(final Node instrumentedNode) {
@@ -105,12 +106,24 @@ public final class AudreyInstrument extends TruffleInstrument {
         final SourceFilter sourceFilter = SourceFilter.newBuilder()
             .includeInternal(false)
             .sourceIs(source -> {
+                final String path = source.getName();
+
+                // Internal stuff we don't care about.
+                if (path.startsWith("(")) {
+                    return false;
+                }
+
+                // Reject any non-project absolute paths.
+                if (path.startsWith("/") && !project.contains(path)) {
+                    return false;
+                }
+
                 final String pathFilter = env.getOptions().get(AudreyCLI.FILTER_PATH);
                 if (pathFilter.isEmpty()) {
                     return true;
                 }
 
-                return source.getName().toLowerCase().contains(pathFilter.toLowerCase());
+                return path.toLowerCase().contains(pathFilter.toLowerCase());
             })
             .build();
 

@@ -20,8 +20,8 @@ public class AudreyCLI {
     @Option(name = "FilterPath", help = "Only instrument files that match this path.", category = OptionCategory.USER)
     static final OptionKey<String> FILTER_PATH = new OptionKey<>("");
 
-    @Option(name = "Storage", help = "Use 'in_memory' or 'redis' as storage (default: in_memory).", category = OptionCategory.USER)
-    static final OptionKey<String> STORAGE = new OptionKey<>("in_memory");
+    @Option(name = "Storage", help = "Use 'in_memory' or 'redis' as storage (default: redis).", category = OptionCategory.USER)
+    static final OptionKey<String> STORAGE = new OptionKey<>("redis");
 
     @Option(name = "RootPath", help = "Absolute project root path. (default: current directory)", category = OptionCategory.USER)
     static final OptionKey<String> ROOT_PATH = new OptionKey<>(currentDir());

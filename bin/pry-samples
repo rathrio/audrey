@@ -1,5 +1,10 @@
 #!/usr/bin/env ruby
 
+if ARGV.empty?
+  puts "Usage: pry-samples <project ID>"
+  exit
+end
+
 require 'bundler/inline'
 
 gemfile do
@@ -14,7 +19,7 @@ require 'redis'
 require 'oj'
 
 class Sample
-  attr_reader :identifier, :meta_object, :value, :root_node_id, :category
+  attr_reader :identifier, :meta_object, :value, :root_node_id, :category, :source
 
   def initialize(hash)
     @identifier = hash['identifier']
@@ -22,13 +27,17 @@ class Sample
     @value = hash.fetch('value')
     @root_node_id = hash.fetch('rootNodeId')
     @category = hash.fetch('category')
+    @source = hash.fetch('source')
     freeze
   end
 end
 
+project_id = ARGV.first
+samples_key = "audrey:#{project_id}:samples"
+
 redis = Redis.new
 samples = redis
-  .smembers('audrey_samples')
+  .smembers(samples_key)
   .map { |sample_json| Sample.new(Oj.load(sample_json)) }
 
 require 'pry'; binding.pry

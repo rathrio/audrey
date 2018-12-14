@@ -11,14 +11,16 @@ public final class RedisSampleStorage implements SampleStorage {
     private final StatefulRedisConnection<String, String> connection = client.connect();
     private final RedisAsyncCommands<String, String> async = connection.async();
     private final Project project;
+    private final String samplesKey;
 
     public RedisSampleStorage(final Project project) {
         this.project = project;
+        this.samplesKey = "audrey:" + project.getId() + ":samples";
     }
 
     @Override
     public void add(final Sample sample) {
-        async.sadd("audrey_samples", sample.toString());
+        async.sadd(samplesKey, sample.toString());
     }
 
     @Override

@@ -32,6 +32,7 @@ public final class AudreyInstrument extends TruffleInstrument {
     private static final Node KEYS_NODE = Message.KEYS.createNode();
 
     private SampleStorage storage;
+    private Project project;
 
     private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
 
@@ -79,13 +80,21 @@ public final class AudreyInstrument extends TruffleInstrument {
             return;
         }
 
+        final String projectId = env.getOptions().get(AudreyCLI.PROJECT);
+        if (projectId.isEmpty()) {
+            throw new Error("Provide a unique project ID with --Audrey.Project=<Project ID>");
+        }
+
+        final String rootPath = env.getOptions().get(AudreyCLI.ROOT_PATH);
+        project = new Project(projectId, rootPath);
+
         final String storageType = env.getOptions().get(AudreyCLI.STORAGE).toLowerCase();
         switch (storageType) {
             case "in_memory":
                 storage = new InMemorySampleStorage();
                 break;
             case "redis":
-                storage = new RedisSampleStorage();
+                storage = new RedisSampleStorage(project);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown storage type: " + storageType);

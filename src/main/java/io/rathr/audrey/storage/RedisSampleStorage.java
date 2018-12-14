@@ -18,6 +18,8 @@ public final class RedisSampleStorage implements SampleStorage {
         this.project = project;
         this.projectKey = "audrey:" + project.getId();
         this.samplesKey = projectKey + ":samples";
+
+        registerProject(project);
     }
 
     @Override
@@ -25,8 +27,7 @@ public final class RedisSampleStorage implements SampleStorage {
         async.sadd(samplesKey, sample.toString());
     }
 
-    @Override
-    public void registerProject(final Project project) {
+    private void registerProject(final Project project) {
         async.hset(projectKey, "path", project.getRootPath());
     }
 

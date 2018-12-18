@@ -18,7 +18,7 @@ class Server < Sinatra::Application
     root_node_id = params.fetch('root_node_id')
     identifier = params.fetch('identifier')
 
-    samples = REDIS.smembers('audrey_samples').map { |sample_json| Oj.load(sample_json) }
+    samples = REDIS.smembers('audrey:punch:samples').map { |sample_json| Oj.load(sample_json) }
     samples.select { |s|
       s['identifier'] == identifier &&
         s['category'] == category &&

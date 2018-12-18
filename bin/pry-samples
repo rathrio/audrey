@@ -12,6 +12,7 @@ gemfile do
   gem 'oj'
   gem 'pry'
   gem 'redis'
+  gem 'hiredis'
 end
 
 require 'pry'
@@ -35,7 +36,7 @@ end
 project_id = ARGV.first
 samples_key = "audrey:#{project_id}:samples"
 
-redis = Redis.new
+redis = Redis.new(driver: :hiredis)
 samples = redis
   .smembers(samples_key)
   .map { |sample_json| Sample.new(Oj.load(sample_json)) }

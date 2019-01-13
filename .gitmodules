@@ -7,3 +7,12 @@
 [submodule "language_servers/javascript-typescript-langserver"]
 	path = language_servers/javascript-typescript-langserver
 	url = git@github.com:rathrio/javascript-typescript-langserver.git
+[submodule "projects/javascript/node-express-realworld-example-app"]
+	path = projects/javascript/node-express-realworld-example-app
+	url = git@github.com:gothinkster/node-express-realworld-example-app.git
+[submodule "projects/javascript/simple-nodejs-weather-app"]
+	path = projects/javascript/simple-nodejs-weather-app
+	url = git@github.com:bmorelli25/simple-nodejs-weather-app.git
+[submodule "projects/javascript/node-tutorial-2-restful-app"]
+	path = projects/javascript/node-tutorial-2-restful-app
+	url = git@github.com:cwbuecheler/node-tutorial-2-restful-app.git

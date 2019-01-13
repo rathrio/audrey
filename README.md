@@ -19,7 +19,7 @@ Make sure that you export an environment variable `GRAALVM` that points to your
 GraalVM home folder, e.g.
 
 ```bash
-export GRAALVM=/Users/radi/graalvm-ee-1.0.0-rc8/Contents/Home
+export GRAALVM=/Users/radi/graalvm-ee-1.0.0-rc10/Contents/Home
 ```
 
 You can then build and install Audrey with:

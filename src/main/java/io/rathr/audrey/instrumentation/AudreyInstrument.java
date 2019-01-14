@@ -110,6 +110,11 @@ public final class AudreyInstrument extends TruffleInstrument {
                     return false;
                 }
 
+                // Internal node stuff we don't care about.
+                if (path.startsWith("internal/")) {
+                    return false;
+                }
+
                 // Reject any non-project absolute paths.
                 if (path.startsWith("/") && !project.contains(path)) {
                     return false;

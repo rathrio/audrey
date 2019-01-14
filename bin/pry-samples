@@ -11,6 +11,7 @@ gemfile do
   source 'https://rubygems.org'
   gem 'oj'
   gem 'pry'
+  gem 'pry-coolline'
   gem 'redis'
   gem 'hiredis'
 end

@@ -21,7 +21,8 @@ require 'redis'
 require 'oj'
 
 class Sample
-  attr_reader :identifier, :meta_object, :value, :root_node_id, :category, :source
+  attr_reader :identifier, :meta_object, :value, :root_node_id, :category,
+    :source_line, :source_index, :source_length
 
   def initialize(hash)
     @identifier = hash['identifier']
@@ -29,7 +30,9 @@ class Sample
     @value = hash.fetch('value')
     @root_node_id = hash.fetch('rootNodeId')
     @category = hash.fetch('category')
-    @source = hash.fetch('source')
+    @source_line = hash.fetch('sourceLine')
+    @source_index = hash.fetch('sourceIndex')
+    @source_length = hash.fetch('sourceLength')
     freeze
   end
 end

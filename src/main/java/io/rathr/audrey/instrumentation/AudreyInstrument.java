@@ -10,6 +10,7 @@ import com.oracle.truffle.api.nodes.LanguageInfo;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
+import io.rathr.audrey.sampling.*;
 import io.rathr.audrey.storage.*;
 import org.graalvm.options.OptionDescriptors;
 
@@ -29,6 +30,7 @@ public final class AudreyInstrument extends TruffleInstrument {
     private static final Node KEYS_NODE = Message.KEYS.createNode();
 
     private SampleStorage storage;
+    private Sampler sampler;
     private Project project;
 
     private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
@@ -86,6 +88,7 @@ public final class AudreyInstrument extends TruffleInstrument {
         final String rootPath = env.getOptions().get(AudreyCLI.ROOT_PATH);
         project = new Project(projectId, rootPath);
 
+        // Setup storage.
         final String storageType = env.getOptions().get(AudreyCLI.STORAGE).toLowerCase();
         switch (storageType) {
             case "in_memory":
@@ -96,6 +99,25 @@ public final class AudreyInstrument extends TruffleInstrument {
                 break;
             default:
                 throw new IllegalArgumentException("Unknown storage type: " + storageType);
+        }
+
+        // Setup sampling strategy.
+        final String samplingStrategy = env.getOptions().get(AudreyCLI.SAMPLE).toLowerCase();
+        switch (samplingStrategy) {
+            case "all":
+                sampler = new AllSampler();
+                break;
+            case "none":
+                sampler = new NoneSampler();
+                break;
+            case "random":
+                sampler = new RandomSampler();
+                break;
+            case "temporal":
+                sampler = new TemporalSampler();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown sampling stategy: " + samplingStrategy);
         }
 
         final InstrumentationContext instrumentationContext = new InstrumentationContext();
@@ -144,6 +166,10 @@ public final class AudreyInstrument extends TruffleInstrument {
 
             @TruffleBoundary
             private void handleOnEnter(final MaterializedFrame frame) {
+                if (sampler.skipExtraction()) {
+                    return;
+                }
+
                 final Node instrumentedNode = context.getInstrumentedNode();
 
                 // If we're entering a root node, let the instrumentation context know, so that the samples
@@ -228,6 +254,10 @@ public final class AudreyInstrument extends TruffleInstrument {
 
             @TruffleBoundary
             private void handleOnReturn(final Object result) {
+                if (sampler.skipExtraction()) {
+                    return;
+                }
+
                 if (!context.hasTag(ROOT_TAG)) {
                     return;
                 }

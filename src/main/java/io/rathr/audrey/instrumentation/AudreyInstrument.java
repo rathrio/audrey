@@ -117,7 +117,7 @@ public final class AudreyInstrument extends TruffleInstrument {
                 sampler = new TemporalSampler();
                 break;
             default:
-                throw new IllegalArgumentException("Unknown sampling stategy: " + samplingStrategy);
+                throw new IllegalArgumentException("Unknown sampling strategy: " + samplingStrategy);
         }
 
         final InstrumentationContext instrumentationContext = new InstrumentationContext();

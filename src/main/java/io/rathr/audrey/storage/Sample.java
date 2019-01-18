@@ -44,10 +44,10 @@ public final class Sample {
         return rootNodeId;
     }
 
-    enum Category {
+    public enum Category {
         RETURN,
         ARGUMENT,
-        STATEMENT;
+        STATEMENT
     }
 
     @Override

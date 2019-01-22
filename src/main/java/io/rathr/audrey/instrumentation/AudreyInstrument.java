@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 
 import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
-@Registration(id = AudreyInstrument.ID, name = "Audrey")
+@Registration(id = AudreyInstrument.ID, name = "Audrey", services = {AudreySampler.class})
 public final class AudreyInstrument extends TruffleInstrument {
 
     public static final String ID = "audrey";
@@ -29,8 +29,10 @@ public final class AudreyInstrument extends TruffleInstrument {
     private static final Node READ_NODE = Message.READ.createNode();
     private static final Node KEYS_NODE = Message.KEYS.createNode();
 
+    private AudreySampler sampler;
+
     private SampleStorage storage;
-    private Sampler sampler;
+    private SamplingStrategy samplingStrategy;
     private Project project;
 
     private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
@@ -80,6 +82,10 @@ public final class AudreyInstrument extends TruffleInstrument {
             return;
         }
 
+        sampler = new AudreySampler(env);
+        sampler.enable();
+        env.registerService(sampler);
+
         final String projectId = env.getOptions().get(AudreyCLI.PROJECT);
         if (projectId.isEmpty()) {
             throw new Error("Provide a unique project ID with --Audrey.Project=\"<Project ID>\"");
@@ -105,16 +111,16 @@ public final class AudreyInstrument extends TruffleInstrument {
         final String samplingStrategy = env.getOptions().get(AudreyCLI.SAMPLE).toLowerCase();
         switch (samplingStrategy) {
             case "all":
-                sampler = new AllSampler();
+                this.samplingStrategy = new SampleAll();
                 break;
             case "none":
-                sampler = new NoneSampler();
+                this.samplingStrategy = new SampleNone();
                 break;
             case "random":
-                sampler = new RandomSampler();
+                this.samplingStrategy = new SampleRandom();
                 break;
             case "temporal":
-                sampler = new TemporalSampler();
+                this.samplingStrategy = new TemporalShardingStrategy();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown sampling strategy: " + samplingStrategy);
@@ -166,7 +172,7 @@ public final class AudreyInstrument extends TruffleInstrument {
 
             @TruffleBoundary
             private void handleOnEnter(final MaterializedFrame frame) {
-                if (sampler.skipExtraction()) {
+                if (AudreyInstrument.this.samplingStrategy.skipExtraction()) {
                     return;
                 }
 
@@ -254,7 +260,7 @@ public final class AudreyInstrument extends TruffleInstrument {
 
             @TruffleBoundary
             private void handleOnReturn(final Object result) {
-                if (sampler.skipExtraction()) {
+                if (AudreyInstrument.this.samplingStrategy.skipExtraction()) {
                     return;
                 }
 

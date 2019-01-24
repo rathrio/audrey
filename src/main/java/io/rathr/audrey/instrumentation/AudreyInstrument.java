@@ -82,10 +82,6 @@ public final class AudreyInstrument extends TruffleInstrument {
             return;
         }
 
-        sampler = new AudreySampler(env);
-        sampler.enable();
-        env.registerService(sampler);
-
         final String projectId = env.getOptions().get(AudreyCLI.PROJECT);
         if (projectId.isEmpty()) {
             throw new Error("Provide a unique project ID with --Audrey.Project=\"<Project ID>\"");
@@ -163,6 +159,10 @@ public final class AudreyInstrument extends TruffleInstrument {
         final SourceSectionFilter sourceSectionFilter = builder.sourceFilter(sourceFilter)
             .tagIs(STATEMENT_TAG, ROOT_TAG)
             .build();
+
+        sampler = new AudreySampler(env, sourceSectionFilter);
+        sampler.enable();
+        env.registerService(sampler);
 
         instrumenter.attachExecutionEventFactory(sourceSectionFilter, context -> new ExecutionEventNode() {
             @Override

@@ -1,4 +1,4 @@
-package io.rathr.audrey.sampling;
+package io.rathr.audrey.sampling_strategies;
 
 public class TemporalShardingStrategy implements SamplingStrategy {
     @Override

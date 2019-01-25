@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 
 import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
-public class AudreySampler implements Closeable {
+public class Audrey implements Closeable {
     private static final Class STATEMENT_TAG = StandardTags.StatementTag.class;
     private static final Class ROOT_TAG = StandardTags.RootTag.class;
 
@@ -33,12 +33,12 @@ public class AudreySampler implements Closeable {
 
     private EventBinding<?> activeBinding;
 
-    public AudreySampler(final TruffleInstrument.Env env,
-                         final String projectId,
-                         final String rootPath,
-                         final String storageType,
-                         final String samplingStrategy,
-                         final String pathFilter) {
+    public Audrey(final TruffleInstrument.Env env,
+                  final String projectId,
+                  final String rootPath,
+                  final String storageType,
+                  final String samplingStrategy,
+                  final String pathFilter) {
         this.env = env;
         this.project = new Project(projectId, rootPath);
         this.pathFilter = pathFilter;
@@ -161,6 +161,7 @@ public class AudreySampler implements Closeable {
         }
     }
 
+    // TODO: Rename
     private static final class SamplerNode extends ExecutionEventNode {
         private static final Node READ_NODE = Message.READ.createNode();
         private static final Node KEYS_NODE = Message.KEYS.createNode();

@@ -4,11 +4,11 @@ import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
 import org.graalvm.options.OptionDescriptors;
 
-@Registration(id = AudreyInstrument.ID, name = "Audrey", services = {AudreySampler.class})
+@Registration(id = AudreyInstrument.ID, name = "Audrey", services = {Audrey.class})
 public final class AudreyInstrument extends TruffleInstrument {
 
     public static final String ID = "audrey";
-    private AudreySampler sampler;
+    private Audrey sampler;
 
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
@@ -26,7 +26,7 @@ public final class AudreyInstrument extends TruffleInstrument {
         final String samplingStrategy = env.getOptions().get(AudreyCLI.SAMPLE).toLowerCase();
         final String pathFilter = env.getOptions().get(AudreyCLI.FILTER_PATH);
 
-        sampler = new AudreySampler(
+        sampler = new Audrey(
             env,
             projectId,
             rootPath,

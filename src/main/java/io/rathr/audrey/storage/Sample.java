@@ -40,6 +40,10 @@ public final class Sample {
         this.sourceCharacters = sourceSection.getCharacters();
     }
 
+    public static Sample fromJson(final String json) {
+        return GSON.fromJson(json, Sample.class);
+    }
+
     public final String getRootNodeId() {
         return rootNodeId;
     }

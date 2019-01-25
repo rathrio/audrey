@@ -1,5 +1,6 @@
 package io.rathr.audrey.storage;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,6 +12,10 @@ public final class InMemorySampleStorage implements SampleStorage {
     public void add(final Sample sample) {
         sampleMap.computeIfAbsent(sample.getRootNodeId(), section -> ConcurrentHashMap.newKeySet());
         sampleMap.get(sample.getRootNodeId()).add(sample);
+    }
+
+    public Set<Sample> getAll() {
+        return new HashSet(sampleMap.values());
     }
 
     @Override

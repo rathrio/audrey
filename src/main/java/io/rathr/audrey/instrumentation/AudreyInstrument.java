@@ -41,6 +41,8 @@ public final class AudreyInstrument extends TruffleInstrument {
         }
 
         env.registerService(audrey);
+
+        System.out.println("AUDREY IS REGISTERED!!!" + audrey);
     }
 
     @Override

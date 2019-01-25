@@ -10,7 +10,7 @@ import org.graalvm.polyglot.Instrument;
 public final class AudreyInstrument extends TruffleInstrument {
 
     public static final String ID = "audrey";
-    private Audrey sampler;
+    private Audrey audrey;
 
     public static Audrey getAudrey(Engine engine) {
         Instrument instrument = engine.getInstruments().get(ID);
@@ -23,7 +23,7 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
-        sampler = new Audrey(env);
+        audrey = new Audrey(env);
 
         if (env.getOptions().get(AudreyCLI.ENABLED)) {
             final String projectId = env.getOptions().get(AudreyCLI.PROJECT);
@@ -36,11 +36,11 @@ public final class AudreyInstrument extends TruffleInstrument {
             final String samplingStrategy = env.getOptions().get(AudreyCLI.SAMPLE).toLowerCase();
             final String pathFilter = env.getOptions().get(AudreyCLI.FILTER_PATH);
 
-            sampler.initialize(projectId, rootPath, storageType, samplingStrategy, pathFilter);
-            sampler.enable();
+            audrey.initialize(projectId, rootPath, storageType, samplingStrategy, pathFilter);
+            audrey.enable();
         }
 
-        env.registerService(sampler);
+        env.registerService(audrey);
     }
 
     @Override

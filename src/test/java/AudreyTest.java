@@ -15,11 +15,12 @@ public class AudreyTest {
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
     private final ByteArrayOutputStream err = new ByteArrayOutputStream();
 
-    private Context context = Context.newBuilder().in(System.in).out(out).err(err).build();
+    private Context context;
     private Audrey audrey;
 
     @Before
     public void setupAudrey() {
+        context = Context.newBuilder().in(System.in).out(out).err(err).build();
         audrey = Audrey.find(context.getEngine());
     }
 

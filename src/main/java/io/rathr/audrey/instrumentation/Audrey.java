@@ -11,6 +11,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import io.rathr.audrey.sampling_strategies.*;
 import io.rathr.audrey.storage.*;
+import org.graalvm.polyglot.Engine;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -73,6 +74,10 @@ public class Audrey implements Closeable {
 
         this.sourceSectionFilter = buildSourceSectionFilter();
         this.instrumentationContext = new InstrumentationContext();
+    }
+
+    public static Audrey find(Engine engine) {
+        return AudreyInstrument.getAudrey(engine);
     }
 
     private SourceSectionFilter buildSourceSectionFilter() {

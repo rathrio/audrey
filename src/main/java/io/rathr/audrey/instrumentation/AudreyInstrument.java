@@ -3,12 +3,23 @@ package io.rathr.audrey.instrumentation;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
 import org.graalvm.options.OptionDescriptors;
+import org.graalvm.polyglot.Engine;
+import org.graalvm.polyglot.Instrument;
 
 @Registration(id = AudreyInstrument.ID, name = "Audrey", services = {Audrey.class})
 public final class AudreyInstrument extends TruffleInstrument {
 
     public static final String ID = "audrey";
     private Audrey sampler;
+
+    public static Audrey getAudrey(Engine engine) {
+        Instrument instrument = engine.getInstruments().get(ID);
+        if (instrument == null) {
+            throw new IllegalStateException("Audrey is not installed.");
+        }
+
+        return instrument.lookup(Audrey.class);
+    }
 
     @Override
     protected void onCreate(TruffleInstrument.Env env) {

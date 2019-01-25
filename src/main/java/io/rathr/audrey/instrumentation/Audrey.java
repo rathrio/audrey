@@ -25,55 +25,17 @@ public class Audrey implements Closeable {
     private static final Class ROOT_TAG = StandardTags.RootTag.class;
 
     private final TruffleInstrument.Env env;
-    private final SourceSectionFilter sourceSectionFilter;
-    private final Project project;
-    private final SampleStorage storage;
-    private final SamplingStrategy samplingStrategy;
-    private final String pathFilter;
-    private final InstrumentationContext instrumentationContext;
+    private SourceSectionFilter sourceSectionFilter;
+    private Project project;
+    private SampleStorage storage;
+    private SamplingStrategy samplingStrategy;
+    private String pathFilter;
+    private InstrumentationContext instrumentationContext;
 
     private EventBinding<?> activeBinding;
 
-    public Audrey(final TruffleInstrument.Env env,
-                  final String projectId,
-                  final String rootPath,
-                  final String storageType,
-                  final String samplingStrategy,
-                  final String pathFilter) {
+    public Audrey(final TruffleInstrument.Env env) {
         this.env = env;
-        this.project = new Project(projectId, rootPath);
-        this.pathFilter = pathFilter;
-
-        switch (storageType) {
-            case "in_memory":
-                storage = new InMemorySampleStorage();
-                break;
-            case "redis":
-                storage = new RedisSampleStorage(project);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown storage type: " + storageType);
-        }
-
-        switch (samplingStrategy) {
-            case "all":
-                this.samplingStrategy = new SampleAll();
-                break;
-            case "none":
-                this.samplingStrategy = new SampleNone();
-                break;
-            case "random":
-                this.samplingStrategy = new SampleRandom();
-                break;
-            case "temporal":
-                this.samplingStrategy = new TemporalShardingStrategy();
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown sampling_strategies strategy: " + samplingStrategy);
-        }
-
-        this.sourceSectionFilter = buildSourceSectionFilter();
-        this.instrumentationContext = new InstrumentationContext();
     }
 
     public static Audrey find(Engine engine) {
@@ -142,6 +104,47 @@ public class Audrey implements Closeable {
 
     @Override
     public void close() throws IOException {
+    }
+
+    public void initialize(final String projectId,
+                           final String rootPath,
+                           final String storageType,
+                           final String samplingStrategy,
+                           final String pathFilter) {
+
+        this.project = new Project(projectId, rootPath);
+        this.pathFilter = pathFilter;
+
+        switch (storageType) {
+            case "in_memory":
+                storage = new InMemorySampleStorage();
+                break;
+            case "redis":
+                storage = new RedisSampleStorage(project);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown storage type: " + storageType);
+        }
+
+        switch (samplingStrategy) {
+            case "all":
+                this.samplingStrategy = new SampleAll();
+                break;
+            case "none":
+                this.samplingStrategy = new SampleNone();
+                break;
+            case "random":
+                this.samplingStrategy = new SampleRandom();
+                break;
+            case "temporal":
+                this.samplingStrategy = new TemporalShardingStrategy();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown sampling_strategies strategy: " + samplingStrategy);
+        }
+
+        this.sourceSectionFilter = buildSourceSectionFilter();
+        this.instrumentationContext = new InstrumentationContext();
     }
 
     private static final class InstrumentationContext {

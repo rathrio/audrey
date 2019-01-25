@@ -23,30 +23,23 @@ public final class AudreyInstrument extends TruffleInstrument {
 
     @Override
     protected void onCreate(TruffleInstrument.Env env) {
-        if (!env.getOptions().get(AudreyCLI.ENABLED)) {
-            return;
+        sampler = new Audrey(env);
+
+        if (env.getOptions().get(AudreyCLI.ENABLED)) {
+            final String projectId = env.getOptions().get(AudreyCLI.PROJECT);
+            if (projectId.isEmpty()) {
+                throw new Error("Provide a unique project ID with --Audrey.Project=\"<Project ID>\"");
+            }
+
+            final String rootPath = env.getOptions().get(AudreyCLI.ROOT_PATH);
+            final String storageType = env.getOptions().get(AudreyCLI.STORAGE).toLowerCase();
+            final String samplingStrategy = env.getOptions().get(AudreyCLI.SAMPLE).toLowerCase();
+            final String pathFilter = env.getOptions().get(AudreyCLI.FILTER_PATH);
+
+            sampler.initialize(projectId, rootPath, storageType, samplingStrategy, pathFilter);
+            sampler.enable();
         }
 
-        final String projectId = env.getOptions().get(AudreyCLI.PROJECT);
-        if (projectId.isEmpty()) {
-            throw new Error("Provide a unique project ID with --Audrey.Project=\"<Project ID>\"");
-        }
-
-        final String rootPath = env.getOptions().get(AudreyCLI.ROOT_PATH);
-        final String storageType = env.getOptions().get(AudreyCLI.STORAGE).toLowerCase();
-        final String samplingStrategy = env.getOptions().get(AudreyCLI.SAMPLE).toLowerCase();
-        final String pathFilter = env.getOptions().get(AudreyCLI.FILTER_PATH);
-
-        sampler = new Audrey(
-            env,
-            projectId,
-            rootPath,
-            storageType,
-            samplingStrategy,
-            pathFilter
-        );
-
-        sampler.enable();
         env.registerService(sampler);
     }
 

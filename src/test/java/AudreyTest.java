@@ -22,7 +22,7 @@ public class AudreyTest {
     }
 
     @Test
-    public void testTruth() {
+    public void testSanity() {
         assertEquals(true, true);
     }
 }

@@ -21,7 +21,6 @@ public class AudreyTest {
     @Before
     public void setupAudrey() {
         audrey = Audrey.find(context.getEngine());
-        assertNotNull(audrey);
     }
 
     @Test

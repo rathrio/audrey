@@ -18,7 +18,13 @@ public final class AudreyInstrument extends TruffleInstrument {
             throw new IllegalStateException("Audrey is not installed.");
         }
 
-        return instrument.lookup(Audrey.class);
+        final Audrey audrey = instrument.lookup(Audrey.class);
+        if (audrey == null) {
+//            throw new IllegalStateException("Could not lookup Audrey service.");
+            System.out.println("Failed to lookup Audrey service.");
+        }
+
+        return audrey;
     }
 
     @Override

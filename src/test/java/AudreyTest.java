@@ -9,7 +9,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class AudreyTest {
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -20,8 +21,17 @@ public class AudreyTest {
 
     @Before
     public void setupAudrey() {
-        context = Context.newBuilder().in(System.in).out(out).err(err).build();
+        context = Context.newBuilder()
+            .in(System.in)
+            .out(out)
+            .err(err)
+            .option("audrey", "true")
+            .option("audrey.Project", "tests")
+            .option("audrey.Storage", "in_memory")
+            .build();
+
         audrey = Audrey.find(context.getEngine());
+        assertNotNull(audrey);
     }
 
     @Test

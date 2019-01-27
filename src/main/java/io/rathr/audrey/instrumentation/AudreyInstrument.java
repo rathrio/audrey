@@ -20,8 +20,7 @@ public final class AudreyInstrument extends TruffleInstrument {
 
         final Audrey audrey = instrument.lookup(Audrey.class);
         if (audrey == null) {
-//            throw new IllegalStateException("Could not lookup Audrey service.");
-            System.out.println("Failed to lookup Audrey service.");
+            throw new IllegalStateException("Failed to lookup Audrey service.");
         }
 
         return audrey;

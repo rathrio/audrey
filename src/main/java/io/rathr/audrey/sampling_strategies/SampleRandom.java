@@ -1,8 +1,8 @@
-package io.rathr.audrey.sampling;
+package io.rathr.audrey.sampling_strategies;
 
 import java.util.Random;
 
-public final class RandomSampler implements Sampler {
+public final class SampleRandom implements SamplingStrategy {
     private final Random rand = new Random();
 
     @Override

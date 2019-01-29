@@ -1,6 +1,8 @@
 Audrey
 ======
 
+[![Build Status](https://travis-ci.com/rathrio/audrey.svg?branch=master)](https://travis-ci.com/rathrio/audrey)
+
 **O**n **D**emand **R**untime **I**nformation.
 
 Prerequisites

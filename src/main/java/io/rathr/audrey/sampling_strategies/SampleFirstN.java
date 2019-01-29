@@ -1,6 +1,6 @@
-package io.rathr.audrey.sampling;
+package io.rathr.audrey.sampling_strategies;
 
-public class FirstNSampler implements Sampler {
+public class SampleFirstN implements SamplingStrategy {
     private final int N = 10;
 
     @Override

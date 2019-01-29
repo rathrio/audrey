@@ -5,9 +5,6 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-
 public final class RedisSampleStorage implements SampleStorage {
     private final RedisClient client = RedisClient.create("redis://localhost");
     private final StatefulRedisConnection<String, String> connection = client.connect();
@@ -36,5 +33,9 @@ public final class RedisSampleStorage implements SampleStorage {
 
     @Override
     public void clear() {
+    }
+
+    @Override
+    public void onDispose() {
     }
 }

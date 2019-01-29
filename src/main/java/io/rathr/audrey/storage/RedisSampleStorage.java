@@ -1,6 +1,7 @@
 package io.rathr.audrey.storage;
 
 
+import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
@@ -36,6 +37,6 @@ public final class RedisSampleStorage implements SampleStorage {
     }
 
     @Override
-    public void onDispose() {
+    public void onDispose(final TruffleInstrument.Env env) {
     }
 }

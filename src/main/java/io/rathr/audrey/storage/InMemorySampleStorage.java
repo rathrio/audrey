@@ -2,8 +2,10 @@ package io.rathr.audrey.storage;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 
-import java.util.HashSet;
+import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,18 +20,20 @@ public final class InMemorySampleStorage implements SampleStorage {
         sampleMap.get(sample.getRootNodeId()).add(sample);
     }
 
-    public Set<Sample> getAll() {
-        return new HashSet(sampleMap.values());
-    }
-
     @Override
     public void clear() {
         sampleMap.clear();
     }
 
     @Override
-    public void onDispose() {
-        System.out.println(GSON.toJson(sampleMap.values().toArray()));
+    public void onDispose(final TruffleInstrument.Env env) {
+        final ArrayList<Sample> samples = new ArrayList<>();
+        sampleMap.values().forEach(samples::addAll);
+        final String output = GSON.toJson(samples);
+
+        final PrintStream out = new PrintStream(env.out());
+        out.println(output);
+
         clear();
     }
 }

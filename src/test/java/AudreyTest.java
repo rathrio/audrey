@@ -31,7 +31,6 @@ public class AudreyTest {
             .build();
 
         audrey = Audrey.find(context.getEngine());
-        assertNotNull(audrey);
     }
 
     @Test
@@ -41,7 +40,6 @@ public class AudreyTest {
 
     @Test
     public void testSimpleFunction() {
-//        audrey.enable();
         eval(makeSourceFromFile("add.js", "js"));
     }
 

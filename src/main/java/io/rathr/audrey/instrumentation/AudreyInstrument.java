@@ -19,10 +19,6 @@ public final class AudreyInstrument extends TruffleInstrument {
         }
 
         final Audrey audrey = instrument.lookup(Audrey.class);
-        if (audrey == null) {
-            throw new IllegalStateException("Failed to lookup Audrey service.");
-        }
-
         return audrey;
     }
 
@@ -46,8 +42,6 @@ public final class AudreyInstrument extends TruffleInstrument {
         }
 
         env.registerService(audrey);
-
-        System.out.println("AUDREY IS REGISTERED!!!" + audrey);
     }
 
     @Override

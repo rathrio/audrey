@@ -45,6 +45,15 @@ public final class AudreyInstrument extends TruffleInstrument {
     }
 
     @Override
+    protected void onDispose(final Env env) {
+        if (!env.getOptions().get(AudreyCLI.ENABLED)) {
+            return;
+        }
+
+        audrey.close();
+    }
+
+    @Override
     protected OptionDescriptors getOptionDescriptors() {
         return new AudreyCLIOptionDescriptors();
     }

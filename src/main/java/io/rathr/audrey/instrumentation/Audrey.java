@@ -103,7 +103,8 @@ public class Audrey implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
+        storage.onDispose(env);
     }
 
     public void initialize(final String projectId,

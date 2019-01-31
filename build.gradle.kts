@@ -44,3 +44,7 @@ task("install") {
         }
     }
 }
+
+tasks.withType<Test> {
+    outputs.upToDateWhen { false }
+}

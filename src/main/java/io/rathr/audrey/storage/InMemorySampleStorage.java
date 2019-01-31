@@ -36,4 +36,8 @@ public final class InMemorySampleStorage implements SampleStorage {
 
         clear();
     }
+
+    public Map<String, Set<Sample>> getSampleMap() {
+        return sampleMap;
+    }
 }

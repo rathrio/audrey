@@ -54,6 +54,10 @@ public final class Sample {
         STATEMENT
     }
 
+    public String getMetaObject() {
+        return metaObject;
+    }
+
     @Override
     public final String toString() {
         return toJson();

@@ -1,4 +1,6 @@
 import io.rathr.audrey.instrumentation.Audrey;
+import io.rathr.audrey.storage.InMemorySampleStorage;
+import io.rathr.audrey.storage.Sample;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Source;
 import org.junit.Before;
@@ -8,7 +10,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
+import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -37,6 +43,19 @@ public class AudreyTest {
     @Test
     public void testSanity() {
         assertTrue(true);
+    }
+
+    @Test
+    public void testSimpleEval() {
+        context.eval("js", "function foo(a) { console.log(a) } foo('bar')");
+        final InMemorySampleStorage storage = (InMemorySampleStorage) audrey.getStorage();
+        final Map<String, Set<Sample>> sampleMap = storage.getSampleMap();
+        assertEquals(1, sampleMap.size());
+        final Set<Sample> foo = sampleMap.get("foo");
+        assertNotNull(foo);
+        assertFalse(foo.isEmpty());
+        foo.removeIf((e) -> !e.getMetaObject().equals("string"));
+        assertFalse(foo.isEmpty());
     }
 
     @Test

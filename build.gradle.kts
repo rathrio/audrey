@@ -49,5 +49,5 @@ tasks.withType<Test> {
     outputs.upToDateWhen { false }
 
     var pathToAudreyJar = "${project.buildDir}/libs/audrey-${project.version}-all.jar"
-    jvmArgs("-Xbootclasspath/p:$pathToAudreyJar")
+    jvmArgs("-XX:-UseJVMCIClassLoader")
 }

@@ -42,6 +42,10 @@ public class Audrey implements Closeable {
         return AudreyInstrument.getAudrey(engine);
     }
 
+    public SampleStorage getStorage() {
+        return storage;
+    }
+
     private SourceSectionFilter buildSourceSectionFilter() {
         final SourceFilter sourceFilter = SourceFilter.newBuilder()
             .includeInternal(false)

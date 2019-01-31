@@ -31,6 +31,7 @@ public class AudreyTest {
             .build();
 
         audrey = Audrey.find(context.getEngine());
+        assertNotNull(audrey);
     }
 
     @Test

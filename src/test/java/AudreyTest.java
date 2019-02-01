@@ -66,13 +66,13 @@ public class AudreyTest {
     public void testCollectsArgumentAndReturnValues() {
         evalFile("add.js", "js");
 
-        final Optional<Sample> x = storage.findBy("x", "add", "ARGUMENT");
-        assert(x.isPresent());
-        assertEquals("1", x.get().getValue());
+        final Optional<Sample> arg1 = storage.findBy("x", "add", "ARGUMENT");
+        assert(arg1.isPresent());
+        assertEquals("1", arg1.get().getValue());
 
-        final Optional<Sample> y = storage.findBy("y", "add", "ARGUMENT");
-        assert(y.isPresent());
-        assertEquals("2", y.get().getValue());
+        final Optional<Sample> arg2 = storage.findBy("y", "add", "ARGUMENT");
+        assert(arg2.isPresent());
+        assertEquals("2", arg2.get().getValue());
 
         final Optional<Sample> returnSample = storage.findBy(null, "add", "RETURN");
         assert(returnSample.isPresent());
@@ -82,6 +82,14 @@ public class AudreyTest {
     @Test
     public void testCollectsNonPrimitiveValues() {
         evalFile("non_primitive.js", "js");
+
+        final Optional<Sample> arg = storage.findBy("w", "magnitude", "ARGUMENT");
+        assert(arg.isPresent());
+        assertEquals("{x: 34, y: 12, z: 6}", arg.get().getValue());
+
+        final Optional<Sample> returnSample = storage.findBy(null, "magnitude", "RETURN");
+        assert(returnSample.isPresent());
+        assertEquals("36.55133376499413", returnSample.get().getValue());
     }
 
     private Source makeSourceFromFile(String filename, String languageId) {

@@ -11,6 +11,7 @@ public class Search {
     private String rootNodeId;
     private String identifier;
     private Integer line;
+    private String value;
 
     public Search(final Set<Sample> samples) {
         this.samples = samples;
@@ -41,6 +42,11 @@ public class Search {
         return this;
     }
 
+    public Search value(final String value) {
+        this.value = value;
+        return this;
+    }
+
     public Stream<Sample> search() {
         Stream<Sample> stream = samples.stream();
         if (category != null) {
@@ -57,6 +63,10 @@ public class Search {
 
         if (line != null) {
             stream = stream.filter(sample -> line == sample.getSourceLine());
+        }
+
+        if (value != null) {
+            stream = stream.filter(sample -> value.equals(sample.getValue()));
         }
 
         return stream;

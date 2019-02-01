@@ -10,10 +10,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -230,7 +228,6 @@ public class AudreyTest {
 
     @Test
     public void testCanDifferentiateMethodsInRuby() {
-        // NOTE that we currently extract arguments from the first statement in the method body.
         evalFile("two_greets.rb", "ruby");
 
         final Optional<Sample> arg = storage.newSearch()
@@ -250,6 +247,35 @@ public class AudreyTest {
 
         assertTrue(differentArg.isPresent());
         assertEquals("\"Spongebob\"", differentArg.get().getValue());
+    }
+
+    @Test
+    public void testModuleFunctionInRuby() {
+        evalFile("module_function.rb", "ruby");
+
+        final List<Sample> args = storage.newSearch()
+            .forArguments()
+            .rootNodeId("Helpers#upcase")
+            .identifier("str")
+            .search().collect(Collectors.toList());
+
+        assertEquals(2, args.size());
+
+        final Optional<Sample> arg1 =
+            args.stream().filter(sample -> sample.getValue().equals("\"foobar\"")).findFirst();
+
+        final Optional<Sample> arg2 =
+            args.stream().filter(sample -> sample.getValue().equals("\"chello\"")).findFirst();
+
+        assertTrue(arg1.isPresent());
+        assertTrue(arg2.isPresent());
+
+        final List<Sample> returns = storage.newSearch()
+            .forReturns()
+            .rootNodeId("Helpers#upcase")
+            .search().collect(Collectors.toList());
+
+        // TODO
     }
 
     private Source makeSourceFromFile(String filename, String languageId) {

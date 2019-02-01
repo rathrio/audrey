@@ -4,6 +4,12 @@ import com.google.gson.Gson;
 import com.oracle.truffle.api.source.SourceSection;
 
 public final class Sample {
+    public enum Category {
+        RETURN,
+        ARGUMENT,
+        STATEMENT
+    }
+
     private final String identifier;
     private final String metaObject;
     private final String value;
@@ -48,10 +54,42 @@ public final class Sample {
         return rootNodeId;
     }
 
-    public enum Category {
-        RETURN,
-        ARGUMENT,
-        STATEMENT
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public int getSourceLine() {
+        return sourceLine;
+    }
+
+    public int getSourceIndex() {
+        return sourceIndex;
+    }
+
+    public int getSourceLength() {
+        return sourceLength;
+    }
+
+    public CharSequence getSourceCharacters() {
+        return sourceCharacters;
+    }
+
+    public boolean matches(final String identifier, final String rootNodeId, final String category) {
+        return (identifier == null || identifier.equals(this.identifier))
+            && rootNodeId.equals(this.rootNodeId)
+            && category.equals(this.category.name());
     }
 
     public String getMetaObject() {

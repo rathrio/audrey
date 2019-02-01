@@ -53,13 +53,15 @@ public class AudreyTest {
     @Test
     public void testSimpleEval() {
         context.eval("js", "function foo(a) { console.log(a) } foo('bar')");
-        final Map<String, Set<Sample>> sampleMap = storage.getSampleMap();
-        assertEquals(1, sampleMap.size());
-        final Set<Sample> foo = sampleMap.get("foo");
-        assertNotNull(foo);
-        assertFalse(foo.isEmpty());
-        foo.removeIf((e) -> !e.getMetaObject().equals("string"));
-        assertFalse(foo.isEmpty());
+
+        final Optional<Sample> arg = storage.newSearch()
+            .forArguments()
+            .rootNodeId("foo")
+            .identifier("a")
+            .findFirst();
+
+        assert(arg.isPresent());
+        assertEquals("bar", arg.get().getValue());
     }
 
     @Test

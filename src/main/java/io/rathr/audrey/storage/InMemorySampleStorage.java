@@ -7,7 +7,6 @@ import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 

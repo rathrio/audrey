@@ -66,7 +66,7 @@ public class AudreyTest {
     }
 
     @Test
-    public void testCollectsArgumentAndReturnValuesInJavaScript() {
+    public void testCollectsArgumentsAndReturnValuesInJavaScript() {
         evalFile("add.js", "js");
 
         final Optional<Sample> arg1 = storage.newSearch()
@@ -181,16 +181,37 @@ public class AudreyTest {
     }
 
     @Test
-    public void testCollectsFromMethodsInJavascript() {
+    public void testCollectsNonPrimitiveValuesInRuby() {
+        evalFile("non_primitive.rb", "ruby");
+
+        final Optional<Sample> arg = storage.newSearch()
+            .forArguments()
+            .identifier("w")
+            .rootNodeId("Object#magnitude")
+            .findFirst();
+
+        assertTrue(arg.isPresent());
+        assertEquals("#<struct Vector x=34, y=12, z=6>", arg.get().getValue());
+
+        final Optional<Sample> returnSample = storage.newSearch()
+            .forReturns()
+            .rootNodeId("Object#magnitude")
+            .findFirst();
+
+        assertTrue(returnSample.isPresent());
+        assertEquals("36.55133376499413", returnSample.get().getValue());
+    }
+
+    @Test
+    public void testCanDifferentiateMethodsInJavascript() {
         // NOTE that we currently extract arguments from the first statement in the function body.
-        evalFile("methods.js", "js");
+        evalFile("two_greets.js", "js");
 
         final Optional<Sample> arg = storage.newSearch()
             .forArguments()
             .rootNodeId("greet")
             .identifier("target")
             .line(3)
-            .search()
             .findFirst();
 
         assertTrue(arg.isPresent());
@@ -201,11 +222,34 @@ public class AudreyTest {
             .rootNodeId("greet")
             .identifier("target")
             .line(9)
-            .search()
             .findFirst();
 
         assertTrue(differentArg.isPresent());
         assertEquals("Spongebob", differentArg.get().getValue());
+    }
+
+    @Test
+    public void testCanDifferentiateMethodsInRuby() {
+        // NOTE that we currently extract arguments from the first statement in the method body.
+        evalFile("two_greets.rb", "ruby");
+
+        final Optional<Sample> arg = storage.newSearch()
+            .forArguments()
+            .rootNodeId("NicePerson.greet")
+            .identifier("target")
+            .findFirst();
+
+        assertTrue(arg.isPresent());
+        assertEquals("\"Haidar\"", arg.get().getValue());
+
+        final Optional<Sample> differentArg = storage.newSearch()
+            .forArguments()
+            .rootNodeId("NotSoNicePerson.greet")
+            .identifier("target")
+            .findFirst();
+
+        assertTrue(differentArg.isPresent());
+        assertEquals("\"Spongebob\"", differentArg.get().getValue());
     }
 
     private Source makeSourceFromFile(String filename, String languageId) {

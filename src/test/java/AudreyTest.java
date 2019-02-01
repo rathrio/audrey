@@ -65,7 +65,7 @@ public class AudreyTest {
     }
 
     @Test
-    public void testCollectsArgumentAndReturnValues() {
+    public void testCollectsArgumentAndReturnValuesInJavaScript() {
         evalFile("add.js", "js");
 
         final Optional<Sample> arg1 = storage.newSearch()
@@ -96,7 +96,38 @@ public class AudreyTest {
     }
 
     @Test
-    public void testCollectsNonPrimitiveValues() {
+    public void testCollectsArgumentsAndReturnValuesInRuby() {
+        evalFile("add.rb", "ruby");
+
+        final Optional<Sample> arg1 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("add")
+            .identifier("x")
+            .findFirst();
+
+        assert(arg1.isPresent());
+        assertEquals("1", arg1.get().getValue());
+
+        final Optional<Sample> arg2 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("add")
+            .identifier("y")
+            .findFirst();
+
+        assert(arg2.isPresent());
+        assertEquals("2", arg2.get().getValue());
+
+        final Optional<Sample> returnSample = storage.newSearch()
+            .forReturns()
+            .rootNodeId("add")
+            .findFirst();
+
+        assert(returnSample.isPresent());
+        assertEquals("3", returnSample.get().getValue());
+    }
+
+    @Test
+    public void testCollectsNonPrimitiveValuesInJavaScript() {
         evalFile("non_primitive.js", "js");
 
         final Optional<Sample> arg = storage.newSearch()
@@ -118,7 +149,7 @@ public class AudreyTest {
     }
 
     @Test
-    public void testCollectsFromJSMethods() {
+    public void testCollectsFromMethodsInJavascript() {
         // NOTE that we currently extract arguments from the first statement in the function body.
         evalFile("methods.js", "js");
 

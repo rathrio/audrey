@@ -92,6 +92,11 @@ public class AudreyTest {
         assertEquals("36.55133376499413", returnSample.get().getValue());
     }
 
+    @Test
+    public void testCollectsFromJSMethods() {
+        evalFile("methods.js", "js");
+    }
+
     private Source makeSourceFromFile(String filename, String languageId) {
         return makeSource(readSourceString(filename), languageId);
     }

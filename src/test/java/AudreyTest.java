@@ -270,12 +270,21 @@ public class AudreyTest {
         assertTrue(arg1.isPresent());
         assertTrue(arg2.isPresent());
 
-        final List<Sample> returns = storage.newSearch()
+        final Optional<Sample> ret1 = storage.newSearch()
             .forReturns()
             .rootNodeId("Helpers#upcase")
-            .search().collect(Collectors.toList());
+            .value("\"FOOBAR\"")
+            .findFirst();
 
-        // TODO
+        assertTrue(ret1.isPresent());
+
+        final Optional<Sample> ret2 = storage.newSearch()
+            .forReturns()
+            .rootNodeId("Helpers#upcase")
+            .value("\"CHELLO\"")
+            .findFirst();
+
+        assertTrue(ret2.isPresent());
     }
 
     private Source makeSourceFromFile(String filename, String languageId) {

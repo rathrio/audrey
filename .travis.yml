@@ -4,6 +4,10 @@ os:
 
 language: java
 
+branches:
+  only:
+    - master
+
 env:
     - GRAALVM_VERSION="1.0.0-rc11"
 

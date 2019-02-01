@@ -42,3 +42,6 @@ cache:
 
 scripts:
   - ./gradlew check
+
+after_success:
+  - ./gradlew jacocoTestReport coveralls

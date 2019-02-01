@@ -1,5 +1,7 @@
 plugins {
     java
+    id("jacoco")
+    id("com.github.kt3k.coveralls") version "2.8.2"
     id("com.github.johnrengelman.shadow") version "4.0.3"
 }
 
@@ -48,4 +50,12 @@ task("install") {
 tasks.withType<Test> {
     outputs.upToDateWhen { false }
     jvmArgs("-XX:-UseJVMCIClassLoader")
+}
+
+tasks {
+    getByName<JacocoReport>("jacocoTestReport") {
+        reports {
+            xml.isEnabled = true
+        }
+    }
 }

@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public class Search {
-
     private final Set<Sample> samples;
     private String category;
     private String rootNodeId;

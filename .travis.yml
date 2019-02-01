@@ -20,7 +20,7 @@ install:
         else
           if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export JAVA_HOME=$(/usr/libexec/java_home); fi
         fi
-    - gu install ruby
+    - $JAVA_HOME/bin/gu install ruby
 
 git:
   submodules:

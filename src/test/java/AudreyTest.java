@@ -155,7 +155,7 @@ public class AudreyTest {
             .findFirst();
 
         assertTrue(returnSample.isPresent());
-        assertEquals("3", returnSample.get().getValue());
+        assertEquals("3.0", returnSample.get().getValue());
     }
 
     @Test

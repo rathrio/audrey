@@ -46,10 +46,7 @@ public final class InMemorySampleStorage implements SampleStorage {
         return samples;
     }
 
-    public Optional<Sample> findBy(final String identifier, final String rootNodeId, final String category) {
-        return getSamples()
-            .stream()
-            .filter(sample -> sample.matches(identifier, rootNodeId, category))
-            .findFirst();
+    public Search newSearch() {
+        return new Search(getSamples());
     }
 }

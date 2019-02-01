@@ -12,4 +12,4 @@ const notSoNicePerson = {
 
 
 nicePerson.greet("Haidar");
-notSoNicePerson.greet("Radi");
+notSoNicePerson.greet("Spongebob");

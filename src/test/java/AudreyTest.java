@@ -101,7 +101,7 @@ public class AudreyTest {
 
         final Optional<Sample> arg1 = storage.newSearch()
             .forArguments()
-            .rootNodeId("add")
+            .rootNodeId("Object#add")
             .identifier("x")
             .findFirst();
 
@@ -110,7 +110,7 @@ public class AudreyTest {
 
         final Optional<Sample> arg2 = storage.newSearch()
             .forArguments()
-            .rootNodeId("add")
+            .rootNodeId("Object#add")
             .identifier("y")
             .findFirst();
 
@@ -119,7 +119,7 @@ public class AudreyTest {
 
         final Optional<Sample> returnSample = storage.newSearch()
             .forReturns()
-            .rootNodeId("add")
+            .rootNodeId("Object#add")
             .findFirst();
 
         assert(returnSample.isPresent());

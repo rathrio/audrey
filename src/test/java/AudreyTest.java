@@ -37,6 +37,7 @@ public class AudreyTest {
             .option("audrey", "true")
             .option("audrey.Project", "tests")
             .option("audrey.Storage", "in_memory")
+            .allowAllAccess(true)
             .build();
 
         audrey = Audrey.find(context.getEngine());
@@ -60,7 +61,7 @@ public class AudreyTest {
             .identifier("a")
             .findFirst();
 
-        assert(arg.isPresent());
+        assertTrue(arg.isPresent());
         assertEquals("bar", arg.get().getValue());
     }
 
@@ -74,7 +75,7 @@ public class AudreyTest {
             .identifier("x")
             .findFirst();
 
-        assert(arg1.isPresent());
+        assertTrue(arg1.isPresent());
         assertEquals("1", arg1.get().getValue());
 
         final Optional<Sample> arg2 = storage.newSearch()
@@ -83,7 +84,7 @@ public class AudreyTest {
             .identifier("y")
             .findFirst();
 
-        assert(arg2.isPresent());
+        assertTrue(arg2.isPresent());
         assertEquals("2", arg2.get().getValue());
 
         final Optional<Sample> returnSample = storage.newSearch()
@@ -91,7 +92,7 @@ public class AudreyTest {
             .rootNodeId("add")
             .findFirst();
 
-        assert(returnSample.isPresent());
+        assertTrue(returnSample.isPresent());
         assertEquals("3", returnSample.get().getValue());
     }
 
@@ -105,7 +106,7 @@ public class AudreyTest {
             .identifier("x")
             .findFirst();
 
-        assert(arg1.isPresent());
+        assertTrue(arg1.isPresent());
         assertEquals("1", arg1.get().getValue());
 
         final Optional<Sample> arg2 = storage.newSearch()
@@ -114,7 +115,7 @@ public class AudreyTest {
             .identifier("y")
             .findFirst();
 
-        assert(arg2.isPresent());
+        assertTrue(arg2.isPresent());
         assertEquals("2", arg2.get().getValue());
 
         final Optional<Sample> returnSample = storage.newSearch()
@@ -122,7 +123,38 @@ public class AudreyTest {
             .rootNodeId("Object#add")
             .findFirst();
 
-        assert(returnSample.isPresent());
+        assertTrue(returnSample.isPresent());
+        assertEquals("3", returnSample.get().getValue());
+    }
+
+    @Test
+    public void testCollectsArgumentsAndReturnValuesInR() {
+        evalFile("add.R", "R");
+
+        final Optional<Sample> arg1 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("add")
+            .identifier("x")
+            .findFirst();
+
+        assertTrue(arg1.isPresent());
+        assertEquals("1", arg1.get().getValue());
+
+        final Optional<Sample> arg2 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("add")
+            .identifier("y")
+            .findFirst();
+
+        assertTrue(arg2.isPresent());
+        assertEquals("2", arg2.get().getValue());
+
+        final Optional<Sample> returnSample = storage.newSearch()
+            .forReturns()
+            .rootNodeId("add")
+            .findFirst();
+
+        assertTrue(returnSample.isPresent());
         assertEquals("3", returnSample.get().getValue());
     }
 
@@ -136,7 +168,7 @@ public class AudreyTest {
             .rootNodeId("magnitude")
             .findFirst();
 
-        assert(arg.isPresent());
+        assertTrue(arg.isPresent());
         assertEquals("{x: 34, y: 12, z: 6}", arg.get().getValue());
 
         final Optional<Sample> returnSample = storage.newSearch()
@@ -144,7 +176,7 @@ public class AudreyTest {
             .rootNodeId("magnitude")
             .findFirst();
 
-        assert(returnSample.isPresent());
+        assertTrue(returnSample.isPresent());
         assertEquals("36.55133376499413", returnSample.get().getValue());
     }
 
@@ -161,7 +193,7 @@ public class AudreyTest {
             .search()
             .findFirst();
 
-        assert(arg.isPresent());
+        assertTrue(arg.isPresent());
         assertEquals("Haidar", arg.get().getValue());
 
         final Optional<Sample> differentArg = storage.newSearch()
@@ -172,7 +204,7 @@ public class AudreyTest {
             .search()
             .findFirst();
 
-        assert(differentArg.isPresent());
+        assertTrue(differentArg.isPresent());
         assertEquals("Spongebob", differentArg.get().getValue());
     }
 

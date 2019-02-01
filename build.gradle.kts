@@ -55,6 +55,7 @@ tasks.withType<Test> {
 tasks {
     getByName<JacocoReport>("jacocoTestReport") {
         reports {
+            // Coveralls wants this XML
             xml.isEnabled = true
         }
     }

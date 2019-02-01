@@ -4,6 +4,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+/**
+ * Can filter a Set of {@link Sample}s, e.g.
+ *
+ * <pre>
+ *     new Search(samples)
+ *        .forArguments()
+ *        .value("\"foobar\"")
+ *        .search() // => Stream of argument samples with value "foobar"
+ * </pre>
+ */
 public class Search {
     private final Set<Sample> samples;
     private String category;

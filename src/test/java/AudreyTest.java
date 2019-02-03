@@ -35,7 +35,8 @@ public class AudreyTest {
             .option("audrey", "true")
             .option("audrey.Project", "tests")
             .option("audrey.Storage", "in_memory")
-            .allowAllAccess(true)
+            .allowIO(true)
+            .allowNativeAccess(true)
             .build();
 
         audrey = Audrey.find(context.getEngine());

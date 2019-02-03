@@ -4,6 +4,10 @@ os:
 
 language: java
 
+branches:
+  only:
+    - master
+
 env:
     - GRAALVM_VERSION="1.0.0-rc11"
 
@@ -20,6 +24,8 @@ install:
         else
           if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export JAVA_HOME=$(/usr/libexec/java_home); fi
         fi
+    - $JAVA_HOME/bin/gu install ruby
+    - $JAVA_HOME/bin/gu install R
 
 git:
   submodules:
@@ -36,3 +42,6 @@ cache:
 
 scripts:
   - ./gradlew check
+
+after_success:
+  - ./gradlew jacocoTestReport coveralls

@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,9 +27,7 @@ public final class InMemorySampleStorage implements SampleStorage {
 
     @Override
     public void onDispose(final TruffleInstrument.Env env) {
-        final ArrayList<Sample> samples = new ArrayList<>();
-        sampleMap.values().forEach(samples::addAll);
-        final String output = GSON.toJson(samples);
+        final String output = GSON.toJson(getSamples());
 
         final PrintStream out = new PrintStream(env.out());
         out.println(output);
@@ -39,5 +37,15 @@ public final class InMemorySampleStorage implements SampleStorage {
 
     public Map<String, Set<Sample>> getSampleMap() {
         return sampleMap;
+    }
+
+    public Set<Sample> getSamples() {
+        final HashSet<Sample> samples = new HashSet<>();
+        sampleMap.values().forEach(samples::addAll);
+        return samples;
+    }
+
+    public Search newSearch() {
+        return new Search(getSamples());
     }
 }

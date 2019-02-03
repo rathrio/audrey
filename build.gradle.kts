@@ -1,5 +1,7 @@
 plugins {
     java
+    id("jacoco")
+    id("com.github.kt3k.coveralls") version "2.8.2"
     id("com.github.johnrengelman.shadow") version "4.0.3"
 }
 
@@ -47,7 +49,14 @@ task("install") {
 
 tasks.withType<Test> {
     outputs.upToDateWhen { false }
-
-    var pathToAudreyJar = "${project.buildDir}/libs/audrey-${project.version}-all.jar"
     jvmArgs("-XX:-UseJVMCIClassLoader")
+}
+
+tasks {
+    getByName<JacocoReport>("jacocoTestReport") {
+        reports {
+            // Coveralls wants this XML
+            xml.isEnabled = true
+        }
+    }
 }

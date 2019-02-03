@@ -2,6 +2,7 @@ Audrey
 ======
 
 [![Build Status](https://travis-ci.com/rathrio/audrey.svg?branch=master)](https://travis-ci.com/rathrio/audrey)
+[![Coverage Status](https://coveralls.io/repos/github/rathrio/audrey/badge.svg?branch=master)](https://coveralls.io/github/rathrio/audrey?branch=master)
 
 **O**n **D**emand **R**untime **I**nformation.
 

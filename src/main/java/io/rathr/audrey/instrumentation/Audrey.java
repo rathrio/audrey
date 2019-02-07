@@ -197,7 +197,9 @@ public class Audrey implements Closeable {
         private final Project project;
         private final SampleStorage storage;
         private final SamplingStrategy samplingStrategy;
-        private InstrumentationContext instrumentationContext;
+        private final InstrumentationContext instrumentationContext;
+        private final SourceSection sourceSection;
+        private final int sourceSectionId;
 
         SamplerNode(final TruffleInstrument.Env env,
                     final EventContext context,
@@ -212,6 +214,8 @@ public class Audrey implements Closeable {
             this.storage = storage;
             this.samplingStrategy = samplingStrategy;
             this.instrumentationContext = instrumentationContext;
+            this.sourceSection = context.getInstrumentedSourceSection();
+            this.sourceSectionId = this.sourceSection.hashCode();
         }
 
         private String extractRootName(final Node instrumentedNode) {
@@ -292,7 +296,6 @@ public class Audrey implements Closeable {
                 return;
             }
 
-            final SourceSection sourceSection = context.getInstrumentedSourceSection();
             final String languageId = sourceSection.getSource().getLanguage();
             final LanguageInfo languageInfo = getLanguageInfo(languageId);
 
@@ -358,7 +361,6 @@ public class Audrey implements Closeable {
                 return;
             }
 
-            final SourceSection sourceSection = context.getInstrumentedSourceSection();
             final String languageId = sourceSection.getSource().getLanguage();
             final LanguageInfo languageInfo = getLanguageInfo(languageId);
             final Object metaObject = env.findMetaObject(languageInfo, result);

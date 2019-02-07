@@ -14,7 +14,6 @@ import io.rathr.audrey.storage.*;
 import org.graalvm.polyglot.Engine;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
@@ -164,9 +163,13 @@ public class Audrey implements Closeable {
             return enteringRoot;
         }
 
-        public void enter(final String rootNodeId) {
+        public void enterRoot(final String rootNodeId) {
             this.rootNodeId = rootNodeId;
             this.enteringRoot = true;
+        }
+
+        public void exitRoot() {
+            this.rootNodeId = "<Unknown>";
         }
 
         public void setEnteringRoot(final boolean flag) {
@@ -266,7 +269,7 @@ public class Audrey implements Closeable {
             // extracted from the following statement in the root body can be marked as argument samples.
             if (context.hasTag(ROOT_TAG)) {
                 final String rootNodeId = extractRootName(instrumentedNode);
-                instrumentationContext.enter(rootNodeId);
+                instrumentationContext.enterRoot(rootNodeId);
                 return;
             }
 
@@ -363,6 +366,7 @@ public class Audrey implements Closeable {
             );
 
             storage.add(sample);
+            instrumentationContext.exitRoot();
         }
     }
 }

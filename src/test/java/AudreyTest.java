@@ -74,10 +74,9 @@ public class AudreyTest {
             .rootNodeId("foo")
             .search();
 
-        assertEquals(1, returns.count());
-        final Optional<Sample> returnSample = returns.findFirst();
-        assertTrue(returnSample.isPresent());
-        assertEquals("42", returnSample.get().getValue());
+        final List<Sample> returnSamples = returns.collect(Collectors.toList());
+        assertEquals(1, returnSamples.size());
+        assertEquals("42", returnSamples.get(0).getValue());
     }
 
     @Test
@@ -89,10 +88,9 @@ public class AudreyTest {
             .rootNodeId("Object#foo")
             .search();
 
-        assertEquals(1, returns.count());
-        final Optional<Sample> returnSample = returns.findFirst();
-        assertTrue(returnSample.isPresent());
-        assertEquals("42", returnSample.get().getValue());
+        final List<Sample> returnSamples = returns.collect(Collectors.toList());
+        assertEquals(1, returnSamples.size());
+        assertEquals("42", returnSamples.get(0).getValue());
     }
 
     @Test

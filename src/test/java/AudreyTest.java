@@ -337,7 +337,7 @@ public class AudreyTest {
 
         final Optional<Sample> innnerArgument = storage.newSearch()
             .forArguments()
-            .rootNodeId("makeOlder")
+            .rootNodeId("inner")
             .identifier("person")
             .findFirst();
 
@@ -345,14 +345,14 @@ public class AudreyTest {
 
         final Optional<Sample> innterReturn = storage.newSearch()
             .forReturns()
-            .rootNodeId("makeOlder")
+            .rootNodeId("inner")
             .findFirst();
 
         assertTrue(innterReturn.isPresent());
 
         final Optional<Sample> outerReturn = storage.newSearch()
             .forReturns()
-            .rootNodeId("init")
+            .rootNodeId("outer")
             .findFirst();
 
         assertTrue(outerReturn.isPresent());

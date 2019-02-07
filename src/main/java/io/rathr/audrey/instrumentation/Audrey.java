@@ -15,6 +15,7 @@ import org.graalvm.polyglot.Engine;
 
 import java.io.Closeable;
 import java.util.Arrays;
+import java.util.Stack;
 import java.util.stream.IntStream;
 
 import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
@@ -152,11 +153,17 @@ public class Audrey implements Closeable {
     }
 
     private static final class InstrumentationContext {
-        private String rootNodeId = "<Unknown>";
+        private final Stack<String> rootNodeIds;
+
+        // I.e. for our purposes: we are instrumenting the first statement in a root node.
         private boolean enteringRoot = false;
 
+        public InstrumentationContext() {
+            this.rootNodeIds = new Stack<>();
+        }
+
         public String getRootNodeId() {
-            return rootNodeId;
+            return rootNodeIds.peek();
         }
 
         public boolean isEnteringRoot() {
@@ -164,12 +171,12 @@ public class Audrey implements Closeable {
         }
 
         public void enterRoot(final String rootNodeId) {
-            this.rootNodeId = rootNodeId;
+            rootNodeIds.push(rootNodeId);
             this.enteringRoot = true;
         }
 
         public void exitRoot() {
-            this.rootNodeId = "<Unknown>";
+            rootNodeIds.pop();
         }
 
         public void setEnteringRoot(final boolean flag) {

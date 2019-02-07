@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -51,8 +52,8 @@ public class AudreyTest {
     }
 
     @Test
-    public void testSimpleEval() {
-        context.eval("js", "function foo(a) { console.log(a) } foo('bar')");
+    public void testSimpleEvalInJavaScript() {
+        evalFile("simple.js", "js");
 
         final Optional<Sample> arg = storage.newSearch()
             .forArguments()
@@ -62,6 +63,50 @@ public class AudreyTest {
 
         assertTrue(arg.isPresent());
         assertEquals("bar", arg.get().getValue());
+    }
+
+    @Test
+    public void testUnambiguousReturnsInJavaScript() {
+        evalFile("simple.js", "js");
+
+        final Stream<Sample> returns = storage.newSearch()
+            .forReturns()
+            .rootNodeId("foo")
+            .search();
+
+        assertEquals(1, returns.count());
+        final Optional<Sample> returnSample = returns.findFirst();
+        assertTrue(returnSample.isPresent());
+        assertEquals("42", returnSample.get().getValue());
+    }
+
+    @Test
+    public void testUnambiguousReturnsInRuby() {
+        evalFile("simple.rb", "ruby");
+
+        final Stream<Sample> returns = storage.newSearch()
+            .forReturns()
+            .rootNodeId("Object#foo")
+            .search();
+
+        assertEquals(1, returns.count());
+        final Optional<Sample> returnSample = returns.findFirst();
+        assertTrue(returnSample.isPresent());
+        assertEquals("42", returnSample.get().getValue());
+    }
+
+    @Test
+    public void testSimpleEvalInRuby() {
+        evalFile("simple.rb", "ruby");
+
+        final Optional<Sample> arg = storage.newSearch()
+            .forArguments()
+            .rootNodeId("Object#foo")
+            .identifier("a")
+            .findFirst();
+
+        assertTrue(arg.isPresent());
+        assertEquals("\"bar\"", arg.get().getValue());
     }
 
     @Test

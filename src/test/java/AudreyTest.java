@@ -52,7 +52,7 @@ public class AudreyTest {
     }
 
     @Test
-    public void testSimpleEvalInJavaScript() {
+    public void testSimpleEvalInJS() {
         evalFile("simple.js", "js");
 
         final Optional<Sample> arg = storage.newSearch()
@@ -66,7 +66,7 @@ public class AudreyTest {
     }
 
     @Test
-    public void testUnambiguousReturnsInJavaScript() {
+    public void testUnambiguousReturnsInJS() {
         evalFile("simple.js", "js");
 
         final Stream<Sample> returns = storage.newSearch()
@@ -108,7 +108,7 @@ public class AudreyTest {
     }
 
     @Test
-    public void testCollectsArgumentsAndReturnValuesInJavaScript() {
+    public void testCollectsArgumentsAndReturnValuesInJS() {
         evalFile("add.js", "js");
 
         final Optional<Sample> arg1 = storage.newSearch()
@@ -201,7 +201,7 @@ public class AudreyTest {
     }
 
     @Test
-    public void testCollectsNonPrimitiveValuesInJavaScript() {
+    public void testCollectsNonPrimitiveValuesInJS() {
         evalFile("non_primitive.js", "js");
 
         final Optional<Sample> arg = storage.newSearch()
@@ -245,7 +245,7 @@ public class AudreyTest {
     }
 
     @Test
-    public void testCanDifferentiateMethodsInJavascript() {
+    public void testCanDifferentiateMethodsInJS() {
         // NOTE that we currently extract arguments from the first statement in the function body.
         evalFile("two_greets.js", "js");
 
@@ -332,7 +332,7 @@ public class AudreyTest {
     }
 
     @Test
-    public void testNestedFunctionsInJavaScript() {
+    public void testNestedFunctionsInJS() {
         evalFile("nested_functions.js", "js");
 
         final Optional<Sample> innnerArgument = storage.newSearch()
@@ -349,6 +349,13 @@ public class AudreyTest {
             .findFirst();
 
         assertTrue(innterReturn.isPresent());
+
+        final Optional<Sample> outerReturn = storage.newSearch()
+            .forReturns()
+            .rootNodeId("init")
+            .findFirst();
+
+        assertTrue(outerReturn.isPresent());
     }
 
     private Source makeSourceFromFile(String filename, String languageId) {

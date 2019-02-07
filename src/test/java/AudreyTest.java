@@ -331,6 +331,26 @@ public class AudreyTest {
         assertTrue(ret2.isPresent());
     }
 
+    @Test
+    public void testNestedFunctionsInJavaScript() {
+        evalFile("nested_functions.js", "js");
+
+        final Optional<Sample> innnerArgument = storage.newSearch()
+            .forArguments()
+            .rootNodeId("makeOlder")
+            .identifier("person")
+            .findFirst();
+
+        assertTrue(innnerArgument.isPresent());
+
+        final Optional<Sample> innterReturn = storage.newSearch()
+            .forReturns()
+            .rootNodeId("makeOlder")
+            .findFirst();
+
+        assertTrue(innterReturn.isPresent());
+    }
+
     private Source makeSourceFromFile(String filename, String languageId) {
         return makeSource(readSourceString(filename), languageId);
     }

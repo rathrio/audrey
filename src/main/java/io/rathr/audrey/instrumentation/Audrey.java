@@ -153,30 +153,15 @@ public class Audrey implements Closeable {
     }
 
     private static final class InstrumentationContext {
-        private final Stack<String> rootNodeIds;
-
         // I.e. for our purposes: we are instrumenting the first statement in a root node.
         private boolean enteringRoot = false;
-
-        public InstrumentationContext() {
-            this.rootNodeIds = new Stack<>();
-        }
-
-        public String getRootNodeId() {
-            return rootNodeIds.peek();
-        }
 
         public boolean isEnteringRoot() {
             return enteringRoot;
         }
 
-        public void enterRoot(final String rootNodeId) {
-            rootNodeIds.push(rootNodeId);
+        public void enterRoot() {
             this.enteringRoot = true;
-        }
-
-        public void exitRoot() {
-            rootNodeIds.pop();
         }
 
         public void setEnteringRoot(final boolean flag) {
@@ -202,6 +187,7 @@ public class Audrey implements Closeable {
         private final int sourceSectionId;
         private final Node instrumentedNode;
         private final String languageId;
+        private final String rootNodeId;
         private LanguageInfo languageInfo;
 
         SamplerNode(final TruffleInstrument.Env env,
@@ -222,6 +208,7 @@ public class Audrey implements Closeable {
             this.instrumentedNode = context.getInstrumentedNode();
             this.languageId = sourceSection.getSource().getLanguage();
             this.languageInfo = getLanguageInfo(languageId);
+            this.rootNodeId = extractRootName(this.instrumentedNode);
         }
 
         private String extractRootName(final Node instrumentedNode) {
@@ -277,9 +264,9 @@ public class Audrey implements Closeable {
 
         @Override
         protected void onEnter(final VirtualFrame frame) {
-            if (i++ % 500 != 0) {
-                return;
-            }
+//            if (i++ % 500 != 0) {
+//                return;
+//            }
             handleOnEnter(frame.materialize());
         }
 
@@ -290,7 +277,7 @@ public class Audrey implements Closeable {
             // TODO: Move to separate node.
             if (context.hasTag(ROOT_TAG)) {
                 final String rootNodeId = extractRootName(instrumentedNode);
-                instrumentationContext.enterRoot(rootNodeId);
+                instrumentationContext.enterRoot();
                 return;
             }
 
@@ -338,7 +325,7 @@ public class Audrey implements Closeable {
                             getString(languageInfo, metaObject),
                             sampleCategory,
                             sourceSection,
-                            instrumentationContext.getRootNodeId()
+                            rootNodeId
                         );
 
                         storage.add(sample);
@@ -357,10 +344,10 @@ public class Audrey implements Closeable {
             }
         }
 
-//        @Override
-//        protected void onReturnValue(final VirtualFrame frame, final Object result) {
-//            handleOnReturn(result);
-//        }
+        @Override
+        protected void onReturnValue(final VirtualFrame frame, final Object result) {
+            handleOnReturn(result);
+        }
 
         @TruffleBoundary
         private void handleOnReturn(final Object result) {
@@ -376,11 +363,10 @@ public class Audrey implements Closeable {
                 getString(languageInfo, metaObject),
                 "RETURN",
                 sourceSection,
-                instrumentationContext.getRootNodeId()
+                rootNodeId
             );
 
             storage.add(sample);
-            instrumentationContext.exitRoot();
         }
     }
 }

@@ -30,6 +30,7 @@ class Sample
     @value = hash.fetch('value')
     @root_node_id = hash.fetch('rootNodeId')
     @category = hash.fetch('category')
+    @source = hash.fetch('source')
     @source_line = hash.fetch('sourceLine')
     @source_index = hash.fetch('sourceIndex')
     @source_length = hash.fetch('sourceLength')

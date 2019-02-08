@@ -200,6 +200,9 @@ public class Audrey implements Closeable {
         private final InstrumentationContext instrumentationContext;
         private final SourceSection sourceSection;
         private final int sourceSectionId;
+        private final Node instrumentedNode;
+        private final String languageId;
+        private LanguageInfo languageInfo;
 
         SamplerNode(final TruffleInstrument.Env env,
                     final EventContext context,
@@ -216,6 +219,9 @@ public class Audrey implements Closeable {
             this.instrumentationContext = instrumentationContext;
             this.sourceSection = context.getInstrumentedSourceSection();
             this.sourceSectionId = this.sourceSection.hashCode();
+            this.instrumentedNode = context.getInstrumentedNode();
+            this.languageId = sourceSection.getSource().getLanguage();
+            this.languageInfo = getLanguageInfo(languageId);
         }
 
         private String extractRootName(final Node instrumentedNode) {
@@ -267,17 +273,21 @@ public class Audrey implements Closeable {
                 || object instanceof Boolean;
         }
 
+        int i = 0;
+
         @Override
         protected void onEnter(final VirtualFrame frame) {
+            if (i++ % 500 != 0) {
+                return;
+            }
             handleOnEnter(frame.materialize());
         }
 
         @TruffleBoundary
         private void handleOnEnter(final MaterializedFrame frame) {
-            final Node instrumentedNode = context.getInstrumentedNode();
-
             // If we're entering a root node, let the instrumentation context know, so that the samples
             // extracted from the following statement in the root body can be marked as argument samples.
+            // TODO: Move to separate node.
             if (context.hasTag(ROOT_TAG)) {
                 final String rootNodeId = extractRootName(instrumentedNode);
                 instrumentationContext.enterRoot(rootNodeId);
@@ -296,9 +306,6 @@ public class Audrey implements Closeable {
                 return;
             }
 
-            final String languageId = sourceSection.getSource().getLanguage();
-            final LanguageInfo languageInfo = getLanguageInfo(languageId);
-
             final Scope scope = env.findLocalScopes(instrumentedNode, frame).iterator().next();
 
             // NOTE that getVariables will return ALL local variables in this scope, not just the ones that have
@@ -313,7 +320,7 @@ public class Audrey implements Closeable {
                     return;
                 }
 
-                IntStream.range(0, keySize).forEach(index -> {
+                for (int index = 0; index < keySize; index++) {
                     try {
                         final String identifier = (String) read(keys, index);
 
@@ -338,7 +345,7 @@ public class Audrey implements Closeable {
                     } catch (UnknownIdentifierException | UnsupportedMessageException e) {
                         e.printStackTrace();
                     }
-                });
+                }
             } catch (UnsupportedMessageException e) {
                 e.printStackTrace();
             } finally {
@@ -350,19 +357,17 @@ public class Audrey implements Closeable {
             }
         }
 
-        @Override
-        protected void onReturnValue(final VirtualFrame frame, final Object result) {
-            handleOnReturn(result);
-        }
+//        @Override
+//        protected void onReturnValue(final VirtualFrame frame, final Object result) {
+//            handleOnReturn(result);
+//        }
 
         @TruffleBoundary
         private void handleOnReturn(final Object result) {
             if (!context.hasTag(ROOT_TAG)) {
                 return;
             }
-
-            final String languageId = sourceSection.getSource().getLanguage();
-            final LanguageInfo languageInfo = getLanguageInfo(languageId);
+            
             final Object metaObject = env.findMetaObject(languageInfo, result);
 
             final Sample sample = new Sample(

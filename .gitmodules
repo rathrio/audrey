@@ -16,3 +16,6 @@
 [submodule "projects/javascript/node-tutorial-2-restful-app"]
 	path = projects/javascript/node-tutorial-2-restful-app
 	url = git@github.com:cwbuecheler/node-tutorial-2-restful-app.git
+[submodule "projects/ruby/optcarrot"]
+	path = projects/ruby/optcarrot
+	url = git@github.com:mame/optcarrot.git

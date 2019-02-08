@@ -3,20 +3,29 @@ package io.rathr.audrey.instrumentation;
 import com.oracle.truffle.api.Scope;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrumentation.*;
-import com.oracle.truffle.api.interop.*;
-import com.oracle.truffle.api.nodes.LanguageInfo;
-import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.source.SourceSection;
-import io.rathr.audrey.sampling_strategies.*;
-import io.rathr.audrey.storage.*;
+import com.oracle.truffle.api.instrumentation.EventBinding;
+import com.oracle.truffle.api.instrumentation.EventContext;
+import com.oracle.truffle.api.instrumentation.SourceFilter;
+import com.oracle.truffle.api.instrumentation.SourceSectionFilter;
+import com.oracle.truffle.api.instrumentation.StandardTags;
+import com.oracle.truffle.api.instrumentation.TruffleInstrument;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import io.rathr.audrey.sampling_strategies.SampleAll;
+import io.rathr.audrey.sampling_strategies.SampleNone;
+import io.rathr.audrey.sampling_strategies.SampleRandom;
+import io.rathr.audrey.sampling_strategies.SamplingStrategy;
+import io.rathr.audrey.sampling_strategies.TemporalShardingStrategy;
+import io.rathr.audrey.storage.InMemorySampleStorage;
+import io.rathr.audrey.storage.Project;
+import io.rathr.audrey.storage.RedisSampleStorage;
+import io.rathr.audrey.storage.Sample;
+import io.rathr.audrey.storage.SampleStorage;
 import org.graalvm.polyglot.Engine;
 
 import java.io.Closeable;
 import java.util.Arrays;
-import java.util.Stack;
-import java.util.stream.IntStream;
 
 import static com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
@@ -25,14 +34,18 @@ public class Audrey implements Closeable {
     private static final Class ROOT_TAG = StandardTags.RootTag.class;
 
     private final TruffleInstrument.Env env;
-    private SourceSectionFilter sourceSectionFilter;
+    private SourceSectionFilter statementSourceSectionFilter;
     private Project project;
     private SampleStorage storage;
     private SamplingStrategy samplingStrategy;
     private String pathFilter;
     private InstrumentationContext instrumentationContext;
 
-    private EventBinding<?> activeBinding;
+    private EventBinding<?> activeRootBinding;
+    private EventBinding<?> activeStatementBinding;
+
+    private SourceSectionFilter sourceSectionFilter;
+    private SourceSectionFilter rootSourceSectionFilter;
 
     public Audrey(final TruffleInstrument.Env env) {
         this.env = env;
@@ -46,7 +59,7 @@ public class Audrey implements Closeable {
         return storage;
     }
 
-    private SourceSectionFilter buildSourceSectionFilter() {
+    private SourceSectionFilter buildSourceSectionFilter(final Class tag) {
         final SourceFilter sourceFilter = SourceFilter.newBuilder()
             .includeInternal(false)
             .sourceIs(source -> {
@@ -77,18 +90,30 @@ public class Audrey implements Closeable {
 
         final SourceSectionFilter.Builder builder = SourceSectionFilter.newBuilder();
         final SourceSectionFilter sourceSectionFilter = builder.sourceFilter(sourceFilter)
-            .tagIs(STATEMENT_TAG, ROOT_TAG)
+            .tagIs(tag)
             .build();
 
         return sourceSectionFilter;
     }
 
     public void enable() {
-        this.activeBinding = env.getInstrumenter().attachExecutionEventFactory(
-            sourceSectionFilter,
-            context -> new SamplerNode(
+        this.activeRootBinding = env.getInstrumenter().attachExecutionEventFactory(
+            rootSourceSectionFilter,
+            context -> new RootSamplerNode(
                 env,
                 context,
+                project,
+                storage,
+                samplingStrategy,
+                instrumentationContext
+            )
+        );
+
+        this.activeStatementBinding = env.getInstrumenter().attachExecutionEventFactory(
+            statementSourceSectionFilter,
+            context -> new StatementSamplerNode(
+                context,
+                env,
                 project,
                 storage,
                 samplingStrategy,
@@ -98,12 +123,12 @@ public class Audrey implements Closeable {
     }
 
     public void disable() {
-        if (this.activeBinding == null) {
+        if (this.activeRootBinding == null) {
             return;
         }
 
-        activeBinding.dispose();
-        activeBinding = null;
+        activeRootBinding.dispose();
+        activeRootBinding = null;
     }
 
     @Override
@@ -148,13 +173,16 @@ public class Audrey implements Closeable {
                 throw new IllegalArgumentException("Unknown sampling_strategies strategy: " + samplingStrategy);
         }
 
-        this.sourceSectionFilter = buildSourceSectionFilter();
+        this.statementSourceSectionFilter = buildSourceSectionFilter(STATEMENT_TAG);
+        this.rootSourceSectionFilter = buildSourceSectionFilter(ROOT_TAG);
+
         this.instrumentationContext = new InstrumentationContext();
     }
 
-    private static final class InstrumentationContext {
+    static final class InstrumentationContext {
         // I.e. for our purposes: we are instrumenting the first statement in a root node.
         private boolean enteringRoot = false;
+        private boolean foundStatement = false;
 
         public boolean isEnteringRoot() {
             return enteringRoot;
@@ -164,122 +192,30 @@ public class Audrey implements Closeable {
             this.enteringRoot = true;
         }
 
+        public void foundStatement() {
+            this.foundStatement = true;
+        }
+
         public void setEnteringRoot(final boolean flag) {
             this.enteringRoot = flag;
         }
     }
-
-    // TODO: Rename
-    private static final class SamplerNode extends ExecutionEventNode {
-        private static final Node READ_NODE = Message.READ.createNode();
-        private static final Node KEYS_NODE = Message.KEYS.createNode();
-
-        private static final String[] IDENTIFIER_BLACKLIST = {"(self)", "rubytruffle_temp"};
-
-        private final EventContext context;
-        private final TruffleInstrument.Env env;
-
-        private final Project project;
-        private final SampleStorage storage;
-        private final SamplingStrategy samplingStrategy;
-        private final InstrumentationContext instrumentationContext;
-        private final SourceSection sourceSection;
-        private final int sourceSectionId;
-        private final Node instrumentedNode;
-        private final String languageId;
-        private final String rootNodeId;
-        private LanguageInfo languageInfo;
-
-        SamplerNode(final TruffleInstrument.Env env,
-                    final EventContext context,
-                    final Project project,
-                    final SampleStorage storage,
-                    final SamplingStrategy samplingStrategy,
-                    final InstrumentationContext instrumentationContext) {
-
-            this.env = env;
-            this.context = context;
-            this.project = project;
-            this.storage = storage;
-            this.samplingStrategy = samplingStrategy;
-            this.instrumentationContext = instrumentationContext;
-            this.sourceSection = context.getInstrumentedSourceSection();
-            this.sourceSectionId = this.sourceSection.hashCode();
-            this.instrumentedNode = context.getInstrumentedNode();
-            this.languageId = sourceSection.getSource().getLanguage();
-            this.languageInfo = getLanguageInfo(languageId);
-            this.rootNodeId = extractRootName(this.instrumentedNode);
+    
+    private static final class StatementSamplerNode extends SamplerNode {
+        public StatementSamplerNode(final EventContext context, final TruffleInstrument.Env env,
+                                    final Project project, final SampleStorage storage,
+                                    final SamplingStrategy samplingStrategy,
+                                    final InstrumentationContext instrumentationContext) {
+            super(context, env, project, storage, samplingStrategy, instrumentationContext);
         }
-
-        private String extractRootName(final Node instrumentedNode) {
-            RootNode rootNode = instrumentedNode.getRootNode();
-
-            if (rootNode != null) {
-                if (rootNode.getName() == null) {
-                    return rootNode.toString();
-                } else {
-                    return rootNode.getName();
-                }
-            } else {
-                return "<Unknown>";
-            }
-        }
-
-        private LanguageInfo getLanguageInfo(String languageId) {
-            return env.getLanguages().get(languageId);
-        }
-
-        private int getSize(final TruffleObject keys) throws UnsupportedMessageException {
-            return ((Number) ForeignAccess.sendGetSize(Message.GET_SIZE.createNode(), keys)).intValue();
-        }
-
-        private TruffleObject getKeys(final TruffleObject variables) throws UnsupportedMessageException {
-            return ForeignAccess.sendKeys(KEYS_NODE, variables);
-        }
-
-        private Object read(final TruffleObject object, final Object identifier) throws UnsupportedMessageException,
-            UnknownIdentifierException {
-            return ForeignAccess.sendRead(READ_NODE, object, identifier);
-        }
-
-        /**
-         * @return guest language string representation of object.
-         */
-        private String getString(LanguageInfo languageInfo, Object object) {
-            if (isSimple(object)) {
-                return object.toString();
-            }
-
-            return env.toString(languageInfo, object);
-        }
-
-        private boolean isSimple(Object object) {
-            return object instanceof String
-                || object instanceof Integer
-                || object instanceof Double
-                || object instanceof Boolean;
-        }
-
-        int i = 0;
 
         @Override
         protected void onEnter(final VirtualFrame frame) {
-//            if (i++ % 500 != 0) {
-//                return;
-//            }
             handleOnEnter(frame.materialize());
         }
 
-        @TruffleBoundary
         private void handleOnEnter(final MaterializedFrame frame) {
-            // If we're entering a root node, let the instrumentation context know, so that the samples
-            // extracted from the following statement in the root body can be marked as argument samples.
-            // TODO: Move to separate node.
-            if (context.hasTag(ROOT_TAG)) {
-                final String rootNodeId = extractRootName(instrumentedNode);
-                instrumentationContext.enterRoot();
-                return;
-            }
+            System.out.println("GOT TO STATEMENT ON ENTER");
 
             String _sampleCategory = "STATEMENT";
             if (context.hasTag(STATEMENT_TAG) && instrumentationContext.isEnteringRoot()) {
@@ -343,6 +279,24 @@ public class Audrey implements Closeable {
                 }
             }
         }
+    }
+
+    // TODO: Rename
+    private static final class RootSamplerNode extends SamplerNode {
+        RootSamplerNode(final TruffleInstrument.Env env,
+                        final EventContext context,
+                        final Project project,
+                        final SampleStorage storage,
+                        final SamplingStrategy samplingStrategy,
+                        final InstrumentationContext instrumentationContext) {
+            super(context, env, project, storage, samplingStrategy, instrumentationContext);
+        }
+
+        @Override
+        protected void onEnter(final VirtualFrame frame) {
+            instrumentationContext.enterRoot();
+        }
+
 
         @Override
         protected void onReturnValue(final VirtualFrame frame, final Object result) {
@@ -351,10 +305,6 @@ public class Audrey implements Closeable {
 
         @TruffleBoundary
         private void handleOnReturn(final Object result) {
-            if (!context.hasTag(ROOT_TAG)) {
-                return;
-            }
-            
             final Object metaObject = env.findMetaObject(languageInfo, result);
 
             final Sample sample = new Sample(

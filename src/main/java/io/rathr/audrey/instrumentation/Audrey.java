@@ -181,23 +181,15 @@ public class Audrey implements Closeable {
 
     static final class InstrumentationContext {
         // I.e. for our purposes: we are instrumenting the first statement in a root node.
-        private boolean enteringRoot = false;
+        private boolean lookingForFirstStatement = false;
         private boolean foundStatement = false;
 
-        public boolean isEnteringRoot() {
-            return enteringRoot;
+        public boolean isLookingForFirstStatement() {
+            return lookingForFirstStatement;
         }
 
-        public void enterRoot() {
-            this.enteringRoot = true;
-        }
-
-        public void foundStatement() {
-            this.foundStatement = true;
-        }
-
-        public void setEnteringRoot(final boolean flag) {
-            this.enteringRoot = flag;
+        public void setLookingForFirstStatement(final boolean flag) {
+            this.lookingForFirstStatement = flag;
         }
     }
     
@@ -209,26 +201,24 @@ public class Audrey implements Closeable {
             super(context, env, project, storage, samplingStrategy, instrumentationContext);
         }
 
+        int i = 0;
+
         @Override
         protected void onEnter(final VirtualFrame frame) {
-            handleOnEnter(frame.materialize());
-        }
-
-        private void handleOnEnter(final MaterializedFrame frame) {
-            System.out.println("GOT TO STATEMENT ON ENTER");
-
-            String _sampleCategory = "STATEMENT";
-            if (context.hasTag(STATEMENT_TAG) && instrumentationContext.isEnteringRoot()) {
-                _sampleCategory = "ARGUMENT";
-            }
-            final String sampleCategory = _sampleCategory;
-
-            // TODO: Introduce CLI flag for this.
-            // Ensures that we only extract variables from the first statement in a root node (i.e. arguments).
-            if (!sampleCategory.equals("ARGUMENT")) {
+            if (++i % 5000 != 0) {
                 return;
             }
 
+            if (!instrumentationContext.isLookingForFirstStatement()) {
+                return;
+            }
+
+            handleOnEnter(frame.materialize());
+        }
+
+        @TruffleBoundary
+        private void handleOnEnter(final MaterializedFrame frame) {
+            final String sampleCategory = "ARGUMENT";
             final Scope scope = env.findLocalScopes(instrumentedNode, frame).iterator().next();
 
             // NOTE that getVariables will return ALL local variables in this scope, not just the ones that have
@@ -274,9 +264,7 @@ public class Audrey implements Closeable {
             } finally {
                 // If we just extracted argument samples, let the following event know that we're done with
                 // arguments.
-                if (sampleCategory.equals("ARGUMENT")) {
-                    instrumentationContext.setEnteringRoot(false);
-                }
+                instrumentationContext.setLookingForFirstStatement(false);
             }
         }
     }
@@ -294,29 +282,29 @@ public class Audrey implements Closeable {
 
         @Override
         protected void onEnter(final VirtualFrame frame) {
-            instrumentationContext.enterRoot();
+            instrumentationContext.setLookingForFirstStatement(true);
         }
 
 
-        @Override
-        protected void onReturnValue(final VirtualFrame frame, final Object result) {
-            handleOnReturn(result);
-        }
-
-        @TruffleBoundary
-        private void handleOnReturn(final Object result) {
-            final Object metaObject = env.findMetaObject(languageInfo, result);
-
-            final Sample sample = new Sample(
-                null,
-                getString(languageInfo, result),
-                getString(languageInfo, metaObject),
-                "RETURN",
-                sourceSection,
-                rootNodeId
-            );
-
-            storage.add(sample);
-        }
+//        @Override
+//        protected void onReturnValue(final VirtualFrame frame, final Object result) {
+//            handleOnReturn(result);
+//        }
+//
+//        @TruffleBoundary
+//        private void handleOnReturn(final Object result) {
+//            final Object metaObject = env.findMetaObject(languageInfo, result);
+//
+//            final Sample sample = new Sample(
+//                null,
+//                getString(languageInfo, result),
+//                getString(languageInfo, metaObject),
+//                "RETURN",
+//                sourceSection,
+//                rootNodeId
+//            );
+//
+//            storage.add(sample);
+//        }
     }
 }

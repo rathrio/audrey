@@ -1,5 +1,6 @@
 package io.rathr.audrey.instrumentation;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Scope;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -44,7 +45,6 @@ public class Audrey implements Closeable {
     private EventBinding<?> activeRootBinding;
     private EventBinding<?> activeStatementBinding;
 
-    private SourceSectionFilter sourceSectionFilter;
     private SourceSectionFilter rootSourceSectionFilter;
 
     public Audrey(final TruffleInstrument.Env env) {
@@ -182,7 +182,6 @@ public class Audrey implements Closeable {
     static final class InstrumentationContext {
         // I.e. for our purposes: we are instrumenting the first statement in a root node.
         private boolean lookingForFirstStatement = false;
-        private boolean foundStatement = false;
 
         public boolean isLookingForFirstStatement() {
             return lookingForFirstStatement;
@@ -192,8 +191,17 @@ public class Audrey implements Closeable {
             this.lookingForFirstStatement = flag;
         }
     }
-    
+
+    enum FirstStatementState {
+        looking,
+        isFirst,
+        isNotFirst
+    }
     private static final class StatementSamplerNode extends SamplerNode {
+
+        @CompilerDirectives.CompilationFinal
+        FirstStatementState isFirstStatement = FirstStatementState.looking;
+
         public StatementSamplerNode(final EventContext context, final TruffleInstrument.Env env,
                                     final Project project, final SampleStorage storage,
                                     final SamplingStrategy samplingStrategy,
@@ -204,15 +212,21 @@ public class Audrey implements Closeable {
 
         @Override
         protected void onEnter(final VirtualFrame frame) {
-            if (!instrumentationContext.isLookingForFirstStatement()) {
-                return;
+            if (isFirstStatement == FirstStatementState.looking) {
+                if (instrumentationContext.isLookingForFirstStatement()) {
+                    handleOnEnter(frame.materialize());
+                } else {
+                    isFirstStatement = FirstStatementState.isNotFirst;
+                }
             }
-
-            handleOnEnter(frame.materialize());
+            if (isFirstStatement == FirstStatementState.isFirst) {
+                handleOnEnter(frame.materialize());
+            }
         }
 
         @TruffleBoundary
         private void handleOnEnter(final MaterializedFrame frame) {
+            isFirstStatement = FirstStatementState.isFirst;
             final String sampleCategory = "ARGUMENT";
             final Scope scope = env.findLocalScopes(instrumentedNode, frame).iterator().next();
 
@@ -281,25 +295,25 @@ public class Audrey implements Closeable {
         }
 
 
-//        @Override
-//        protected void onReturnValue(final VirtualFrame frame, final Object result) {
-//            handleOnReturn(result);
-//        }
-//
-//        @TruffleBoundary
-//        private void handleOnReturn(final Object result) {
-//            final Object metaObject = env.findMetaObject(languageInfo, result);
-//
-//            final Sample sample = new Sample(
-//                null,
-//                getString(languageInfo, result),
-//                getString(languageInfo, metaObject),
-//                "RETURN",
-//                sourceSection,
-//                rootNodeId
-//            );
-//
-//            storage.add(sample);
-//        }
+        @Override
+        protected void onReturnValue(final VirtualFrame frame, final Object result) {
+            handleOnReturn(result);
+        }
+
+        @TruffleBoundary
+        private void handleOnReturn(final Object result) {
+            final Object metaObject = env.findMetaObject(languageInfo, result);
+
+            final Sample sample = new Sample(
+                null,
+                getString(languageInfo, result),
+                getString(languageInfo, metaObject),
+                "RETURN",
+                sourceSection,
+                rootNodeId
+            );
+
+            storage.add(sample);
+        }
     }
 }

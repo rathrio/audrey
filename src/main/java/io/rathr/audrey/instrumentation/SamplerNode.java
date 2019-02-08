@@ -33,6 +33,7 @@ public abstract class SamplerNode extends ExecutionEventNode {
     protected final String languageId;
     protected final String rootNodeId;
     protected final LanguageInfo languageInfo;
+    protected int hitCount = 0;
 
     public SamplerNode(final EventContext context, final TruffleInstrument.Env env, final Project project, final SampleStorage storage, final SamplingStrategy samplingStrategy, final Audrey.InstrumentationContext instrumentationContext) {
         this.context = context;

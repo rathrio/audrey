@@ -201,14 +201,9 @@ public class Audrey implements Closeable {
             super(context, env, project, storage, samplingStrategy, instrumentationContext);
         }
 
-        int i = 0;
 
         @Override
         protected void onEnter(final VirtualFrame frame) {
-            if (++i % 5000 != 0) {
-                return;
-            }
-
             if (!instrumentationContext.isLookingForFirstStatement()) {
                 return;
             }

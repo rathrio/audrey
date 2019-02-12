@@ -226,7 +226,7 @@ public class Audrey implements Closeable {
 
         @TruffleBoundary
         private void handleOnEnter(final MaterializedFrame frame) {
-            final String sampleCategory = "ARGUMENT";
+            isFirstStatement = FirstStatementState.isFirst;
             final Scope scope = env.findLocalScopes(instrumentedNode, frame).iterator().next();
 
             // NOTE that getVariables will return ALL local variables in this scope, not just the ones that have
@@ -257,7 +257,7 @@ public class Audrey implements Closeable {
                             identifier,
                             getString(languageInfo, valueObject),
                             getString(languageInfo, metaObject),
-                            sampleCategory,
+                            "ARGUMENT",
                             sourceSection,
                             rootNodeId
                         );

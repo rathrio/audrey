@@ -214,7 +214,7 @@ public class Audrey implements Closeable {
         protected void onEnter(final VirtualFrame frame) {
             if (isFirstStatement == FirstStatementState.looking) {
                 if (instrumentationContext.isLookingForFirstStatement()) {
-                    handleOnEnter(frame.materialize());
+                    isFirstStatement = FirstStatementState.isFirst;
                 } else {
                     isFirstStatement = FirstStatementState.isNotFirst;
                 }
@@ -226,7 +226,6 @@ public class Audrey implements Closeable {
 
         @TruffleBoundary
         private void handleOnEnter(final MaterializedFrame frame) {
-            isFirstStatement = FirstStatementState.isFirst;
             final String sampleCategory = "ARGUMENT";
             final Scope scope = env.findLocalScopes(instrumentedNode, frame).iterator().next();
 
@@ -291,7 +290,9 @@ public class Audrey implements Closeable {
 
         @Override
         protected void onEnter(final VirtualFrame frame) {
-            instrumentationContext.setLookingForFirstStatement(true);
+            if (CompilerDirectives.inInterpreter()) {
+                instrumentationContext.setLookingForFirstStatement(true);
+            }
         }
 
 

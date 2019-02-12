@@ -1,4 +1,4 @@
-package io.rathr.audrey.instrumentation;
+package io.rathr.audrey.instrumentation.nodes;
 
 import com.oracle.truffle.api.instrumentation.EventContext;
 import com.oracle.truffle.api.instrumentation.ExecutionEventNode;
@@ -12,6 +12,7 @@ import com.oracle.truffle.api.nodes.LanguageInfo;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
+import io.rathr.audrey.instrumentation.InstrumentationContext;
 import io.rathr.audrey.sampling_strategies.SamplingStrategy;
 import io.rathr.audrey.storage.Project;
 import io.rathr.audrey.storage.SampleStorage;
@@ -26,16 +27,15 @@ public abstract class SamplerNode extends ExecutionEventNode {
     protected final Project project;
     protected final SampleStorage storage;
     protected final SamplingStrategy samplingStrategy;
-    protected final Audrey.InstrumentationContext instrumentationContext;
+    protected final InstrumentationContext instrumentationContext;
     protected final SourceSection sourceSection;
     protected final int sourceSectionId;
     protected final Node instrumentedNode;
     protected final String languageId;
     protected final String rootNodeId;
     protected final LanguageInfo languageInfo;
-    protected int hitCount = 0;
 
-    public SamplerNode(final EventContext context, final TruffleInstrument.Env env, final Project project, final SampleStorage storage, final SamplingStrategy samplingStrategy, final Audrey.InstrumentationContext instrumentationContext) {
+    public SamplerNode(final EventContext context, final TruffleInstrument.Env env, final Project project, final SampleStorage storage, final SamplingStrategy samplingStrategy, final InstrumentationContext instrumentationContext) {
         this.context = context;
         this.env = env;
         this.project = project;
@@ -97,5 +97,11 @@ public abstract class SamplerNode extends ExecutionEventNode {
             || object instanceof Integer
             || object instanceof Double
             || object instanceof Boolean;
+    }
+
+    enum FirstStatementState {
+        looking,
+        isFirst,
+        isNotFirst
     }
 }

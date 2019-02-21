@@ -11,12 +11,6 @@ import io.rathr.audrey.storage.Sample;
 import io.rathr.audrey.storage.SampleStorage;
 
 public final class RootSamplerNode extends SamplerNode {
-    /**
-     * Used to prevent infinite recursions in case a language does an allocation during meta
-     * object lookup or toString call.
-     */
-    ThreadLocal<Boolean> extractingSample = ThreadLocal.withInitial(() -> false);
-
     public RootSamplerNode(final TruffleInstrument.Env env,
                            final EventContext context,
                            final Project project,

@@ -35,6 +35,12 @@ public abstract class SamplerNode extends ExecutionEventNode {
     protected final String rootNodeId;
     protected final LanguageInfo languageInfo;
 
+    /**
+     * Used to prevent infinite recursions in case a language does an allocation during meta
+     * object lookup or toString call.
+     */
+    ThreadLocal<Boolean> extractingSample = ThreadLocal.withInitial(() -> false);
+
     public SamplerNode(final EventContext context, final TruffleInstrument.Env env, final Project project, final SampleStorage storage, final SamplingStrategy samplingStrategy, final InstrumentationContext instrumentationContext) {
         this.context = context;
         this.env = env;

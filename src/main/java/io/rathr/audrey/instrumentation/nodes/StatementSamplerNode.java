@@ -18,12 +18,6 @@ import io.rathr.audrey.storage.SampleStorage;
 import java.util.Arrays;
 
 public final class StatementSamplerNode extends SamplerNode {
-    /**
-     * Used to prevent infinite recursions in case a language does an allocation during meta
-     * object lookup or toString call.
-     */
-    ThreadLocal<Boolean> extractingSample = ThreadLocal.withInitial(() -> false);
-
     @CompilerDirectives.CompilationFinal
     FirstStatementState isFirstStatement = FirstStatementState.looking;
 

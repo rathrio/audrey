@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -51,8 +52,8 @@ public class AudreyTest {
     }
 
     @Test
-    public void testSimpleEval() {
-        context.eval("js", "function foo(a) { console.log(a) } foo('bar')");
+    public void testSimpleEvalInJS() {
+        evalFile("simple.js", "js");
 
         final Optional<Sample> arg = storage.newSearch()
             .forArguments()
@@ -65,7 +66,49 @@ public class AudreyTest {
     }
 
     @Test
-    public void testCollectsArgumentsAndReturnValuesInJavaScript() {
+    public void testUnambiguousReturnsInJS() {
+        evalFile("simple.js", "js");
+
+        final Stream<Sample> returns = storage.newSearch()
+            .forReturns()
+            .rootNodeId("foo")
+            .search();
+
+        final List<Sample> returnSamples = returns.collect(Collectors.toList());
+        assertEquals(1, returnSamples.size());
+        assertEquals("42", returnSamples.get(0).getValue());
+    }
+
+    @Test
+    public void testUnambiguousReturnsInRuby() {
+        evalFile("simple.rb", "ruby");
+
+        final Stream<Sample> returns = storage.newSearch()
+            .forReturns()
+            .rootNodeId("Object#foo")
+            .search();
+
+        final List<Sample> returnSamples = returns.collect(Collectors.toList());
+        assertEquals(1, returnSamples.size());
+        assertEquals("42", returnSamples.get(0).getValue());
+    }
+
+    @Test
+    public void testSimpleEvalInRuby() {
+        evalFile("simple.rb", "ruby");
+
+        final Optional<Sample> arg = storage.newSearch()
+            .forArguments()
+            .rootNodeId("Object#foo")
+            .identifier("a")
+            .findFirst();
+
+        assertTrue(arg.isPresent());
+        assertEquals("\"bar\"", arg.get().getValue());
+    }
+
+    @Test
+    public void testCollectsArgumentsAndReturnValuesInJS() {
         evalFile("add.js", "js");
 
         final Optional<Sample> arg1 = storage.newSearch()
@@ -158,7 +201,7 @@ public class AudreyTest {
     }
 
     @Test
-    public void testCollectsNonPrimitiveValuesInJavaScript() {
+    public void testCollectsNonPrimitiveValuesInJS() {
         evalFile("non_primitive.js", "js");
 
         final Optional<Sample> arg = storage.newSearch()
@@ -202,7 +245,7 @@ public class AudreyTest {
     }
 
     @Test
-    public void testCanDifferentiateMethodsInJavascript() {
+    public void testCanDifferentiateMethodsInJS() {
         // NOTE that we currently extract arguments from the first statement in the function body.
         evalFile("two_greets.js", "js");
 
@@ -286,6 +329,33 @@ public class AudreyTest {
             .findFirst();
 
         assertTrue(ret2.isPresent());
+    }
+
+    @Test
+    public void testNestedFunctionsInJS() {
+        evalFile("nested_functions.js", "js");
+
+        final Optional<Sample> innnerArgument = storage.newSearch()
+            .forArguments()
+            .rootNodeId("inner")
+            .identifier("person")
+            .findFirst();
+
+        assertTrue(innnerArgument.isPresent());
+
+        final Optional<Sample> innterReturn = storage.newSearch()
+            .forReturns()
+            .rootNodeId("inner")
+            .findFirst();
+
+        assertTrue(innterReturn.isPresent());
+
+        final Optional<Sample> outerReturn = storage.newSearch()
+            .forReturns()
+            .rootNodeId("outer")
+            .findFirst();
+
+        assertTrue(outerReturn.isPresent());
     }
 
     private Source makeSourceFromFile(String filename, String languageId) {

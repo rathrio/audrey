@@ -86,12 +86,6 @@ public final class Sample {
         return sourceCharacters;
     }
 
-    public boolean matches(final String identifier, final String rootNodeId, final String category) {
-        return (identifier == null || identifier.equals(this.identifier))
-            && rootNodeId.equals(this.rootNodeId)
-            && category.equals(this.category.name());
-    }
-
     public String getMetaObject() {
         return metaObject;
     }

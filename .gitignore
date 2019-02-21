@@ -3,6 +3,9 @@
 /build/
 target
 
+# Truffle Dumps
+dumps
+
 # Ignore Gradle GUI config
 gradle-app.setting
 

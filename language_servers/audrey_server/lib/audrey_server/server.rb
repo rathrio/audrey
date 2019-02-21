@@ -7,23 +7,29 @@ class Server < Sinatra::Application
   use Rack::Logger
 
   REDIS = Redis.new(driver: :hiredis)
+  AUDREY_PROJECT_ID = ENV['AUDREY_PROJECT_ID']
+
+  SAMPLES = REDIS.smembers("audrey:#{AUDREY_PROJECT_ID}:samples").map { |sample_json| Oj.load(sample_json) }
 
   before do
     content_type 'application/json'
   end
 
   get '/samples' do
-    category = params.fetch('category')
-    source = params.fetch('source')
-    root_node_id = params.fetch('root_node_id')
-    identifier = params.fetch('identifier')
+    category = params['category']
+    source = params['source']
+    root_node_id = params['root_node_id']
+    identifier = params['identifier']
 
-    samples = REDIS.smembers('audrey:punch:samples').map { |sample_json| Oj.load(sample_json) }
-    samples.select { |s|
+    if category.nil? && source.nil? && root_node_id.nil? && identifier.nil?
+      return SAMPLES.to_json
+    end
+
+    SAMPLES.select do |s|
       s['identifier'] == identifier &&
         s['category'] == category &&
         # s['source'].end_with?(source) &&
         s['rootNodeId'] == root_node_id
-    }.to_json
+    end.to_json
   end
 end

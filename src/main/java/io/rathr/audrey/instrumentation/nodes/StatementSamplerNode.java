@@ -18,6 +18,11 @@ import io.rathr.audrey.storage.SampleStorage;
 import java.util.Arrays;
 
 public final class StatementSamplerNode extends SamplerNode {
+    /**
+     * Used to prevent infinite recursions in case a language does an allocation during meta
+     * object lookup or toString call.
+     */
+    ThreadLocal<Boolean> extractingSample = ThreadLocal.withInitial(() -> false);
 
     @CompilerDirectives.CompilationFinal
     FirstStatementState isFirstStatement = FirstStatementState.looking;
@@ -46,6 +51,12 @@ public final class StatementSamplerNode extends SamplerNode {
 
     @CompilerDirectives.TruffleBoundary
     private void handleOnEnter(final MaterializedFrame frame) {
+        if (extractingSample.get()) {
+            return;
+        }
+
+        extractingSample.set(true);
+
         isFirstStatement = FirstStatementState.isFirst;
         final Scope scope = env.findLocalScopes(instrumentedNode, frame).iterator().next();
 
@@ -71,12 +82,12 @@ public final class StatementSamplerNode extends SamplerNode {
                     }
 
                     final Object valueObject = read(variables, identifier);
-                    final Object metaObject = env.findMetaObject(languageInfo, valueObject);
+                    final Object metaObject = getMetaObject(valueObject);
 
                     final Sample sample = new Sample(
                         identifier,
-                        getString(languageInfo, valueObject),
-                        getString(languageInfo, metaObject),
+                        getString(valueObject),
+                        getString(metaObject),
                         "ARGUMENT",
                         sourceSection,
                         rootNodeId
@@ -90,6 +101,7 @@ public final class StatementSamplerNode extends SamplerNode {
         } catch (UnsupportedMessageException e) {
             e.printStackTrace();
         } finally {
+            extractingSample.set(false);
             // If we just extracted argument samples, let the following event know that we're done with
             // arguments.
             instrumentationContext.setLookingForFirstStatement(false);

@@ -11,6 +11,12 @@ import io.rathr.audrey.storage.Sample;
 import io.rathr.audrey.storage.SampleStorage;
 
 public final class RootSamplerNode extends SamplerNode {
+    /**
+     * Used to prevent infinite recursions in case a language does an allocation during meta
+     * object lookup or toString call.
+     */
+    ThreadLocal<Boolean> extractingSample = ThreadLocal.withInitial(() -> false);
+
     public RootSamplerNode(final TruffleInstrument.Env env,
                            final EventContext context,
                            final Project project,
@@ -35,17 +41,23 @@ public final class RootSamplerNode extends SamplerNode {
 
     @CompilerDirectives.TruffleBoundary
     private void handleOnReturn(final Object result) {
-        final Object metaObject = env.findMetaObject(languageInfo, result);
+        if (extractingSample.get()) {
+            return;
+        }
 
+        extractingSample.set(true);
+
+        final Object metaObject = getMetaObject(result);
         final Sample sample = new Sample(
             null,
-            getString(languageInfo, result),
-            getString(languageInfo, metaObject),
+            getString(result),
+            getString(metaObject),
             "RETURN",
             sourceSection,
             rootNodeId
         );
 
+        extractingSample.set(false);
         storage.add(sample);
     }
 }

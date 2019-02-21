@@ -84,12 +84,16 @@ public abstract class SamplerNode extends ExecutionEventNode {
     /**
      * @return guest language string representation of object.
      */
-    protected String getString(LanguageInfo languageInfo, Object object) {
+    protected String getString(Object object) {
         if (isSimple(object)) {
             return object.toString();
         }
 
         return env.toString(languageInfo, object);
+    }
+
+    protected Object getMetaObject(Object object) {
+        return env.findMetaObject(languageInfo, object);
     }
 
     protected boolean isSimple(Object object) {

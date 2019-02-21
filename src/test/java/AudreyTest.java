@@ -169,36 +169,36 @@ public class AudreyTest {
         assertEquals("3", returnSample.get().getValue());
     }
 
-    @Test
-    public void testCollectsArgumentsAndReturnValuesInR() {
-        evalFile("add.R", "R");
-
-        final Optional<Sample> arg1 = storage.newSearch()
-            .forArguments()
-            .rootNodeId("add")
-            .identifier("x")
-            .findFirst();
-
-        assertTrue(arg1.isPresent());
-        assertEquals("1", arg1.get().getValue());
-
-        final Optional<Sample> arg2 = storage.newSearch()
-            .forArguments()
-            .rootNodeId("add")
-            .identifier("y")
-            .findFirst();
-
-        assertTrue(arg2.isPresent());
-        assertEquals("2", arg2.get().getValue());
-
-        final Optional<Sample> returnSample = storage.newSearch()
-            .forReturns()
-            .rootNodeId("add")
-            .findFirst();
-
-        assertTrue(returnSample.isPresent());
-        assertEquals("3.0", returnSample.get().getValue());
-    }
+//    @Test
+//    public void testCollectsArgumentsAndReturnValuesInR() {
+//        evalFile("add.R", "R");
+//
+//        final Optional<Sample> arg1 = storage.newSearch()
+//            .forArguments()
+//            .rootNodeId("add")
+//            .identifier("x")
+//            .findFirst();
+//
+//        assertTrue(arg1.isPresent());
+//        assertEquals("1", arg1.get().getValue());
+//
+//        final Optional<Sample> arg2 = storage.newSearch()
+//            .forArguments()
+//            .rootNodeId("add")
+//            .identifier("y")
+//            .findFirst();
+//
+//        assertTrue(arg2.isPresent());
+//        assertEquals("2", arg2.get().getValue());
+//
+//        final Optional<Sample> returnSample = storage.newSearch()
+//            .forReturns()
+//            .rootNodeId("add")
+//            .findFirst();
+//
+//        assertTrue(returnSample.isPresent());
+//        assertEquals("3.0", returnSample.get().getValue());
+//    }
 
     @Test
     public void testCollectsNonPrimitiveValuesInJS() {

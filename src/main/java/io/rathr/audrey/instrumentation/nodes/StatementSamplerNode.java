@@ -9,6 +9,7 @@ import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import io.rathr.audrey.instrumentation.Audrey;
 import io.rathr.audrey.instrumentation.InstrumentationContext;
 import io.rathr.audrey.sampling_strategies.SamplingStrategy;
 import io.rathr.audrey.storage.Project;
@@ -22,11 +23,15 @@ public final class StatementSamplerNode extends SamplerNode {
     @CompilerDirectives.CompilationFinal
     FirstStatementState isFirstStatement = FirstStatementState.looking;
 
-    public StatementSamplerNode(final EventContext context, final TruffleInstrument.Env env,
-                                final Project project, final SampleStorage storage,
+    public StatementSamplerNode(final Audrey audrey,
+                                final EventContext context,
+                                final TruffleInstrument.Env env,
+                                final Project project,
+                                final SampleStorage storage,
                                 final SamplingStrategy samplingStrategy,
                                 final InstrumentationContext instrumentationContext) {
-        super(context, env, project, storage, samplingStrategy, instrumentationContext);
+
+        super(audrey, context, env, project, storage, samplingStrategy, instrumentationContext);
     }
 
 
@@ -46,11 +51,11 @@ public final class StatementSamplerNode extends SamplerNode {
 
     @CompilerDirectives.TruffleBoundary
     private void handleOnEnter(final MaterializedFrame frame) {
-        if (extractingSample.get()) {
+        if (audrey.isExtractingSample()) {
             return;
         }
 
-        extractingSample.set(true);
+        audrey.setExtractingSample(true);
 
         isFirstStatement = FirstStatementState.isFirst;
         final Iterator<Scope> scopeIterator = env.findLocalScopes(instrumentedNode, frame).iterator();
@@ -107,8 +112,9 @@ public final class StatementSamplerNode extends SamplerNode {
         }
     }
 
+    // Should be called when exiting from the extraction process so that flags are reset.
     private void exit() {
-        extractingSample.set(false);
+        audrey.setExtractingSample(false);
         // If we just extracted argument samples, let the following event know that we're done with
         // arguments.
         instrumentationContext.setLookingForFirstStatement(false);

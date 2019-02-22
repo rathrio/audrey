@@ -12,6 +12,7 @@ import com.oracle.truffle.api.nodes.LanguageInfo;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
+import io.rathr.audrey.instrumentation.Audrey;
 import io.rathr.audrey.instrumentation.InstrumentationContext;
 import io.rathr.audrey.sampling_strategies.SamplingStrategy;
 import io.rathr.audrey.storage.Project;
@@ -22,6 +23,8 @@ public abstract class SamplerNode extends ExecutionEventNode {
     private static final Node KEYS_NODE = Message.KEYS.createNode();
 
     protected static final String[] IDENTIFIER_BLACKLIST = {"(self)", "rubytruffle_temp"};
+
+    protected final Audrey audrey;
     protected final EventContext context;
     protected final TruffleInstrument.Env env;
     protected final Project project;
@@ -35,13 +38,15 @@ public abstract class SamplerNode extends ExecutionEventNode {
     protected final String rootNodeId;
     protected final LanguageInfo languageInfo;
 
-    /**
-     * Used to prevent infinite recursions in case a language does an allocation during meta
-     * object lookup or toString call.
-     */
-    ThreadLocal<Boolean> extractingSample = ThreadLocal.withInitial(() -> false);
+    public SamplerNode(final Audrey audrey,
+                       final EventContext context,
+                       final TruffleInstrument.Env env,
+                       final Project project,
+                       final SampleStorage storage,
+                       final SamplingStrategy samplingStrategy,
+                       final InstrumentationContext instrumentationContext) {
 
-    public SamplerNode(final EventContext context, final TruffleInstrument.Env env, final Project project, final SampleStorage storage, final SamplingStrategy samplingStrategy, final InstrumentationContext instrumentationContext) {
+        this.audrey = audrey;
         this.context = context;
         this.env = env;
         this.project = project;

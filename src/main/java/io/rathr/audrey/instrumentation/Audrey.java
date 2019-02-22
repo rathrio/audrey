@@ -37,6 +37,12 @@ public class Audrey implements Closeable {
 
     private SourceSectionFilter rootSourceSectionFilter;
 
+    /**
+     * Used to prevent infinite recursions in case a language does an allocation during meta
+     * object lookup or toString call.
+     */
+    private final ThreadLocal<Boolean> extractingSample = ThreadLocal.withInitial(() -> false);
+
     public Audrey(final TruffleInstrument.Env env) {
         this.env = env;
     }
@@ -47,6 +53,14 @@ public class Audrey implements Closeable {
 
     public SampleStorage getStorage() {
         return storage;
+    }
+
+    public boolean isExtractingSample() {
+        return extractingSample.get();
+    }
+
+    public void setExtractingSample(boolean value) {
+        extractingSample.set(value);
     }
 
     private SourceSectionFilter buildSourceSectionFilter(final Class tag) {
@@ -90,8 +104,9 @@ public class Audrey implements Closeable {
         this.activeRootBinding = env.getInstrumenter().attachExecutionEventFactory(
             rootSourceSectionFilter,
             context -> new RootSamplerNode(
-                env,
+                this,
                 context,
+                env,
                 project,
                 storage,
                 samplingStrategy,
@@ -102,6 +117,7 @@ public class Audrey implements Closeable {
         this.activeStatementBinding = env.getInstrumenter().attachExecutionEventFactory(
             statementSourceSectionFilter,
             context -> new StatementSamplerNode(
+                this,
                 context,
                 env,
                 project,

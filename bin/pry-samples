@@ -5,17 +5,6 @@ if ARGV.empty?
   exit
 end
 
-# require 'bundler/inline'
-
-# gemfile do
-#   source 'https://rubygems.org'
-#   gem 'oj'
-#   gem 'pry'
-#   gem 'pry-coolline'
-#   gem 'redis'
-#   gem 'hiredis'
-# end
-
 require 'pry'
 require 'redis'
 require 'oj'

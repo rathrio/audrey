@@ -16,6 +16,7 @@ import io.rathr.audrey.storage.Sample;
 import io.rathr.audrey.storage.SampleStorage;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 public final class StatementSamplerNode extends SamplerNode {
     @CompilerDirectives.CompilationFinal
@@ -52,7 +53,16 @@ public final class StatementSamplerNode extends SamplerNode {
         extractingSample.set(true);
 
         isFirstStatement = FirstStatementState.isFirst;
-        final Scope scope = env.findLocalScopes(instrumentedNode, frame).iterator().next();
+        final Iterator<Scope> scopeIterator = env.findLocalScopes(instrumentedNode, frame).iterator();
+        if (!scopeIterator.hasNext()) {
+            extractingSample.set(false);
+            // If we just extracted argument samples, let the following event know that we're done with
+            // arguments.
+            instrumentationContext.setLookingForFirstStatement(false);
+            return;
+        }
+
+        final Scope scope = scopeIterator.next();
 
         // NOTE that getVariables will return ALL local variables in this scope, not just the ones that have
         // been defined at this point of execution. I guess they've been extracted in a semantic analysis
@@ -94,11 +104,11 @@ public final class StatementSamplerNode extends SamplerNode {
             }
         } catch (UnsupportedMessageException e) {
             e.printStackTrace();
-        } finally {
-            extractingSample.set(false);
-            // If we just extracted argument samples, let the following event know that we're done with
-            // arguments.
-            instrumentationContext.setLookingForFirstStatement(false);
         }
+
+        extractingSample.set(false);
+        // If we just extracted argument samples, let the following event know that we're done with
+        // arguments.
+        instrumentationContext.setLookingForFirstStatement(false);
     }
 }

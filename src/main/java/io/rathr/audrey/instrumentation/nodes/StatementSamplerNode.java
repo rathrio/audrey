@@ -9,6 +9,7 @@ import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import io.rathr.audrey.instrumentation.Audrey;
 import io.rathr.audrey.instrumentation.InstrumentationContext;
 import io.rathr.audrey.sampling_strategies.SamplingStrategy;
 import io.rathr.audrey.storage.Project;
@@ -16,17 +17,21 @@ import io.rathr.audrey.storage.Sample;
 import io.rathr.audrey.storage.SampleStorage;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 public final class StatementSamplerNode extends SamplerNode {
-
     @CompilerDirectives.CompilationFinal
     FirstStatementState isFirstStatement = FirstStatementState.looking;
 
-    public StatementSamplerNode(final EventContext context, final TruffleInstrument.Env env,
-                                final Project project, final SampleStorage storage,
+    public StatementSamplerNode(final Audrey audrey,
+                                final EventContext context,
+                                final TruffleInstrument.Env env,
+                                final Project project,
+                                final SampleStorage storage,
                                 final SamplingStrategy samplingStrategy,
                                 final InstrumentationContext instrumentationContext) {
-        super(context, env, project, storage, samplingStrategy, instrumentationContext);
+
+        super(audrey, context, env, project, storage, samplingStrategy, instrumentationContext);
     }
 
 
@@ -46,8 +51,20 @@ public final class StatementSamplerNode extends SamplerNode {
 
     @CompilerDirectives.TruffleBoundary
     private void handleOnEnter(final MaterializedFrame frame) {
+        if (audrey.isExtractingSample()) {
+            return;
+        }
+
+        audrey.setExtractingSample(true);
+
         isFirstStatement = FirstStatementState.isFirst;
-        final Scope scope = env.findLocalScopes(instrumentedNode, frame).iterator().next();
+        final Iterator<Scope> scopeIterator = env.findLocalScopes(instrumentedNode, frame).iterator();
+        if (!scopeIterator.hasNext()) {
+            exit();
+            return;
+        }
+
+        final Scope scope = scopeIterator.next();
 
         // NOTE that getVariables will return ALL local variables in this scope, not just the ones that have
         // been defined at this point of execution. I guess they've been extracted in a semantic analysis
@@ -58,6 +75,7 @@ public final class StatementSamplerNode extends SamplerNode {
             final TruffleObject keys = getKeys((TruffleObject) scope.getVariables());
             final int keySize = getSize(keys);
             if (keySize == 0) {
+                exit();
                 return;
             }
 
@@ -71,12 +89,12 @@ public final class StatementSamplerNode extends SamplerNode {
                     }
 
                     final Object valueObject = read(variables, identifier);
-                    final Object metaObject = env.findMetaObject(languageInfo, valueObject);
+                    final Object metaObject = getMetaObject(valueObject);
 
                     final Sample sample = new Sample(
                         identifier,
-                        getString(languageInfo, valueObject),
-                        getString(languageInfo, metaObject),
+                        getString(valueObject),
+                        getString(metaObject),
                         "ARGUMENT",
                         sourceSection,
                         rootNodeId
@@ -90,9 +108,15 @@ public final class StatementSamplerNode extends SamplerNode {
         } catch (UnsupportedMessageException e) {
             e.printStackTrace();
         } finally {
-            // If we just extracted argument samples, let the following event know that we're done with
-            // arguments.
-            instrumentationContext.setLookingForFirstStatement(false);
+            exit();
         }
+    }
+
+    // Should be called when exiting from the extraction process so that flags are reset.
+    private void exit() {
+        audrey.setExtractingSample(false);
+        // If we just extracted argument samples, let the following event know that we're done with
+        // arguments.
+        instrumentationContext.setLookingForFirstStatement(false);
     }
 }

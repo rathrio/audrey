@@ -55,10 +55,7 @@ public final class StatementSamplerNode extends SamplerNode {
         isFirstStatement = FirstStatementState.isFirst;
         final Iterator<Scope> scopeIterator = env.findLocalScopes(instrumentedNode, frame).iterator();
         if (!scopeIterator.hasNext()) {
-            extractingSample.set(false);
-            // If we just extracted argument samples, let the following event know that we're done with
-            // arguments.
-            instrumentationContext.setLookingForFirstStatement(false);
+            exit();
             return;
         }
 
@@ -73,6 +70,7 @@ public final class StatementSamplerNode extends SamplerNode {
             final TruffleObject keys = getKeys((TruffleObject) scope.getVariables());
             final int keySize = getSize(keys);
             if (keySize == 0) {
+                exit();
                 return;
             }
 
@@ -104,8 +102,12 @@ public final class StatementSamplerNode extends SamplerNode {
             }
         } catch (UnsupportedMessageException e) {
             e.printStackTrace();
+        } finally {
+            exit();
         }
+    }
 
+    private void exit() {
         extractingSample.set(false);
         // If we just extracted argument samples, let the following event know that we're done with
         // arguments.

@@ -10,19 +10,17 @@ Prerequisites
 -------------
 
 * [GraalVM](https://www.graalvm.org/downloads/)
-* [Java](https://www.java.com/en/download/) (optional if you want to use GraalVM
-    to build Audrey)
 * [Gradle](https://gradle.org/install/)
 * [Ruby >= 2.5](https://www.ruby-lang.org/en/documentation/installation/) and [Bundler](https://bundler.io) (for running some tools and language servers)
 
 Building
 --------
 
-Make sure that you export an environment variable `GRAALVM` that points to your
-GraalVM home folder, e.g.
+Ensure that the environment variable `$JAVA_HOME` points to your GraalVM home
+folder, e.g.
 
 ```bash
-export GRAALVM=/Users/radi/graalvm-ee-1.0.0-rc10/Contents/Home
+export JAVA_HOME=/Users/radi/graalvm-ee-1.0.0-rc12/Contents/Home
 ```
 
 You can then build and install Audrey with:

@@ -32,11 +32,11 @@ configure<JavaPluginConvention> {
 
 task("install") {
     group = "Build"
-    description = "Installs a fat JAR into \$GRAALVM/jre/tools/."
+    description = "Installs a fat JAR into \$JAVA_HOME/jre/tools/."
 
     dependsOn("shadowJar")
 
-    val graalvmHome = System.getenv("GRAALVM")
+    val graalvmHome = System.getenv("JAVA_HOME")
     mkdir("$graalvmHome/jre/tools/audrey")
 
     doLast {

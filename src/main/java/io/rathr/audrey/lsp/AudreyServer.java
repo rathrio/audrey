@@ -30,8 +30,7 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
         );
     }
 
-    static final Logger LOG = Logger.getLogger(AudreyServer.class.getName());
-
+    public static final Logger LOG = Logger.getLogger(AudreyServer.class.getName());
 
     final static int DEFAULT_PORT = 8123;
 

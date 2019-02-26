@@ -1,5 +1,6 @@
 package io.rathr.audrey.lsp;
 
+import io.rathr.audrey.lsp.javascript.SampleCollector;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
@@ -29,6 +30,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class AudreyTextDocumentService implements TextDocumentService {
+    private static final CompletableFuture<Hover> EMPTY_HOVER =
+        CompletableFuture.completedFuture(new Hover(new ArrayList<>()));
+
     private final Map<String, AstRoot> asts = new HashMap<>();
 
     @Override
@@ -38,11 +42,14 @@ public class AudreyTextDocumentService implements TextDocumentService {
 
         final AstNode firstNodeOnLine = findFirstNodeOnLine(line, uri);
         if (firstNodeOnLine == null) {
-            return null;
+            return EMPTY_HOVER;
         }
 
+        final SampleCollector sampleCollector = new SampleCollector();
+        firstNodeOnLine.visit(sampleCollector);
+
         List<Either<String, MarkedString>> contents = new ArrayList<>();
-        contents.add(Either.forLeft("HI FROM AUDREY LSP!!"));
+        contents.add(Either.forLeft("Node: " + firstNodeOnLine.getClass().getName()));
 
         return CompletableFuture.completedFuture(new Hover(contents));
     }

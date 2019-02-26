@@ -39,7 +39,7 @@ task("install") {
 
     dependsOn("shadowJar")
 
-    val graalvmHome = System.getenv("JAVA_HOME")
+    val graalvmHome = System.getenv("ch")
     mkdir("$graalvmHome/jre/tools/audrey")
 
     doLast {

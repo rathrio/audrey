@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -325,6 +326,31 @@ public class AudreyTest {
             .findFirst();
 
         assertTrue(outerReturn.isPresent());
+    }
+
+    @Test
+    public void testModernJSFeatures() {
+        evalFile("class.js", "js");
+        final Optional<Sample> arg = storage.newSearch()
+            .forArguments()
+            .rootNodeId("sayHiTo")
+            .identifier("otherPerson")
+            .search()
+            .findFirst();
+
+        assertTrue(arg.isPresent());
+        assertEquals("Person", arg.get().getMetaObject());
+        assertEquals("{name: \"Haidar\"}", arg.get().getValue());
+
+        final Optional<Sample> returnSample = storage.newSearch()
+            .forReturns()
+            .rootNodeId("sayHiTo")
+            .search()
+            .findFirst();
+
+        assertTrue(returnSample.isPresent());
+        assertEquals("string", returnSample.get().getMetaObject());
+        assertEquals("Hi Haidar, my name is Boris", returnSample.get().getValue());
     }
 
     private Source makeSourceFromFile(String filename, String languageId) {

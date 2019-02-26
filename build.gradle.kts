@@ -23,6 +23,9 @@ dependencies {
     // Redis Client
     implementation("io.lettuce:lettuce-core:5.1.3.RELEASE")
 
+    // LSP
+//    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j:0.6.0")
+
     testImplementation("junit", "junit", "4.12")
 }
 
@@ -32,7 +35,7 @@ configure<JavaPluginConvention> {
 
 task("install") {
     group = "Build"
-    description = "Installs a fat JAR into \$JAVA_HOME/jre/tools/."
+    description = "Places an Audrey fat JAR into \$JAVA_HOME/jre/tools/."
 
     dependsOn("shadowJar")
 
@@ -44,6 +47,18 @@ task("install") {
             from("build/libs/")
             into("$graalvmHome/jre/tools/audrey/")
         }
+    }
+}
+
+task("uninstall") {
+    group = "Build"
+    description = "Removes the Audrey fat JAR from \$JAVA_HOME/jre/tools/."
+
+    val graalvmHome = System.getenv("JAVA_HOME")
+    mkdir("$graalvmHome/jre/tools/audrey")
+
+    doLast {
+        // TODO: find out how to delete stuff with this stupid DSL
     }
 }
 

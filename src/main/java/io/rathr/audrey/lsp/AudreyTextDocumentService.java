@@ -10,6 +10,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.mozilla.javascript.CompilerEnvirons;
+import org.mozilla.javascript.Context;
 import org.mozilla.javascript.IRFactory;
 import org.mozilla.javascript.ast.AstRoot;
 
@@ -26,10 +27,16 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class AudreyTextDocumentService implements TextDocumentService {
-    private final Map<String, AstRoot> documents = new HashMap<>();
+    private final Map<String, AstRoot> asts = new HashMap<>();
 
     @Override
     public CompletableFuture<Hover> hover(final TextDocumentPositionParams position) {
+        final String uri = position.getTextDocument().getUri();
+        final AstRoot ast = asts.get(uri);
+        if (ast == null) {
+            return null;
+        }
+
         List<Either<String, MarkedString>> contents = new ArrayList<>();
         contents.add(Either.forLeft("HI FROM AUDREY LSP!!"));
 
@@ -47,12 +54,13 @@ public class AudreyTextDocumentService implements TextDocumentService {
             final CompilerEnvirons env = new CompilerEnvirons();
             env.setRecoverFromErrors(true);
             env.setGenerateDebugInfo(true);
-            env.setRecordingComments(true);
+            env.setLanguageVersion(Context.VERSION_ES6);
+
             final StringReader stringReader = new StringReader(source);
             final IRFactory factory = new IRFactory(env);
             final AstRoot ast = factory.parse(stringReader, uri, 0);
 
-            documents.put(params.getTextDocument().getUri(), ast);
+            asts.put(params.getTextDocument().getUri(), ast);
         } catch (IOException | URISyntaxException e) {
             AudreyServer.LOG.severe(e.getMessage());
             e.printStackTrace();
@@ -68,7 +76,7 @@ public class AudreyTextDocumentService implements TextDocumentService {
         final String uri = params.getTextDocument().getUri();
         AudreyServer.LOG.info("didClose " + uri);
 
-        documents.remove(uri);
+        asts.remove(uri);
     }
 
     @Override

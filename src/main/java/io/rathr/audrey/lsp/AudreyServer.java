@@ -48,7 +48,7 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
             LOG.info("Listening on port " + DEFAULT_PORT);
             final ServerSocket serverSocket = new ServerSocket(DEFAULT_PORT);
 
-            LOG.info("Waiting on client connection");
+            LOG.info("Waiting for client to connect");
             final Socket socket = serverSocket.accept();
 
             InputStream in = socket.getInputStream();

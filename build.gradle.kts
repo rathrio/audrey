@@ -24,7 +24,7 @@ dependencies {
     implementation("io.lettuce:lettuce-core:5.1.3.RELEASE")
 
     // LSP
-//    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j:0.6.0")
+    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j:0.6.0")
 
     testImplementation("junit", "junit", "4.12")
 }
@@ -58,7 +58,7 @@ task("uninstall") {
     mkdir("$graalvmHome/jre/tools/audrey")
 
     doLast {
-        // TODO: find out how to delete stuff with this stupid DSL
+        delete("$graalvmHome/jre/tools/audrey")
     }
 }
 

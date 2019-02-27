@@ -54,7 +54,8 @@ public class SampleCollector implements NodeVisitor {
     }
 
     private boolean visit(final ObjectProperty node) {
-        if (!node.isMethod()) {
+        final AstNode right = node.getRight();
+        if (!(right instanceof FunctionNode)) {
             return true;
         }
 

@@ -1,6 +1,7 @@
 package io.rathr.audrey.lsp;
 
 import io.rathr.audrey.lsp.javascript.SampleCollector;
+import io.rathr.audrey.storage.Sample;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
@@ -13,7 +14,6 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.mozilla.javascript.CompilerEnvirons;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.IRFactory;
-import org.mozilla.javascript.Node;
 import org.mozilla.javascript.ast.AstNode;
 import org.mozilla.javascript.ast.AstRoot;
 
@@ -25,8 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class AudreyTextDocumentService implements TextDocumentService {
@@ -39,19 +39,17 @@ public class AudreyTextDocumentService implements TextDocumentService {
     public CompletableFuture<Hover> hover(final TextDocumentPositionParams position) {
         final String uri = position.getTextDocument().getUri();
         final int line = position.getPosition().getLine();
+        final int column = position.getPosition().getCharacter();
 
-        final AstNode firstNodeOnLine = findFirstNodeOnLine(line, uri);
-        if (firstNodeOnLine == null) {
+        final AstRoot ast = asts.get(uri);
+        final SampleCollector sampleCollector = new SampleCollector(uri, line, column);
+        ast.visit(sampleCollector);
+        final Set<Sample> samples = sampleCollector.getSamples();
+        if (samples.isEmpty()) {
             return EMPTY_HOVER;
         }
 
-        final SampleCollector sampleCollector = new SampleCollector();
-        firstNodeOnLine.visit(sampleCollector);
-
-        List<Either<String, MarkedString>> contents = new ArrayList<>();
-        contents.add(Either.forLeft("Node: " + firstNodeOnLine.getClass().getName()));
-
-        return CompletableFuture.completedFuture(new Hover(contents));
+        return EMPTY_HOVER;
     }
 
     @Override
@@ -92,20 +90,5 @@ public class AudreyTextDocumentService implements TextDocumentService {
 
     @Override
     public void didSave(final DidSaveTextDocumentParams params) {
-    }
-
-    private AstNode findFirstNodeOnLine(final int line, final String uri) {
-        final AstRoot ast = asts.get(uri);
-        if (ast == null) {
-            return null;
-        }
-
-        for (final Node node : ast) {
-            if (node.getLineno() == line) {
-                return (AstNode) node;
-            }
-        }
-
-        return null;
     }
 }

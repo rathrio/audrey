@@ -34,8 +34,8 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
 
     public static final Logger LOG = Logger.getLogger(AudreyServer.class.getName());
 
-    final static int DEFAULT_PORT = 8123;
-    final static String DEFAULT_PROJECT_ID = "raytrace.js";
+    private final static int DEFAULT_PORT = 8123;
+    private final static String DEFAULT_PROJECT_ID = "test";
 
     private final AudreyTextDocumentService textDocumentService;
     private LanguageClient client;

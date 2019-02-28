@@ -51,7 +51,7 @@ export function activate(context: ExtensionContext) {
 	// Options to control the language client
 	let clientOptions: LanguageClientOptions = {
 		// Register the server for plain text documents
-		documentSelector: ['javascript', 'ruby'],
+		documentSelector: [{scheme: 'file', language: 'javascript'}, {scheme: 'file', language: 'ruby'}],
 		// synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace
 			// fileEvents: workspace.createFileSystemWatcher('**/.clientrc')

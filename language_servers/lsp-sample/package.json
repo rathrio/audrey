@@ -17,7 +17,8 @@
 		"vscode": "^1.23.0"
 	},
 	"activationEvents": [
-		"onLanguage:javascript"
+		"onLanguage:javascript",
+		"onLanguage:ruby"
 	],
 	"main": "./client/out/extension",
 	"contributes": {

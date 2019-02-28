@@ -30,7 +30,7 @@ dependencies {
     implementation("org.mozilla:rhino:1.7.10")
 
     // For parsing Ruby
-    implementation("org.jruby:jrubyparser:0.5.3")
+    implementation(files("libs/jrubyparser-0.5.5-SNAPSHOT.jar"))
 
     testImplementation("junit", "junit", "4.12")
 }

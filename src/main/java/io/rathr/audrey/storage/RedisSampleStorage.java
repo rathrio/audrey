@@ -18,12 +18,18 @@ public final class RedisSampleStorage extends SampleStorage {
     private final String samplesKey;
     private final String projectKey;
 
-    public RedisSampleStorage(final Project project) {
+    public RedisSampleStorage(final Project project, final boolean registerProject) {
         this.project = project;
         this.projectKey = "audrey:" + project.getId();
         this.samplesKey = projectKey + ":samples";
 
-        registerProject(project);
+        if (registerProject) {
+            registerProject(project);
+        }
+    }
+
+    public RedisSampleStorage(final Project project) {
+        this(project, true);
     }
 
     @Override

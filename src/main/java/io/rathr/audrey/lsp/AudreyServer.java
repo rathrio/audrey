@@ -1,5 +1,7 @@
 package io.rathr.audrey.lsp;
 
+import io.rathr.audrey.storage.Project;
+import io.rathr.audrey.storage.RedisSampleStorage;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.InitializeParams;
@@ -34,9 +36,9 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
 
     final static int DEFAULT_PORT = 8123;
 
-    private final TextDocumentService textDocumentService;
-    private String workspaceRoot;
+    private final AudreyTextDocumentService textDocumentService;
     private LanguageClient client;
+    private Project project;
 
     public static void main(String[] args) {
         try {
@@ -69,7 +71,15 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
 
     @Override
     public CompletableFuture<InitializeResult> initialize(final InitializeParams params) {
-        workspaceRoot = params.getRootUri();
+        project = new Project(
+            System.getenv("AUDREY_PROJECT_ID"),
+            params.getRootUri()
+        );
+
+        // Load all samples into memory and let the document service know about them. Pass "registerProject: false" to
+        // disable any Redis writes. We just want to read the data here.
+        final RedisSampleStorage storage = new RedisSampleStorage(project, false);
+        textDocumentService.setSamples(storage.getSamples());
 
         final ServerCapabilities capabilities = new ServerCapabilities();
         capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
@@ -86,7 +96,7 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
 
     @Override
     public void exit() {
-
+        LOG.info("Exit");
     }
 
     @Override

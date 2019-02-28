@@ -2,25 +2,27 @@ package io.rathr.audrey.lsp.javascript;
 
 import io.rathr.audrey.lsp.AudreyServer;
 import io.rathr.audrey.storage.Sample;
+import io.rathr.audrey.storage.Search;
 import org.mozilla.javascript.ast.AstNode;
 import org.mozilla.javascript.ast.FunctionNode;
 import org.mozilla.javascript.ast.Name;
 import org.mozilla.javascript.ast.NodeVisitor;
 import org.mozilla.javascript.ast.ObjectProperty;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SampleCollector implements NodeVisitor {
-    private final Set<Sample> samples = new HashSet<>();
     private final String uri;
     private final int column;
     private final int line;
+    private final Search search;
 
-    public SampleCollector(final String uri, final int line, final int column) {
+    public SampleCollector(final String uri, final int line, final int column, final Set<Sample> samples) {
         this.uri = uri;
         this.line = line;
         this.column = column;
+        this.search = new Search(samples);
     }
 
     @Override
@@ -68,6 +70,6 @@ public class SampleCollector implements NodeVisitor {
     }
 
     public Set<Sample> getSamples() {
-        return samples;
+        return search.search().collect(Collectors.toSet());
     }
 }

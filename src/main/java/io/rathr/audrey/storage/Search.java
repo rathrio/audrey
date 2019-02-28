@@ -21,6 +21,7 @@ public class Search {
     private String identifier;
     private Integer line;
     private String value;
+    private String source;
 
     public Search(final Set<Sample> samples) {
         this.samples = samples;
@@ -56,6 +57,12 @@ public class Search {
         return this;
     }
 
+    public Search source(final String source) {
+        this.source = source;
+        return this;
+    }
+
+
     public Stream<Sample> search() {
         Stream<Sample> stream = samples.stream();
         if (category != null) {
@@ -76,6 +83,10 @@ public class Search {
 
         if (value != null) {
             stream = stream.filter(sample -> value.equals(sample.getValue()));
+        }
+
+        if (source != null) {
+            stream = stream.filter(sample -> sample.getSource().endsWith(source));
         }
 
         return stream;

@@ -27,15 +27,15 @@ public abstract class SampleStorage {
 
     }
 
-    protected String toJson(final Sample sample) {
+    String toJson(final Sample sample) {
         return GSON.toJson(sample);
     }
 
-    protected String toJson(final Set<Sample> samples) {
+    String toJson(final Set<Sample> samples) {
         return GSON.toJson(samples);
     }
 
-    protected Sample fromJson(final String json) {
+    Sample fromJson(final String json) {
         return GSON.fromJson(json, Sample.class);
     }
 }

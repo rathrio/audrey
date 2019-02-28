@@ -7,9 +7,7 @@ import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
 import org.eclipse.lsp4j.Hover;
-import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.mozilla.javascript.CompilerEnvirons;
 import org.mozilla.javascript.Context;
@@ -32,11 +30,8 @@ public class AudreyTextDocumentService implements TextDocumentService {
     private static final CompletableFuture<Hover> EMPTY_HOVER =
         CompletableFuture.completedFuture(new Hover(new ArrayList<>()));
 
+    private Set<Sample> samples;
     private final Map<String, AstRoot> asts = new HashMap<>();
-
-    public AudreyTextDocumentService() {
-        // TODO: Load samples into memory
-    }
 
     @Override
     public CompletableFuture<Hover> hover(final TextDocumentPositionParams position) {
@@ -45,7 +40,7 @@ public class AudreyTextDocumentService implements TextDocumentService {
         final int column = position.getPosition().getCharacter();
 
         final AstRoot ast = asts.get(uri);
-        final SampleCollector sampleCollector = new SampleCollector(uri, line, column);
+        final SampleCollector sampleCollector = new SampleCollector(uri, line, column, samples);
         ast.visit(sampleCollector);
         final Set<Sample> samples = sampleCollector.getSamples();
         if (samples.isEmpty()) {
@@ -93,5 +88,9 @@ public class AudreyTextDocumentService implements TextDocumentService {
 
     @Override
     public void didSave(final DidSaveTextDocumentParams params) {
+    }
+
+    void setSamples(final Set<Sample> samples) {
+        this.samples = samples;
     }
 }

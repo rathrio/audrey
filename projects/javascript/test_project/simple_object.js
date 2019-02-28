@@ -4,3 +4,5 @@ simpleObject = {
     return foo + bar;
   }
 }
+
+simpleObject.f(42, 99.2);

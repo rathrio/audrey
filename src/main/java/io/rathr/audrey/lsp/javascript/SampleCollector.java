@@ -8,6 +8,7 @@ import org.mozilla.javascript.ast.FunctionNode;
 import org.mozilla.javascript.ast.Name;
 import org.mozilla.javascript.ast.NodeVisitor;
 import org.mozilla.javascript.ast.ObjectProperty;
+import org.mozilla.javascript.ast.ReturnStatement;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -45,6 +46,10 @@ public class SampleCollector implements NodeVisitor {
             return visit((ObjectProperty) node);
         }
 
+        if (node instanceof ReturnStatement) {
+            return visit((ReturnStatement) node);
+        }
+
         return true;
     }
 
@@ -71,6 +76,33 @@ public class SampleCollector implements NodeVisitor {
         AudreyServer.LOG.info("Detected ObjectProperty: " + left.getString());
         search.rootNodeId(left.getString());
         return true;
+    }
+
+    private boolean visit(final ReturnStatement node) {
+        final AstNode parent = node.getParent().getParent();
+        if (!(parent instanceof FunctionNode)) {
+            return false;
+        }
+
+        String rootNodeId;
+        final FunctionNode functionNode = (FunctionNode) parent;
+        final Name functionName = functionNode.getFunctionName();
+        if (functionName == null) {
+            final AstNode fParent = functionNode.getParent();
+            if (!(fParent instanceof ObjectProperty)) {
+                return false;
+            }
+
+            ObjectProperty property = (ObjectProperty) fParent;
+            rootNodeId = property.getLeft().getString();
+        } else {
+            rootNodeId = functionName.getIdentifier();
+        }
+
+        foundNode = true;
+        AudreyServer.LOG.info("Detected ReturnStatement: " + rootNodeId);
+        search.forReturns().rootNodeId(rootNodeId);
+        return false;
     }
 
     public Set<Sample> getSamples() {

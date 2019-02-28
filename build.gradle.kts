@@ -29,6 +29,9 @@ dependencies {
     // For parsing JS
     implementation("org.mozilla:rhino:1.7.10")
 
+    // For parsing Ruby
+    implementation("org.jruby:jrubyparser:0.5.3")
+
     testImplementation("junit", "junit", "4.12")
 }
 
@@ -63,6 +66,11 @@ task("uninstall") {
     doLast {
         delete("$graalvmHome/jre/tools/audrey")
     }
+}
+
+task("startServer", JavaExec::class) {
+    classpath = java.sourceSets["main"].runtimeClasspath
+    main = "io.rathr.audrey.lsp.AudreyServer"
 }
 
 tasks.withType<Test> {

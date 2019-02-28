@@ -92,7 +92,6 @@ public final class Sample {
         return metaObject;
     }
 
-
     public void setIdentifier(final String identifier) {
         this.identifier = identifier;
     }
@@ -131,5 +130,19 @@ public final class Sample {
 
     public void setSourceCharacters(final CharSequence sourceCharacters) {
         this.sourceCharacters = sourceCharacters;
+    }
+
+    /**
+     * Whether the value of this sample represents a missing value, e.g. nil in Ruby or undefined in JS.
+     * <p>
+     * Note that this is approach is not future-proof and currently only used for filtering purposes in the language
+     * server.
+     */
+    public boolean isBlank() {
+        return value.equals("undefined") || value.equals("nil");
+    }
+
+    public boolean isPresent() {
+        return !isBlank();
     }
 }

@@ -21,7 +21,7 @@ public abstract class SamplerNode extends ExecutionEventNode {
     private static final Node READ_NODE = Message.READ.createNode();
     private static final Node KEYS_NODE = Message.KEYS.createNode();
 
-    protected static final String[] IDENTIFIER_BLACKLIST = {"(self)", "rubytruffle_temp"};
+    protected static final String[] IDENTIFIER_BLACKLIST = {"(self)", "rubytruffle_temp", "this"};
 
     protected final Audrey audrey;
     protected final EventContext context;

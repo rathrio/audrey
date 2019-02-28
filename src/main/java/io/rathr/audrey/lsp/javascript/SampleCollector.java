@@ -13,16 +13,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SampleCollector implements NodeVisitor {
-    private final String uri;
     private final int column;
     private final int line;
     private final Search search;
 
     public SampleCollector(final String uri, final int line, final int column, final Set<Sample> samples) {
-        this.uri = uri;
         this.line = line;
         this.column = column;
-        this.search = new Search(samples);
+        this.search = new Search(samples).source(uri);
     }
 
     @Override
@@ -49,9 +47,7 @@ public class SampleCollector implements NodeVisitor {
             return true;
         }
 
-        final String rootNodeId = functionName.getIdentifier();
-        AudreyServer.LOG.info("Root from FunctionNode: " + rootNodeId);
-
+        search.rootNodeId(functionName.getIdentifier());
         return true;
     }
 
@@ -62,10 +58,7 @@ public class SampleCollector implements NodeVisitor {
         }
 
         final AstNode left = node.getLeft();
-        final String rootNodeId = left.getString();
-
-        AudreyServer.LOG.info("Root from ObjectProperty: " + rootNodeId);
-
+        search.rootNodeId(left.getString());
         return true;
     }
 

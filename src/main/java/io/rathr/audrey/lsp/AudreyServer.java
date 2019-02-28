@@ -66,7 +66,7 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
         }
     }
 
-    public AudreyServer() {
+    private AudreyServer() {
         this.textDocumentService = new AudreyTextDocumentService();
     }
 

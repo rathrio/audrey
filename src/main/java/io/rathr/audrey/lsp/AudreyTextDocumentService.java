@@ -30,6 +30,7 @@ public class AudreyTextDocumentService implements TextDocumentService {
     private static final CompletableFuture<Hover> EMPTY_HOVER =
         CompletableFuture.completedFuture(new Hover(new ArrayList<>()));
 
+    private final HoverReport report = new HoverReport();
     private Set<Sample> samples;
     private final Map<String, AstRoot> asts = new HashMap<>();
 
@@ -47,7 +48,8 @@ public class AudreyTextDocumentService implements TextDocumentService {
             return EMPTY_HOVER;
         }
 
-        return EMPTY_HOVER;
+        final Hover hover = report.generate(samples);
+        return CompletableFuture.completedFuture(hover);
     }
 
     @Override

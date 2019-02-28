@@ -1,27 +1,20 @@
 package io.rathr.audrey.lsp;
 
-import io.rathr.audrey.lsp.es5.ES5SampleCollector;
+import io.rathr.audrey.lsp.es5.ES5SampleService;
+import io.rathr.audrey.lsp.ruby.RubySampleService;
 import io.rathr.audrey.storage.Sample;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.services.TextDocumentService;
-import org.mozilla.javascript.CompilerEnvirons;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.IRFactory;
-import org.mozilla.javascript.ast.AstRoot;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -31,8 +24,10 @@ public class AudreyTextDocumentService implements TextDocumentService {
         CompletableFuture.completedFuture(new Hover(new ArrayList<>()));
 
     private final HoverReport report = new HoverReport();
-    private Set<Sample> samples;
-    private final Map<String, AstRoot> asts = new HashMap<>();
+    private Set<Sample> samples = new HashSet<>();
+
+    private final Map<String, TextDocumentItem> documents = new HashMap<>();
+    private final Map<String, SampleService> sampleServices = new HashMap<>();
 
     @Override
     public CompletableFuture<Hover> hover(final TextDocumentPositionParams position) {
@@ -40,40 +35,26 @@ public class AudreyTextDocumentService implements TextDocumentService {
         final int line = position.getPosition().getLine();
         final int column = position.getPosition().getCharacter();
 
-        final AstRoot ast = asts.get(uri);
-        final ES5SampleCollector sampleCollector = new ES5SampleCollector(uri, line, column, samples);
-        ast.visit(sampleCollector);
-        final Set<Sample> samples = sampleCollector.getSamples();
-        if (samples.isEmpty()) {
+        final String languageId = documents.get(uri).getLanguageId();
+        final Set<Sample> filterSamples = sampleService(languageId).filterSamples(samples, uri, line, column);
+
+        if (filterSamples.isEmpty()) {
             return EMPTY_HOVER;
         }
 
-        final Hover hover = report.generate(samples);
+        final Hover hover = report.generate(filterSamples);
         return CompletableFuture.completedFuture(hover);
     }
 
     @Override
     public void didOpen(final DidOpenTextDocumentParams params) {
-        final String uri = params.getTextDocument().getUri();
+        final TextDocumentItem document = params.getTextDocument();
+        final String uri = document.getUri();
+        documents.put(uri, document);
+
+        final String languageId = document.getLanguageId();
+        sampleService(languageId).didOpen(uri);
         AudreyServer.LOG.info("didOpen " + uri);
-
-        try {
-            final String source = new String(Files.readAllBytes(Paths.get(new URI(uri))));
-
-            final CompilerEnvirons env = new CompilerEnvirons();
-            env.setRecoverFromErrors(true);
-            env.setGenerateDebugInfo(true);
-            env.setLanguageVersion(Context.VERSION_ES6);
-
-            final StringReader stringReader = new StringReader(source);
-            final IRFactory factory = new IRFactory(env);
-            final AstRoot ast = factory.parse(stringReader, uri, 0);
-
-            asts.put(params.getTextDocument().getUri(), ast);
-        } catch (IOException | URISyntaxException e) {
-            AudreyServer.LOG.severe(e.getMessage());
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -83,9 +64,10 @@ public class AudreyTextDocumentService implements TextDocumentService {
     @Override
     public void didClose(final DidCloseTextDocumentParams params) {
         final String uri = params.getTextDocument().getUri();
+        final String languageId = documents.get(uri).getLanguageId();
+        sampleService(languageId).didClose(uri);
+        documents.remove(uri);
         AudreyServer.LOG.info("didClose " + uri);
-
-        asts.remove(uri);
     }
 
     @Override
@@ -94,5 +76,17 @@ public class AudreyTextDocumentService implements TextDocumentService {
 
     void setSamples(final Set<Sample> samples) {
         this.samples = samples;
+    }
+
+    private SampleService sampleService(final String languageId) {
+        sampleServices.computeIfAbsent(languageId, s -> {
+            switch (languageId) {
+                case "javascript": return new ES5SampleService();
+                case "ruby":       return new RubySampleService();
+                default:           throw new Error("Unsupported language: " + languageId);
+            }
+        });
+
+        return sampleServices.get(languageId);
     }
 }

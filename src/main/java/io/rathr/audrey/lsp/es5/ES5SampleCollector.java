@@ -24,7 +24,7 @@ public class ES5SampleCollector implements NodeVisitor {
      */
     private boolean foundNode;
 
-    public ES5SampleCollector(final String uri, final int line, final int column, final Set<Sample> samples) {
+    public ES5SampleCollector(final Set<Sample> samples, final String uri, final int line, final int column) {
         this.line = line;
         this.column = column;
         this.search = new Search(samples).source(uri);

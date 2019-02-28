@@ -9,6 +9,7 @@ import org.mozilla.javascript.ast.Name;
 import org.mozilla.javascript.ast.NodeVisitor;
 import org.mozilla.javascript.ast.ObjectProperty;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,10 +18,16 @@ public class SampleCollector implements NodeVisitor {
     private final int line;
     private final Search search;
 
+    /**
+     * Whether we actually encountered a relevant node during visiting.
+     */
+    private boolean foundNode;
+
     public SampleCollector(final String uri, final int line, final int column, final Set<Sample> samples) {
         this.line = line;
         this.column = column;
         this.search = new Search(samples).source(uri);
+        this.foundNode = false;
     }
 
     @Override
@@ -46,7 +53,9 @@ public class SampleCollector implements NodeVisitor {
         if (functionName == null) {
             return true;
         }
+        foundNode = true;
 
+        AudreyServer.LOG.info("Detected FunctionNode: " + functionName.getIdentifier());
         search.rootNodeId(functionName.getIdentifier());
         return true;
     }
@@ -56,13 +65,19 @@ public class SampleCollector implements NodeVisitor {
         if (!(right instanceof FunctionNode)) {
             return true;
         }
+        foundNode = true;
 
         final AstNode left = node.getLeft();
+        AudreyServer.LOG.info("Detected ObjectProperty: " + left.getString());
         search.rootNodeId(left.getString());
         return true;
     }
 
     public Set<Sample> getSamples() {
+        if (!foundNode) {
+            return new HashSet<>();
+        }
+
         return search.search().collect(Collectors.toSet());
     }
 }

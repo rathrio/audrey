@@ -1,4 +1,4 @@
-package io.rathr.audrey.lsp.javascript;
+package io.rathr.audrey.lsp.es5;
 
 import io.rathr.audrey.lsp.AudreyServer;
 import io.rathr.audrey.storage.Sample;
@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class SampleCollector implements NodeVisitor {
+public class ES5SampleCollector implements NodeVisitor {
     private final int column;
     private final int line;
     private final Search search;
@@ -24,7 +24,7 @@ public class SampleCollector implements NodeVisitor {
      */
     private boolean foundNode;
 
-    public SampleCollector(final String uri, final int line, final int column, final Set<Sample> samples) {
+    public ES5SampleCollector(final String uri, final int line, final int column, final Set<Sample> samples) {
         this.line = line;
         this.column = column;
         this.search = new Search(samples).source(uri);

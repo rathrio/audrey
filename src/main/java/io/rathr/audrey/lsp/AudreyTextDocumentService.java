@@ -1,6 +1,6 @@
 package io.rathr.audrey.lsp;
 
-import io.rathr.audrey.lsp.javascript.SampleCollector;
+import io.rathr.audrey.lsp.es5.ES5SampleCollector;
 import io.rathr.audrey.storage.Sample;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
@@ -41,7 +41,7 @@ public class AudreyTextDocumentService implements TextDocumentService {
         final int column = position.getPosition().getCharacter();
 
         final AstRoot ast = asts.get(uri);
-        final SampleCollector sampleCollector = new SampleCollector(uri, line, column, samples);
+        final ES5SampleCollector sampleCollector = new ES5SampleCollector(uri, line, column, samples);
         ast.visit(sampleCollector);
         final Set<Sample> samples = sampleCollector.getSamples();
         if (samples.isEmpty()) {

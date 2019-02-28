@@ -35,6 +35,7 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
     public static final Logger LOG = Logger.getLogger(AudreyServer.class.getName());
 
     final static int DEFAULT_PORT = 8123;
+    final static String DEFAULT_PROJECT_ID = "raytrace.js";
 
     private final AudreyTextDocumentService textDocumentService;
     private LanguageClient client;
@@ -71,10 +72,11 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
 
     @Override
     public CompletableFuture<InitializeResult> initialize(final InitializeParams params) {
-        project = new Project(
-            System.getenv("AUDREY_PROJECT_ID"),
-            params.getRootUri()
-        );
+        String projectId = System.getenv("AUDREY_PROJECT_ID");
+        if (projectId == null || projectId.isEmpty()) {
+            projectId = DEFAULT_PROJECT_ID;
+        }
+        project = new Project(projectId, params.getRootUri());
 
         // Load all samples into memory and let the document service know about them. Pass "registerProject: false" to
         // disable any Redis writes. We just want to read the data here.

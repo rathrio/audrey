@@ -60,7 +60,9 @@ public class SampleCollector implements NodeVisitor {
         }
 
         final AstNode left = node.getLeft();
-        AudreyServer.LOG.info("Root from ObjectProperty: " + left.getString());
+        final String rootNodeId = left.getString();
+
+        AudreyServer.LOG.info("Root from ObjectProperty: " + rootNodeId);
 
         return true;
     }

@@ -6,7 +6,6 @@ import com.oracle.truffle.api.instrumentation.EventContext;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import io.rathr.audrey.instrumentation.Audrey;
 import io.rathr.audrey.instrumentation.InstrumentationContext;
-import io.rathr.audrey.sampling_strategies.SamplingStrategy;
 import io.rathr.audrey.storage.Project;
 import io.rathr.audrey.storage.Sample;
 import io.rathr.audrey.storage.SampleStorage;
@@ -17,10 +16,9 @@ public final class RootSamplerNode extends SamplerNode {
                            final TruffleInstrument.Env env,
                            final Project project,
                            final SampleStorage storage,
-                           final SamplingStrategy samplingStrategy,
                            final InstrumentationContext instrumentationContext) {
 
-        super(audrey, context, env, project, storage, samplingStrategy, instrumentationContext);
+        super(audrey, context, env, project, storage, instrumentationContext);
     }
 
     @Override

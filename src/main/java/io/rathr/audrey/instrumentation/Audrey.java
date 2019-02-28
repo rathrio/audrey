@@ -7,11 +7,6 @@ import com.oracle.truffle.api.instrumentation.StandardTags;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import io.rathr.audrey.instrumentation.nodes.RootSamplerNode;
 import io.rathr.audrey.instrumentation.nodes.StatementSamplerNode;
-import io.rathr.audrey.sampling_strategies.SampleAll;
-import io.rathr.audrey.sampling_strategies.SampleNone;
-import io.rathr.audrey.sampling_strategies.SampleRandom;
-import io.rathr.audrey.sampling_strategies.SamplingStrategy;
-import io.rathr.audrey.sampling_strategies.TemporalShardingStrategy;
 import io.rathr.audrey.storage.InMemorySampleStorage;
 import io.rathr.audrey.storage.Project;
 import io.rathr.audrey.storage.RedisSampleStorage;
@@ -28,7 +23,6 @@ public class Audrey implements Closeable {
     private SourceSectionFilter statementSourceSectionFilter;
     private Project project;
     private SampleStorage storage;
-    private SamplingStrategy samplingStrategy;
     private String pathFilter;
     private InstrumentationContext instrumentationContext;
 
@@ -109,7 +103,6 @@ public class Audrey implements Closeable {
                 env,
                 project,
                 storage,
-                samplingStrategy,
                 instrumentationContext
             )
         );
@@ -122,7 +115,6 @@ public class Audrey implements Closeable {
                 env,
                 project,
                 storage,
-                samplingStrategy,
                 instrumentationContext
             )
         );
@@ -155,16 +147,12 @@ public class Audrey implements Closeable {
 
         switch (samplingStrategy) {
             case "all":
-                this.samplingStrategy = new SampleAll();
                 break;
             case "none":
-                this.samplingStrategy = new SampleNone();
                 break;
             case "random":
-                this.samplingStrategy = new SampleRandom();
                 break;
             case "temporal":
-                this.samplingStrategy = new TemporalShardingStrategy();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown sampling_strategies strategy: " + samplingStrategy);

@@ -66,6 +66,9 @@ task("uninstall") {
 }
 
 tasks.withType<Test> {
+    // Ensure that there's no Audrey fat JAR in the tools folder, because we want to load this build.
+    dependsOn("uninstall")
+
     outputs.upToDateWhen { false }
     jvmArgs("-XX:-UseJVMCIClassLoader")
 }

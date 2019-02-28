@@ -14,7 +14,6 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.mozilla.javascript.CompilerEnvirons;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.IRFactory;
-import org.mozilla.javascript.ast.AstNode;
 import org.mozilla.javascript.ast.AstRoot;
 
 import java.io.IOException;
@@ -34,6 +33,10 @@ public class AudreyTextDocumentService implements TextDocumentService {
         CompletableFuture.completedFuture(new Hover(new ArrayList<>()));
 
     private final Map<String, AstRoot> asts = new HashMap<>();
+
+    public AudreyTextDocumentService() {
+        // TODO: Load samples into memory
+    }
 
     @Override
     public CompletableFuture<Hover> hover(final TextDocumentPositionParams position) {

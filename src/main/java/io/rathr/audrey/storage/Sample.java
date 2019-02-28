@@ -1,6 +1,5 @@
 package io.rathr.audrey.storage;
 
-import com.google.gson.Gson;
 import com.oracle.truffle.api.source.SourceSection;
 
 public final class Sample {
@@ -10,21 +9,20 @@ public final class Sample {
         STATEMENT
     }
 
-    private final String identifier;
-    private final String metaObject;
-    private final String value;
-    private final String rootNodeId;
-    private final Category category;
+    private String identifier;
+    private String metaObject;
+    private String value;
+    private String rootNodeId;
+    private Category category;
 
-    // Extracted from the source section and stored in primitive fields here so that we don't have to write a custom
-    // GSON adapter for source sections, i.e. GSON.toJson(this) just works™.
-    private final String source;
-    private final int sourceLine;
-    private final int sourceIndex;
-    private final int sourceLength;
-    private final CharSequence sourceCharacters;
+    private String source;
+    private int sourceLine;
+    private int sourceIndex;
+    private int sourceLength;
+    private CharSequence sourceCharacters;
 
-    private static final Gson GSON = new Gson();
+    public Sample() {
+    }
 
     public Sample(final String identifier,
                   final String value,
@@ -46,11 +44,15 @@ public final class Sample {
         this.sourceCharacters = sourceSection.getCharacters();
     }
 
-    public static Sample fromJson(final String json) {
-        return GSON.fromJson(json, Sample.class);
+    public boolean isArgument() {
+        return category.equals(Category.ARGUMENT);
     }
 
-    public final String getRootNodeId() {
+    public boolean isReturn() {
+        return category.equals(Category.RETURN);
+    }
+
+    public String getRootNodeId() {
         return rootNodeId;
     }
 
@@ -90,12 +92,44 @@ public final class Sample {
         return metaObject;
     }
 
-    @Override
-    public final String toString() {
-        return toJson();
+
+    public void setIdentifier(final String identifier) {
+        this.identifier = identifier;
     }
 
-    public final String toJson() {
-        return GSON.toJson(this);
+    public void setMetaObject(final String metaObject) {
+        this.metaObject = metaObject;
+    }
+
+    public void setValue(final String value) {
+        this.value = value;
+    }
+
+    public void setRootNodeId(final String rootNodeId) {
+        this.rootNodeId = rootNodeId;
+    }
+
+    public void setCategory(final Category category) {
+        this.category = category;
+    }
+
+    public void setSource(final String source) {
+        this.source = source;
+    }
+
+    public void setSourceLine(final int sourceLine) {
+        this.sourceLine = sourceLine;
+    }
+
+    public void setSourceIndex(final int sourceIndex) {
+        this.sourceIndex = sourceIndex;
+    }
+
+    public void setSourceLength(final int sourceLength) {
+        this.sourceLength = sourceLength;
+    }
+
+    public void setSourceCharacters(final CharSequence sourceCharacters) {
+        this.sourceCharacters = sourceCharacters;
     }
 }

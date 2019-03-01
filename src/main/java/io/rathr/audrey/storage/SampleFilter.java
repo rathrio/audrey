@@ -20,6 +20,8 @@ public class SampleFilter {
     private String rootNodeId;
     private String identifier;
     private Integer line;
+    private Integer startLine;
+    private Integer endLine;
     private String value;
     private String source;
 
@@ -52,6 +54,16 @@ public class SampleFilter {
         return this;
     }
 
+    public SampleFilter startLine(final int line) {
+        this.startLine = line;
+        return this;
+    }
+
+    public SampleFilter endLine(final int line) {
+        this.endLine = line;
+        return this;
+    }
+
     public SampleFilter value(final String value) {
         this.value = value;
         return this;
@@ -78,7 +90,15 @@ public class SampleFilter {
         }
 
         if (line != null) {
-            stream = stream.filter(sample -> line == sample.getSourceLine());
+            stream = stream.filter(sample -> line == (sample.getSourceLine() - 1));
+        }
+
+        if (startLine != null) {
+            stream = stream.filter(sample -> (sample.getSourceLine() - 1) >= startLine);
+        }
+
+        if (endLine != null) {
+            stream = stream.filter(sample -> (sample.getSourceLine() - 1) <= endLine);
         }
 
         if (value != null) {

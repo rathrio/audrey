@@ -26,8 +26,11 @@ dependencies {
     // LSP
     implementation("org.eclipse.lsp4j:org.eclipse.lsp4j:0.6.0")
 
-    // For parsing JS
+    // For parsing ES5
     implementation("org.mozilla:rhino:1.7.10")
+
+    // For parsing JS
+    implementation("org.graalvm.js:js:1.0.0-rc12")
 
     // For parsing Ruby
     implementation(files("libs/jrubyparser-0.5.5-SNAPSHOT.jar"))

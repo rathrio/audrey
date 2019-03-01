@@ -1,7 +1,7 @@
 package io.rathr.audrey.lsp.ruby;
 
 import io.rathr.audrey.storage.Sample;
-import io.rathr.audrey.storage.Search;
+import io.rathr.audrey.storage.SampleFilter;
 import org.jrubyparser.ast.DefnNode;
 import org.jrubyparser.ast.DefsNode;
 import org.jrubyparser.util.NoopVisitor;
@@ -12,7 +12,7 @@ import java.util.Set;
 public class RubySampleCollector extends NoopVisitor {
     private final int column;
     private final int line;
-    private final Search search;
+    private final SampleFilter search;
 
     /**
      * Whether we actually encountered a relevant node during visiting.
@@ -22,7 +22,7 @@ public class RubySampleCollector extends NoopVisitor {
     RubySampleCollector(final Set<Sample> samples, final String uri, final int line, final int column) {
         this.line = line;
         this.column = column;
-        this.search = new Search(samples).source(uri);
+        this.search = new SampleFilter(samples).source(uri);
         this.foundNode = false;
     }
 

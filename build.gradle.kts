@@ -69,6 +69,7 @@ task("uninstall") {
 }
 
 task("startServer", JavaExec::class) {
+    description = "Starts the Audrey language server"
     classpath = java.sourceSets["main"].runtimeClasspath
     main = "io.rathr.audrey.lsp.AudreyServer"
 }

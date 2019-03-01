@@ -72,7 +72,7 @@ public class AudreyTest {
         final Stream<Sample> returns = storage.newSearch()
             .forReturns()
             .rootNodeId("foo")
-            .search();
+            .apply();
 
         final List<Sample> returnSamples = returns.collect(Collectors.toList());
         assertEquals(1, returnSamples.size());
@@ -86,7 +86,7 @@ public class AudreyTest {
         final Stream<Sample> returns = storage.newSearch()
             .forReturns()
             .rootNodeId("Object#foo")
-            .search();
+            .apply();
 
         final List<Sample> returnSamples = returns.collect(Collectors.toList());
         assertEquals(1, returnSamples.size());
@@ -270,7 +270,7 @@ public class AudreyTest {
             .forArguments()
             .rootNodeId("Helpers#upcase")
             .identifier("str")
-            .search().collect(Collectors.toList());
+            .apply().collect(Collectors.toList());
 
         assertEquals(2, args.size());
 
@@ -334,7 +334,7 @@ public class AudreyTest {
             .forArguments()
             .rootNodeId("sayHiTo")
             .identifier("otherPerson")
-            .search()
+            .apply()
             .findFirst();
 
         assertTrue(arg.isPresent());
@@ -344,7 +344,7 @@ public class AudreyTest {
         final Optional<Sample> returnSample = storage.newSearch()
             .forReturns()
             .rootNodeId("sayHiTo")
-            .search()
+            .apply()
             .findFirst();
 
         assertTrue(returnSample.isPresent());

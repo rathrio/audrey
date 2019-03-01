@@ -39,7 +39,7 @@ public final class InMemorySampleStorage extends SampleStorage {
         return samples;
     }
 
-    public Search newSearch() {
-        return new Search(getSamples());
+    public SampleFilter newSearch() {
+        return new SampleFilter(getSamples());
     }
 }

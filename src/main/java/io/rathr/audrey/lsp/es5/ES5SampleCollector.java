@@ -2,7 +2,7 @@ package io.rathr.audrey.lsp.es5;
 
 import io.rathr.audrey.lsp.AudreyServer;
 import io.rathr.audrey.storage.Sample;
-import io.rathr.audrey.storage.Search;
+import io.rathr.audrey.storage.SampleFilter;
 import org.mozilla.javascript.ast.AstNode;
 import org.mozilla.javascript.ast.FunctionNode;
 import org.mozilla.javascript.ast.Name;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class ES5SampleCollector implements NodeVisitor {
     private final int column;
     private final int line;
-    private final Search search;
+    private final SampleFilter search;
 
     /**
      * Whether we actually encountered a relevant node during visiting.
@@ -27,7 +27,7 @@ public class ES5SampleCollector implements NodeVisitor {
     ES5SampleCollector(final Set<Sample> samples, final String uri, final int line, final int column) {
         this.line = line;
         this.column = column;
-        this.search = new Search(samples).source(uri);
+        this.search = new SampleFilter(samples).source(uri);
         this.foundNode = false;
     }
 
@@ -110,6 +110,6 @@ public class ES5SampleCollector implements NodeVisitor {
             return new HashSet<>();
         }
 
-        return search.search().collect(Collectors.toSet());
+        return search.apply().collect(Collectors.toSet());
     }
 }

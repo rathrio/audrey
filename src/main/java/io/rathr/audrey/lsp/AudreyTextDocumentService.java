@@ -31,6 +31,7 @@ public class AudreyTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<Hover> hover(final TextDocumentPositionParams position) {
+        AudreyServer.LOG.info("hover " + position.toString());
         final String uri = position.getTextDocument().getUri();
         final int line = position.getPosition().getLine();
         final int column = position.getPosition().getCharacter();

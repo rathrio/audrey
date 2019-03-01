@@ -61,7 +61,10 @@ public class ES5SampleCollector implements NodeVisitor {
         foundNode = true;
 
         AudreyServer.LOG.info("Detected FunctionNode: " + functionName.getIdentifier());
-        search.rootNodeId(functionName.getIdentifier());
+        search.rootNodeId(functionName.getIdentifier())
+            .startLine(node.getLineno())
+            .endLine(node.getEndLineno());
+
         return true;
     }
 
@@ -71,10 +74,14 @@ public class ES5SampleCollector implements NodeVisitor {
             return true;
         }
         foundNode = true;
+        final FunctionNode functionNode = (FunctionNode) right;
 
         final AstNode left = node.getLeft();
         AudreyServer.LOG.info("Detected ObjectProperty: " + left.getString());
-        search.rootNodeId(left.getString());
+        search.rootNodeId(left.getString())
+            .startLine(functionNode.getLineno())
+            .endLine(functionNode.getEndLineno());
+
         return true;
     }
 
@@ -101,7 +108,11 @@ public class ES5SampleCollector implements NodeVisitor {
 
         foundNode = true;
         AudreyServer.LOG.info("Detected ReturnStatement: " + rootNodeId);
-        search.forReturns().rootNodeId(rootNodeId);
+        search.forReturns()
+            .rootNodeId(rootNodeId)
+            .startLine(functionNode.getLineno())
+            .endLine(functionNode.getEndLineno());
+
         return false;
     }
 

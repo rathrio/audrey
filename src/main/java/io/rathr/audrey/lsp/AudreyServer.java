@@ -22,7 +22,9 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class AudreyServer implements LanguageServer, LanguageClientAware {
     static {
@@ -43,14 +45,33 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
 
     public static void main(String[] args) {
         try {
-            LOG.info("Listening on port " + DEFAULT_PORT);
-            final ServerSocket serverSocket = new ServerSocket(DEFAULT_PORT);
+            InputStream in;
+            OutputStream out;
 
-            LOG.info("Waiting for client to connect");
-            final Socket socket = serverSocket.accept();
+            final FileHandler fileHandler = new FileHandler(
+                System.getenv("HOME") + "/audrey.log",
+                true
+            );
 
-            InputStream in = socket.getInputStream();
-            OutputStream out = socket.getOutputStream();
+            final SimpleFormatter formatter = new SimpleFormatter();
+            fileHandler.setFormatter(formatter);
+            LOG.addHandler(fileHandler);
+
+            if (args.length > 0 && args[0].equals("--stdio")) {
+                LOG.info("Listening on STDIN");
+                in = System.in;
+                out = System.out;
+            } else {
+                LOG.info("Listening on port " + DEFAULT_PORT);
+                final ServerSocket serverSocket = new ServerSocket(DEFAULT_PORT);
+
+                LOG.info("Waiting for client to connect");
+                final Socket socket = serverSocket.accept();
+                LOG.info("Client connected");
+
+                in = socket.getInputStream();
+                out = socket.getOutputStream();
+            }
 
             AudreyServer server = new AudreyServer();
             final Launcher<LanguageClient> launcher = LSPLauncher.createServerLauncher(server, in, out);
@@ -59,7 +80,6 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
             server.connect(client);
 
             launcher.startListening();
-            LOG.info("Client connected");
         } catch (IOException e) {
             LOG.severe(e.getMessage());
             e.printStackTrace();

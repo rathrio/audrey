@@ -335,7 +335,6 @@ public class AudreyTest {
             .forArguments()
             .rootNodeId("sayHiTo")
             .identifier("otherPerson")
-            .apply()
             .findFirst();
 
         assertTrue(arg.isPresent());
@@ -345,12 +344,56 @@ public class AudreyTest {
         final Optional<Sample> returnSample = storage.newSearch()
             .forReturns()
             .rootNodeId("sayHiTo")
-            .apply()
             .findFirst();
 
         assertTrue(returnSample.isPresent());
         assertEquals("string", returnSample.get().getMetaObject());
         assertEquals("Hi Haidar, my name is Boris", returnSample.get().getValue());
+    }
+
+    @Test
+    public void testNestingInRuby() {
+        evalFile("nesting.rb", "ruby");
+
+        final Optional<Sample> arg1 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("A::B#method_in_b")
+            .identifier("x")
+            .findFirst();
+
+        assertTrue(arg1.isPresent());
+
+        final Optional<Sample> arg2 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("A.method_in_a")
+            .identifier("x")
+            .findFirst();
+
+        assertTrue(arg2.isPresent());
+    }
+
+    @Test
+    public void testClassSelfInRuby() {
+        evalFile("class_self.rb", "ruby");
+
+        final Optional<Sample> arg = storage.newSearch()
+            .forArguments()
+            .rootNodeId("Dog.foobar")
+            .identifier("baz")
+            .findFirst();
+
+        assertTrue(arg.isPresent());
+        assertEquals("Array", arg.get().getMetaObject());
+        assertEquals("[1, 2, 3, 4, 5]", arg.get().getValue());
+
+        final Optional<Sample> returnSample = storage.newSearch()
+            .forReturns()
+            .rootNodeId("Dog.foobar")
+            .findFirst();
+
+        assertTrue(returnSample.isPresent());
+        assertEquals("Array", returnSample.get().getMetaObject());
+        assertEquals("[1, 3, 5]", returnSample.get().getValue());
     }
 
     private Source makeSourceFromFile(String filename, String languageId) {

@@ -11,7 +11,7 @@ require 'oj'
 
 class Sample
   attr_reader :identifier, :meta_object, :value, :root_node_id, :category,
-    :source_line, :source_index, :source_length
+    :source_line, :source_index, :source_length, :source
 
   def initialize(hash)
     @identifier = hash['identifier']

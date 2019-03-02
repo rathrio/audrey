@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class ES5SampleCollector implements NodeVisitor {
     private final int column;
     private final int line;
-    private final SampleFilter search;
+    private final SampleFilter filter;
 
     /**
      * Whether we actually encountered a relevant node during visiting.
@@ -27,7 +27,7 @@ public class ES5SampleCollector implements NodeVisitor {
     ES5SampleCollector(final Set<Sample> samples, final String uri, final int line, final int column) {
         this.line = line;
         this.column = column;
-        this.search = new SampleFilter(samples).source(uri);
+        this.filter = new SampleFilter(samples).source(uri);
         this.foundNode = false;
     }
 
@@ -60,8 +60,8 @@ public class ES5SampleCollector implements NodeVisitor {
         }
         foundNode = true;
 
-        AudreyServer.LOG.info("Detected FunctionNode: " + functionName.getIdentifier());
-        search.rootNodeId(functionName.getIdentifier())
+        AudreyServer.LOG.info("Detected ES5 FunctionNode: " + functionName.getIdentifier());
+        filter.rootNodeId(functionName.getIdentifier())
             .startLine(node.getLineno())
             .endLine(node.getEndLineno());
 
@@ -77,8 +77,8 @@ public class ES5SampleCollector implements NodeVisitor {
         final FunctionNode functionNode = (FunctionNode) right;
 
         final AstNode left = node.getLeft();
-        AudreyServer.LOG.info("Detected ObjectProperty: " + left.getString());
-        search.rootNodeId(left.getString())
+        AudreyServer.LOG.info("Detected ES5 ObjectProperty: " + left.getString());
+        filter.rootNodeId(left.getString())
             .startLine(functionNode.getLineno())
             .endLine(functionNode.getEndLineno());
 
@@ -107,8 +107,8 @@ public class ES5SampleCollector implements NodeVisitor {
         }
 
         foundNode = true;
-        AudreyServer.LOG.info("Detected ReturnStatement: " + rootNodeId);
-        search.forReturns()
+        AudreyServer.LOG.info("Detected ES5 ReturnStatement: " + rootNodeId);
+        filter.forReturns()
             .rootNodeId(rootNodeId)
             .startLine(functionNode.getLineno())
             .endLine(functionNode.getEndLineno());
@@ -121,6 +121,6 @@ public class ES5SampleCollector implements NodeVisitor {
             return new HashSet<>();
         }
 
-        return search.apply().collect(Collectors.toSet());
+        return filter.apply().collect(Collectors.toSet());
     }
 }

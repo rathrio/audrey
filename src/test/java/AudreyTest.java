@@ -215,14 +215,14 @@ public class AudreyTest {
 
     @Test
     public void testCanDifferentiateMethodsInJS() {
-        // NOTE that we currently extract arguments from the first statement in the function body.
         evalFile("two_greets.js", "js");
 
         final Optional<Sample> arg = storage.newSearch()
             .forArguments()
             .rootNodeId("greet")
             .identifier("target")
-            .line(3)
+            .startLine(1)
+            .endLine(3)
             .findFirst();
 
         assertTrue(arg.isPresent());
@@ -232,7 +232,8 @@ public class AudreyTest {
             .forArguments()
             .rootNodeId("greet")
             .identifier("target")
-            .line(9)
+            .startLine(7)
+            .endLine(9)
             .findFirst();
 
         assertTrue(differentArg.isPresent());

@@ -6,7 +6,7 @@ import io.rathr.audrey.storage.SampleFilter;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.DefnNode;
 import org.jrubyparser.ast.DefsNode;
-import org.jrubyparser.ast.ILocalScope;
+import org.jrubyparser.ast.IScope;
 import org.jrubyparser.ast.ModuleNode;
 import org.jrubyparser.ast.ReturnNode;
 import org.jrubyparser.util.NoopVisitor;
@@ -55,29 +55,22 @@ public class RubySampleCollector extends NoopVisitor {
 
     @Override
     public Object visitDefnNode(final DefnNode iVisited) {
+        super.visitDefnNode(iVisited);
+
         if (iVisited.getPosition().getStartLine() != line) {
-            return super.visitDefnNode(iVisited);
+            return null;
         }
 
         updateFilter(iVisited);
         return null;
     }
 
-    private void updateFilter(final DefnNode iVisited) {
-        foundNode = true;
-        final String methodName = "#" + iVisited.getName();
-        final String rootNodeId = currentNesting() + methodName;
-        AudreyServer.LOG.info("Detected Ruby instance method def: " + rootNodeId);
-
-        filter.rootNodeId(rootNodeId)
-            .startLine(iVisited.getPosition().getStartLine())
-            .endLine(iVisited.getPosition().getEndLine());
-    }
-
     @Override
     public Object visitDefsNode(final DefsNode iVisited) {
+        super.visitDefsNode(iVisited);
+
         if (iVisited.getPosition().getStartLine() != line) {
-            return super.visitDefsNode(iVisited);
+            return null;
         }
 
         updateFilter(iVisited);
@@ -90,19 +83,8 @@ public class RubySampleCollector extends NoopVisitor {
             return null;
         }
 
-        final ILocalScope closestILocalScope = iVisited.getClosestILocalScope();
-        if (closestILocalScope instanceof DefsNode) {
-            updateFilter((DefsNode) closestILocalScope);
-            filter.forReturns().line(line);
-            return null;
-        }
-
-        if (closestILocalScope instanceof DefnNode) {
-            updateFilter((DefnNode) closestILocalScope);
-            filter.forReturns().line(line);
-            return null;
-        }
-
+        filter.forReturns();
+        updateFilterForScope(iVisited.getClosestILocalScope());
         return null;
     }
 
@@ -127,6 +109,25 @@ public class RubySampleCollector extends NoopVisitor {
         final String methodName = "." + iVisited.getName();
         final String rootNodeId = currentNesting() + methodName;
         AudreyServer.LOG.info("Detected Ruby singleton method def: " + rootNodeId);
+
+        filter.rootNodeId(rootNodeId)
+            .startLine(iVisited.getPosition().getStartLine())
+            .endLine(iVisited.getPosition().getEndLine());
+    }
+
+    private void updateFilterForScope(final IScope definedScope) {
+        if (definedScope instanceof DefsNode) {
+            updateFilter((DefsNode) definedScope);
+        } else if (definedScope instanceof DefnNode) {
+            updateFilter((DefnNode) definedScope);
+        }
+    }
+
+    private void updateFilter(final DefnNode iVisited) {
+        foundNode = true;
+        final String methodName = "#" + iVisited.getName();
+        final String rootNodeId = currentNesting() + methodName;
+        AudreyServer.LOG.info("Detected Ruby instance method def: " + rootNodeId);
 
         filter.rootNodeId(rootNodeId)
             .startLine(iVisited.getPosition().getStartLine())

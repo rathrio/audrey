@@ -28,7 +28,6 @@ public final class RootSamplerNode extends SamplerNode {
         }
     }
 
-
     @Override
     protected void onReturnValue(final VirtualFrame frame, final Object result) {
         handleOnReturn(result);

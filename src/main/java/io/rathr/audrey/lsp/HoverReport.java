@@ -13,10 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 class HoverReport {
-    private static final String JAVASCRIPT_ID = "javascript";
-    private static final String RUBY_ID = "ruby";
-
-    Hover generate(final Set<Sample> samples) {
+    Hover generate(final Set<Sample> samples, final String languageId) {
         List<Either<String, MarkedString>> contents = new ArrayList<>();
 
         List<Sample> arguments = new ArrayList<>();
@@ -45,7 +42,7 @@ class HoverReport {
                 final Sample argSample = args.get(0);
                 final String argMetaObject = argSample.getMetaObject();
                 contents.add(Either.forLeft("(parameter) " + identifier + ": " + argMetaObject));
-                contents.add(Either.forRight(new MarkedString(JAVASCRIPT_ID, argSample.getValue())));
+                contents.add(Either.forRight(new MarkedString(languageId, argSample.getValue())));
             });
         }
 
@@ -53,7 +50,7 @@ class HoverReport {
             Collections.shuffle(returns);
             final Sample returnSample = returns.get(0);
             contents.add(Either.forLeft("=> " + returnSample.getMetaObject()));
-            contents.add(Either.forRight(new MarkedString(JAVASCRIPT_ID, returnSample.getValue())));
+            contents.add(Either.forRight(new MarkedString(languageId, returnSample.getValue())));
         }
 
         return new Hover(contents);

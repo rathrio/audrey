@@ -1,6 +1,7 @@
 package io.rathr.audrey.lsp;
 
 import io.rathr.audrey.lsp.es5.ES5SampleService;
+import io.rathr.audrey.lsp.graaljs.GraalJSSampleService;
 import io.rathr.audrey.lsp.ruby.RubySampleService;
 import io.rathr.audrey.storage.Sample;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
@@ -43,7 +44,7 @@ public class AudreyTextDocumentService implements TextDocumentService {
             return EMPTY_HOVER;
         }
 
-        final Hover hover = report.generate(filterSamples);
+        final Hover hover = report.generate(filterSamples, languageId);
         return CompletableFuture.completedFuture(hover);
     }
 
@@ -82,7 +83,7 @@ public class AudreyTextDocumentService implements TextDocumentService {
     private SampleService sampleService(final String languageId) {
         sampleServices.computeIfAbsent(languageId, s -> {
             switch (languageId) {
-                case "javascript": return new ES5SampleService();
+                case "javascript": return new GraalJSSampleService();
                 case "ruby":       return new RubySampleService();
                 default:           throw new Error("Unsupported language: " + languageId);
             }

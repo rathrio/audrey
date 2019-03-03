@@ -5,6 +5,7 @@ import com.oracle.js.parser.ir.FunctionNode;
 import com.oracle.js.parser.ir.LexicalContext;
 import com.oracle.js.parser.ir.Node;
 import com.oracle.js.parser.ir.PropertyNode;
+import com.oracle.js.parser.ir.ReturnNode;
 import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import io.rathr.audrey.storage.Sample;
 import io.rathr.audrey.storage.SampleFilter;
@@ -19,6 +20,7 @@ public class GraalJSSampleCollector extends NodeVisitor<LexicalContext> {
     private final int column;
     private final int line;
     private final SampleFilter filter;
+    FunctionNode currentFunctionNode;
 
     /**
      * Whether we actually encountered a relevant node during visiting.
@@ -41,6 +43,7 @@ public class GraalJSSampleCollector extends NodeVisitor<LexicalContext> {
 
     @Override
     public boolean enterFunctionNode(final FunctionNode functionNode) {
+        currentFunctionNode = functionNode;
         if (functionNode.getLineNumber() - 1 != line) {
             return true;
         }
@@ -53,6 +56,28 @@ public class GraalJSSampleCollector extends NodeVisitor<LexicalContext> {
         foundNode = true;
         LOG.info("Detected GraalJS FunctionNode: " + functionName);
         filter.rootNodeId(functionName)
+            .startLine(functionNode.getLineNumber() - 1)
+            .endLine(functionNode.getBody().getLastStatement().getLineNumber());
+
+        return true;
+    }
+
+    @Override
+    public boolean enterReturnNode(final ReturnNode returnNode) {
+        if (returnNode.getLineNumber() - 1 != line) {
+            return true;
+        }
+
+        final FunctionNode functionNode = currentFunctionNode;
+        final String functionName = functionNode.getName();
+        if (functionName == null) {
+            return true;
+        }
+
+        foundNode = true;
+        LOG.info("Detected GraalJS ReturnNode: " + functionName);
+        filter.rootNodeId(functionName)
+            .forReturns()
             .startLine(functionNode.getLineNumber() - 1)
             .endLine(functionNode.getBody().getLastStatement().getLineNumber());
 

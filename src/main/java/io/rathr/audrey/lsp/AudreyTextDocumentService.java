@@ -1,6 +1,5 @@
 package io.rathr.audrey.lsp;
 
-import io.rathr.audrey.lsp.es5.ES5SampleService;
 import io.rathr.audrey.lsp.graaljs.GraalJSSampleService;
 import io.rathr.audrey.lsp.ruby.RubySampleService;
 import io.rathr.audrey.storage.Sample;

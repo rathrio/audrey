@@ -41,7 +41,7 @@ class HoverReport {
             argumentMap.forEach((identifier, args) -> {
                 final Sample argSample = args.get(0);
                 final String argMetaObject = argSample.getMetaObject();
-                contents.add(Either.forLeft("(parameter) " + identifier + ": " + argMetaObject));
+                contents.add(Either.forLeft("(parameter) " + identifier + ": `" + argMetaObject + "`"));
                 contents.add(Either.forRight(new MarkedString(languageId, argSample.getValue())));
             });
         }
@@ -49,8 +49,9 @@ class HoverReport {
         if (!returns.isEmpty()) {
             Collections.shuffle(returns);
             final Sample returnSample = returns.get(0);
-            contents.add(Either.forLeft("=> " + returnSample.getMetaObject()));
+            contents.add(Either.forLeft("**Returns:** `" + returnSample.getMetaObject() + "`"));
             contents.add(Either.forRight(new MarkedString(languageId, returnSample.getValue())));
+
         }
 
         return new Hover(contents);

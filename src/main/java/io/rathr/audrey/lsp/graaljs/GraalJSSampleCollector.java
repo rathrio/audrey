@@ -1,10 +1,9 @@
 package io.rathr.audrey.lsp.graaljs;
 
-import com.oracle.js.parser.ir.Expression;
 import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.IdentNode;
 import com.oracle.js.parser.ir.LexicalContext;
 import com.oracle.js.parser.ir.Node;
-import com.oracle.js.parser.ir.PropertyNode;
 import com.oracle.js.parser.ir.ReturnNode;
 import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import io.rathr.audrey.storage.Sample;
@@ -20,7 +19,7 @@ public class GraalJSSampleCollector extends NodeVisitor<LexicalContext> {
     private final int column;
     private final int line;
     private final SampleFilter filter;
-    FunctionNode currentFunctionNode;
+    private FunctionNode currentFunctionNode;
 
     /**
      * Whether we actually encountered a relevant node during visiting.

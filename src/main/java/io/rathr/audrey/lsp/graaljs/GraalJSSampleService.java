@@ -60,6 +60,10 @@ public class GraalJSSampleService implements SampleService {
 
     @Override
     public Set<Sample> filterSamples(final Set<Sample> samples, final String uri, final int line, final int column) {
-        return null;
+        final FunctionNode ast = asts.get(uri);
+        final GraalJSSampleCollector sampleCollector = new GraalJSSampleCollector(samples, uri, line, column);
+        ast.accept(sampleCollector);
+
+        return sampleCollector.getSamples();
     }
 }

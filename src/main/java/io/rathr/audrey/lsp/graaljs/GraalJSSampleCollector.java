@@ -1,6 +1,10 @@
 package io.rathr.audrey.lsp.graaljs;
 
+import com.oracle.js.parser.ir.Expression;
+import com.oracle.js.parser.ir.FunctionNode;
 import com.oracle.js.parser.ir.LexicalContext;
+import com.oracle.js.parser.ir.Node;
+import com.oracle.js.parser.ir.PropertyNode;
 import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import io.rathr.audrey.storage.Sample;
 import io.rathr.audrey.storage.SampleFilter;
@@ -8,6 +12,8 @@ import io.rathr.audrey.storage.SampleFilter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static io.rathr.audrey.lsp.AudreyServer.LOG;
 
 public class GraalJSSampleCollector extends NodeVisitor<LexicalContext> {
     private final int column;
@@ -19,12 +25,38 @@ public class GraalJSSampleCollector extends NodeVisitor<LexicalContext> {
      */
     private boolean foundNode;
 
-    public GraalJSSampleCollector(final Set<Sample> samples, final String uri, final int line, final int column) {
+    GraalJSSampleCollector(final Set<Sample> samples, final String uri, final int line, final int column) {
         super(new LexicalContext());
+
         this.line = line;
         this.column = column;
         this.filter = new SampleFilter(samples).source(uri);
         this.foundNode = false;
+    }
+
+    @Override
+    protected boolean enterDefault(final Node node) {
+        return true;
+    }
+
+    @Override
+    public boolean enterFunctionNode(final FunctionNode functionNode) {
+        if (functionNode.getLineNumber() - 1 != line) {
+            return true;
+        }
+
+        final String functionName = functionNode.getName();
+        if (functionName == null) {
+            return true;
+        }
+
+        foundNode = true;
+        LOG.info("Detected GraalJS FunctionNode: " + functionName);
+        filter.rootNodeId(functionName)
+            .startLine(functionNode.getLineNumber() - 1)
+            .endLine(functionNode.getBody().getLastStatement().getLineNumber());
+
+        return true;
     }
 
     public Set<Sample> getSamples() {

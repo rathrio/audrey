@@ -64,8 +64,6 @@ task("uninstall") {
     description = "Removes the Audrey fat JAR from \$JAVA_HOME/jre/tools/."
 
     val graalvmHome = System.getenv("JAVA_HOME")
-    mkdir("$graalvmHome/jre/tools/audrey")
-
     doLast {
         delete("$graalvmHome/jre/tools/audrey")
     }

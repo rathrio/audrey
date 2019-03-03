@@ -3,6 +3,8 @@ package io.rathr.audrey.lsp.ruby;
 import io.rathr.audrey.lsp.AudreyServer;
 import io.rathr.audrey.storage.Sample;
 import io.rathr.audrey.storage.SampleFilter;
+import org.jrubyparser.SourcePosition;
+import org.jrubyparser.ast.ArgumentNode;
 import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.DefnNode;
 import org.jrubyparser.ast.DefsNode;
@@ -88,6 +90,21 @@ public class RubySampleCollector extends NoopVisitor {
         return null;
     }
 
+    @Override
+    public Object visitArgumentNode(final ArgumentNode iVisited) {
+        final SourcePosition position = iVisited.getPosition();
+        if (position.getStartLine() != line) {
+            return null;
+        }
+
+        if (columnWithin(position.getStartOffset(), position.getEndOffset())) {
+            filter.forArguments();
+            filter.identifier(iVisited.getName());
+        }
+
+        return null;
+    }
+
     public Set<Sample> getSamples() {
         if (!foundNode) {
             return new HashSet<>();
@@ -132,5 +149,11 @@ public class RubySampleCollector extends NoopVisitor {
         filter.rootNodeId(rootNodeId)
             .startLine(iVisited.getPosition().getStartLine())
             .endLine(iVisited.getPosition().getEndLine());
+    }
+
+    private boolean columnWithin(final int startOffset, final int endOffset) {
+        // Currently broken for anything other than the first line, because startOffset and endOffset are not
+        // relative to the current line, but column is.
+        return column >= startOffset && column <= endOffset;
     }
 }

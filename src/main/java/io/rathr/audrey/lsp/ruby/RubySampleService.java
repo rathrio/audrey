@@ -1,6 +1,5 @@
 package io.rathr.audrey.lsp.ruby;
 
-import io.rathr.audrey.lsp.AudreyServer;
 import io.rathr.audrey.lsp.SampleService;
 import io.rathr.audrey.storage.Sample;
 import org.jrubyparser.CompatVersion;
@@ -18,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static io.rathr.audrey.lsp.AudreyServer.LOG;
+
 public class RubySampleService implements SampleService {
     private final static ParserConfiguration CONFIG = new ParserConfiguration(0, CompatVersion.RUBY2_3);
     private Map<String, Node> asts = new HashMap<>();
@@ -26,13 +27,13 @@ public class RubySampleService implements SampleService {
     public void didOpen(final String uri) {
         try {
             final String source = new String(Files.readAllBytes(Paths.get(new URI(uri))));
-            Parser rubyParser = new Parser();
+            final Parser parser = new Parser();
             final StringReader stringReader = new StringReader(source);
-            final Node ast = rubyParser.parse(uri, stringReader, CONFIG);
+            final Node ast = parser.parse(uri, stringReader, CONFIG);
 
             asts.put(uri, ast);
         } catch (IOException | URISyntaxException e) {
-            AudreyServer.LOG.severe(e.getMessage());
+            LOG.severe(e.getMessage());
             e.printStackTrace();
         }
     }

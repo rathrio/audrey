@@ -42,7 +42,7 @@ public class GraalJSSampleService implements SampleService {
         try {
             contents = new String(Files.readAllBytes(Paths.get(new URI(uri))));
         } catch (IOException | URISyntaxException e) {
-            LOG.info(e.getMessage());
+            LOG.severe(e.getMessage());
             e.printStackTrace();
         }
 

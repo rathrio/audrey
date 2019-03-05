@@ -26,6 +26,12 @@ import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+/**
+ * A <a href="https://microsoft.github.io/language-server-protocol/">language server</a>
+ * that provides parameter and return value types and examples for text document hover requests.
+ *
+ * @see AudreyTextDocumentService
+ */
 public class AudreyServer implements LanguageServer, LanguageClientAware {
     static {
         System.setProperty(

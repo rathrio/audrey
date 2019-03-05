@@ -19,6 +19,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Delegates requests to the language specific sample services.
+ *
+ * @see RubySampleService
+ * @see GraalJSSampleService
+ */
 public class AudreyTextDocumentService implements TextDocumentService {
     private static final CompletableFuture<Hover> EMPTY_HOVER =
         CompletableFuture.completedFuture(new Hover(new ArrayList<>()));

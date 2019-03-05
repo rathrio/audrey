@@ -66,9 +66,24 @@ Consult `--jvm --help:tools` for a more exhaustive list of options.
 Starting a language server
 --------------------------
 
+To start a language server from the project root for debugging purposes, run:
+
 ```bash
 ./gradlew startServer
 ```
+
+This should start a server that waits for clients to connect to port 8123 (by
+default).
+
+To make an executable globally available to language clients, ensure that
+`bin/audrey-ls` is in your path, e.g.
+
+```bash
+ln -sr bin/audrey-ls /usr/local/bin/audrey-ls
+```
+
+You should now be able to start a language server that communicates via
+stdin/out with `audrey-ls`.
 
 Setting up additional test projects
 -----------------------------------

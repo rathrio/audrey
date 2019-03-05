@@ -27,9 +27,9 @@ public final class AudreyInstrument extends TruffleInstrument {
         audrey = new Audrey(env);
 
         if (env.getOptions().get(AudreyCLI.ENABLED)) {
-            final String projectId = env.getOptions().get(AudreyCLI.PROJECT);
-            if (projectId.isEmpty()) {
-                throw new Error("Provide a unique project ID with --" + ID + ".Project=\"<Project ID>\"");
+            String projectId = env.getOptions().get(AudreyCLI.PROJECT);
+            if (projectId == null || projectId.isEmpty()) {
+                projectId = Audrey.DEFAULT_PROJECT_ID;
             }
 
             final String rootPath = env.getOptions().get(AudreyCLI.ROOT_PATH);

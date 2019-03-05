@@ -16,6 +16,7 @@ import org.graalvm.polyglot.Engine;
 import java.io.Closeable;
 
 public class Audrey implements Closeable {
+    public static final String DEFAULT_PROJECT_ID = "default";
     private static final Class STATEMENT_TAG = StandardTags.StatementTag.class;
     private static final Class ROOT_TAG = StandardTags.RootTag.class;
 

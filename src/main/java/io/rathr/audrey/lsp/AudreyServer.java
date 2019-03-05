@@ -1,5 +1,6 @@
 package io.rathr.audrey.lsp;
 
+import io.rathr.audrey.instrumentation.Audrey;
 import io.rathr.audrey.storage.Project;
 import io.rathr.audrey.storage.RedisSampleStorage;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
@@ -43,7 +44,6 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
     public static final Logger LOG = Logger.getLogger(AudreyServer.class.getName());
 
     private final static int DEFAULT_PORT = 8123;
-    private final static String DEFAULT_PROJECT_ID = "test";
 
     private final AudreyTextDocumentService textDocumentService;
     private LanguageClient client;
@@ -100,7 +100,7 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
     public CompletableFuture<InitializeResult> initialize(final InitializeParams params) {
         String projectId = System.getenv("AUDREY_PROJECT_ID");
         if (projectId == null || projectId.isEmpty()) {
-            projectId = DEFAULT_PROJECT_ID;
+            projectId = Audrey.DEFAULT_PROJECT_ID;
         }
         project = new Project(projectId, params.getRootUri());
 

@@ -4,9 +4,6 @@
 [submodule "language_servers/solargraph"]
 	path = language_servers/solargraph
 	url = git@github.com:rathrio/solargraph.git
-[submodule "language_servers/javascript-typescript-langserver"]
-	path = language_servers/javascript-typescript-langserver
-	url = git@github.com:rathrio/javascript-typescript-langserver.git
 [submodule "projects/javascript/node-express-realworld-example-app"]
 	path = projects/javascript/node-express-realworld-example-app
 	url = git@github.com:gothinkster/node-express-realworld-example-app.git

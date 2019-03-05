@@ -1,0 +1,5 @@
+#!/bin/bash
+
+BIN_DIR=$(dirname "$(realpath $0)")
+AUDREY_ROOT=$(dirname $BIN_DIR)
+java -cp $AUDREY_ROOT/build/libs/audrey-1.0-SNAPSHOT-all.jar io.rathr.audrey.lsp.AudreyServer --stdio

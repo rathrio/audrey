@@ -18,6 +18,7 @@ public class RubySampleServiceTest {
         final Path path = path("simple.rb");
         final String uri = path.toUri().toString();
         final HashSet<Sample> samples = new HashSet<>();
+
         final Sample relevantArg = new Sample(
             "a",
             "\"bar\"",

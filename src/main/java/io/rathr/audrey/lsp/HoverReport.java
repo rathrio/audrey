@@ -49,7 +49,7 @@ class HoverReport {
         if (!returns.isEmpty()) {
             Collections.shuffle(returns);
             final Sample returnSample = returns.get(0);
-            contents.add(Either.forLeft("**Returns:** `" + returnSample.getMetaObject() + "`"));
+            contents.add(Either.forLeft("Returns: `" + returnSample.getMetaObject() + "`"));
             contents.add(Either.forRight(new MarkedString(languageId, returnSample.getValue())));
 
         }

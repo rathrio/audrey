@@ -1,7 +1,6 @@
 package io.rathr.audrey.lsp.graaljs;
 
 import com.oracle.js.parser.ir.FunctionNode;
-import com.oracle.js.parser.ir.IdentNode;
 import com.oracle.js.parser.ir.LexicalContext;
 import com.oracle.js.parser.ir.Node;
 import com.oracle.js.parser.ir.ReturnNode;
@@ -19,6 +18,11 @@ public class GraalJSSampleCollector extends NodeVisitor<LexicalContext> {
     private final int column;
     private final int line;
     private final SampleFilter filter;
+
+    /**
+     * Is used to lookup the current function when looking and return statements. ReturnNodes don't have parent
+     * references.
+     */
     private FunctionNode currentFunctionNode;
 
     /**

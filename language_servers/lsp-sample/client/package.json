@@ -9,7 +9,8 @@
 		"vscode": "^1.23.0"
 	},
 	"activationEvents": [
-		"onLanguage:javascript"
+		"onLanguage:javascript",
+		"onLanguage:ruby"
 	],
 	"scripts": {
 		"update-vscode": "vscode-install",

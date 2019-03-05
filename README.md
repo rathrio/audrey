@@ -10,29 +10,68 @@ Prerequisites
 -------------
 
 * [GraalVM](https://www.graalvm.org/downloads/)
-* [Java](https://www.java.com/en/download/) (optional if you want to use GraalVM
-    to build Audrey)
 * [Gradle](https://gradle.org/install/)
+* [Redis](https://redis.io)
 * [Ruby >= 2.5](https://www.ruby-lang.org/en/documentation/installation/) and [Bundler](https://bundler.io) (for running some tools and language servers)
 
-Building
---------
-
-Make sure that you export an environment variable `GRAALVM` that points to your
-GraalVM home folder, e.g.
+Ensure that the environment variable `$JAVA_HOME` points to your GraalVM home
+folder, e.g.
 
 ```bash
-export GRAALVM=/Users/radi/graalvm-ee-1.0.0-rc10/Contents/Home
+export JAVA_HOME=/Users/radi/graalvm-ee-1.0.0-rc12/Contents/Home
 ```
 
-You can then build and install Audrey with:
+Ensure that a redis server is running, e.g.
 
 ```bash
-./gradlew install
+redis-cli ping
+# => PONG
 ```
 
-Setting up sample projects
+Gathering data
+--------------
+
+1. To let your GraalVM installation at `$JAVA_HOME` know about Audrey, run:
+
+    ```bash
+    ./gradlew install
+    ```
+
+    This will build a fat JAR and place it in `$JAVA_HOME/jre/tools/audrey`.
+
+2. Verify your installation by running
+
+    ```bash
+    $JAVA_HOME/bin/js --jvm --help:tools | grep audrey
+    ```
+
+    If you see some output describing `--audrey` flags and switches, the
+    installation was successful.
+
+3. Run your application and provide the following flags to enable data-gathering
+   with Audrey:
+
+    ```bash
+    $JAVA_HOME/bin/js --jvm --audrey --audrey.Project="<my_unique_project_name>" path/to/app.js 
+    ```
+
+    For example:
+    
+    ```bash
+    $JAVA_HOME/bin/js --jvm --audrey --audrey.Project="test" --audrey.FilterPath="add.js" projects/javascript/test_project/add.js
+    ```
+
+Consult `--jvm --help:tools` for a more exhaustive list of options.
+
+Starting a language server
 --------------------------
+
+```bash
+./gradlew startServer
+```
+
+Setting up additional test projects
+-----------------------------------
 
 The `project` directory contains sub folders for each Truffle language to test
 with. By default you should find a simple test project for each of them, e.g.

@@ -11,52 +11,71 @@ import java.util.stream.Stream;
  *     new Search(samples)
  *        .forArguments()
  *        .value("\"foobar\"")
- *        .search() // => Stream of argument samples with value "foobar"
+ *        .apply() // => Stream of argument samples with value "foobar"
  * </pre>
  */
-public class Search {
+public class SampleFilter {
     private final Set<Sample> samples;
     private String category;
     private String rootNodeId;
     private String identifier;
     private Integer line;
+    private Integer startLine;
+    private Integer endLine;
     private String value;
+    private String source;
 
-    public Search(final Set<Sample> samples) {
+    public SampleFilter(final Set<Sample> samples) {
         this.samples = samples;
     }
 
-    public Search forArguments() {
+    public SampleFilter forArguments() {
         category = "ARGUMENT";
         return this;
     }
     
-    public Search forReturns() {
+    public SampleFilter forReturns() {
         category = "RETURN";
         return this;
     }
 
-    public Search rootNodeId(final String rootNodeId) {
+    public SampleFilter rootNodeId(final String rootNodeId) {
         this.rootNodeId = rootNodeId;
         return this;
     }
 
-    public Search identifier(final String identifier) {
+    public SampleFilter identifier(final String identifier) {
         this.identifier = identifier;
         return this;
     }
 
-    public Search line(final int line) {
+    public SampleFilter line(final int line) {
         this.line = line;
         return this;
     }
 
-    public Search value(final String value) {
+    public SampleFilter startLine(final int line) {
+        this.startLine = line;
+        return this;
+    }
+
+    public SampleFilter endLine(final int line) {
+        this.endLine = line;
+        return this;
+    }
+
+    public SampleFilter value(final String value) {
         this.value = value;
         return this;
     }
 
-    public Stream<Sample> search() {
+    public SampleFilter source(final String source) {
+        this.source = source;
+        return this;
+    }
+
+
+    public Stream<Sample> apply() {
         Stream<Sample> stream = samples.stream();
         if (category != null) {
             stream = stream.filter(sample -> category.equals(sample.getCategory().name()));
@@ -71,17 +90,29 @@ public class Search {
         }
 
         if (line != null) {
-            stream = stream.filter(sample -> line == sample.getSourceLine());
+            stream = stream.filter(sample -> line == (sample.getSourceLine() - 1));
+        }
+
+        if (startLine != null) {
+            stream = stream.filter(sample -> (sample.getSourceLine() - 1) >= startLine);
+        }
+
+        if (endLine != null) {
+            stream = stream.filter(sample -> (sample.getSourceLine() - 1) <= endLine);
         }
 
         if (value != null) {
             stream = stream.filter(sample -> value.equals(sample.getValue()));
         }
 
+        if (source != null) {
+            stream = stream.filter(sample -> source.endsWith(sample.getSource()));
+        }
+
         return stream;
     }
 
     public Optional<Sample> findFirst() {
-        return search().findFirst();
+        return apply().findFirst();
     }
 }

@@ -19,3 +19,6 @@
 [submodule "projects/ruby/optcarrot"]
 	path = projects/ruby/optcarrot
 	url = git@github.com:mame/optcarrot.git
+[submodule "language_servers/ale"]
+	path = language_servers/ale
+	url = git@github.com:rathrio/ale.git

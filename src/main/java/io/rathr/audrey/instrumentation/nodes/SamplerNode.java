@@ -14,7 +14,6 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import io.rathr.audrey.instrumentation.Audrey;
 import io.rathr.audrey.instrumentation.InstrumentationContext;
-import io.rathr.audrey.sampling_strategies.SamplingStrategy;
 import io.rathr.audrey.storage.Project;
 import io.rathr.audrey.storage.SampleStorage;
 
@@ -22,14 +21,13 @@ public abstract class SamplerNode extends ExecutionEventNode {
     private static final Node READ_NODE = Message.READ.createNode();
     private static final Node KEYS_NODE = Message.KEYS.createNode();
 
-    protected static final String[] IDENTIFIER_BLACKLIST = {"(self)", "rubytruffle_temp"};
+    protected static final String[] IDENTIFIER_BLACKLIST = {"(self)", "rubytruffle_temp", "this"};
 
     protected final Audrey audrey;
     protected final EventContext context;
     protected final TruffleInstrument.Env env;
     protected final Project project;
     protected final SampleStorage storage;
-    protected final SamplingStrategy samplingStrategy;
     protected final InstrumentationContext instrumentationContext;
     protected final SourceSection sourceSection;
     protected final int sourceSectionId;
@@ -43,7 +41,6 @@ public abstract class SamplerNode extends ExecutionEventNode {
                        final TruffleInstrument.Env env,
                        final Project project,
                        final SampleStorage storage,
-                       final SamplingStrategy samplingStrategy,
                        final InstrumentationContext instrumentationContext) {
 
         this.audrey = audrey;
@@ -51,7 +48,6 @@ public abstract class SamplerNode extends ExecutionEventNode {
         this.env = env;
         this.project = project;
         this.storage = storage;
-        this.samplingStrategy = samplingStrategy;
         this.instrumentationContext = instrumentationContext;
         this.sourceSection = context.getInstrumentedSourceSection();
         this.sourceSectionId = this.sourceSection.hashCode();

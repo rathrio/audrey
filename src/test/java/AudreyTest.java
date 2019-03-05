@@ -72,7 +72,7 @@ public class AudreyTest {
         final Stream<Sample> returns = storage.newSearch()
             .forReturns()
             .rootNodeId("foo")
-            .search();
+            .apply();
 
         final List<Sample> returnSamples = returns.collect(Collectors.toList());
         assertEquals(1, returnSamples.size());
@@ -86,7 +86,7 @@ public class AudreyTest {
         final Stream<Sample> returns = storage.newSearch()
             .forReturns()
             .rootNodeId("Object#foo")
-            .search();
+            .apply();
 
         final List<Sample> returnSamples = returns.collect(Collectors.toList());
         assertEquals(1, returnSamples.size());
@@ -215,14 +215,14 @@ public class AudreyTest {
 
     @Test
     public void testCanDifferentiateMethodsInJS() {
-        // NOTE that we currently extract arguments from the first statement in the function body.
         evalFile("two_greets.js", "js");
 
         final Optional<Sample> arg = storage.newSearch()
             .forArguments()
             .rootNodeId("greet")
             .identifier("target")
-            .line(3)
+            .startLine(1)
+            .endLine(3)
             .findFirst();
 
         assertTrue(arg.isPresent());
@@ -232,7 +232,8 @@ public class AudreyTest {
             .forArguments()
             .rootNodeId("greet")
             .identifier("target")
-            .line(9)
+            .startLine(7)
+            .endLine(9)
             .findFirst();
 
         assertTrue(differentArg.isPresent());
@@ -270,7 +271,7 @@ public class AudreyTest {
             .forArguments()
             .rootNodeId("Helpers#upcase")
             .identifier("str")
-            .search().collect(Collectors.toList());
+            .apply().collect(Collectors.toList());
 
         assertEquals(2, args.size());
 
@@ -325,6 +326,74 @@ public class AudreyTest {
             .findFirst();
 
         assertTrue(outerReturn.isPresent());
+    }
+
+    @Test
+    public void testModernJSFeatures() {
+        evalFile("class.js", "js");
+        final Optional<Sample> arg = storage.newSearch()
+            .forArguments()
+            .rootNodeId("sayHiTo")
+            .identifier("otherPerson")
+            .findFirst();
+
+        assertTrue(arg.isPresent());
+        assertEquals("Person", arg.get().getMetaObject());
+        assertEquals("{name: \"Haidar\"}", arg.get().getValue());
+
+        final Optional<Sample> returnSample = storage.newSearch()
+            .forReturns()
+            .rootNodeId("sayHiTo")
+            .findFirst();
+
+        assertTrue(returnSample.isPresent());
+        assertEquals("string", returnSample.get().getMetaObject());
+        assertEquals("Hi Haidar, my name is Boris", returnSample.get().getValue());
+    }
+
+    @Test
+    public void testNestingInRuby() {
+        evalFile("nesting.rb", "ruby");
+
+        final Optional<Sample> arg1 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("A::B#method_in_b")
+            .identifier("x")
+            .findFirst();
+
+        assertTrue(arg1.isPresent());
+
+        final Optional<Sample> arg2 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("A.method_in_a")
+            .identifier("x")
+            .findFirst();
+
+        assertTrue(arg2.isPresent());
+    }
+
+    @Test
+    public void testClassSelfInRuby() {
+        evalFile("class_self.rb", "ruby");
+
+        final Optional<Sample> arg = storage.newSearch()
+            .forArguments()
+            .rootNodeId("Dog.foobar")
+            .identifier("baz")
+            .findFirst();
+
+        assertTrue(arg.isPresent());
+        assertEquals("Array", arg.get().getMetaObject());
+        assertEquals("[1, 2, 3, 4, 5]", arg.get().getValue());
+
+        final Optional<Sample> returnSample = storage.newSearch()
+            .forReturns()
+            .rootNodeId("Dog.foobar")
+            .findFirst();
+
+        assertTrue(returnSample.isPresent());
+        assertEquals("Array", returnSample.get().getMetaObject());
+        assertEquals("[1, 3, 5]", returnSample.get().getValue());
     }
 
     private Source makeSourceFromFile(String filename, String languageId) {

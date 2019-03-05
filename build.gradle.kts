@@ -14,14 +14,23 @@ repositories {
 
 dependencies {
     // Truffle API
-    implementation("org.graalvm.truffle:truffle-api:1.0.0-rc9")
-    implementation("org.graalvm.truffle:truffle-dsl-processor:1.0.0-rc9")
+    implementation("org.graalvm.truffle:truffle-api:1.0.0-rc12")
+    implementation("org.graalvm.truffle:truffle-dsl-processor:1.0.0-rc12")
 
     // JSON
     implementation("com.google.code.gson:gson:2.8.5")
 
     // Redis Client
     implementation("io.lettuce:lettuce-core:5.1.3.RELEASE")
+
+    // LSP
+    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j:0.6.0")
+
+    // For parsing JS
+    implementation("org.graalvm.js:js:1.0.0-rc12")
+
+    // For parsing Ruby
+    implementation(files("libs/jrubyparser-0.5.5-SNAPSHOT.jar"))
 
     testImplementation("junit", "junit", "4.12")
 }
@@ -32,11 +41,11 @@ configure<JavaPluginConvention> {
 
 task("install") {
     group = "Build"
-    description = "Installs a fat JAR into \$GRAALVM/jre/tools/."
+    description = "Places an Audrey fat JAR into \$JAVA_HOME/jre/tools/."
 
     dependsOn("shadowJar")
 
-    val graalvmHome = System.getenv("GRAALVM")
+    val graalvmHome = System.getenv("JAVA_HOME")
     mkdir("$graalvmHome/jre/tools/audrey")
 
     doLast {
@@ -47,7 +56,26 @@ task("install") {
     }
 }
 
+task("uninstall") {
+    group = "Build"
+    description = "Removes the Audrey fat JAR from \$JAVA_HOME/jre/tools/."
+
+    val graalvmHome = System.getenv("JAVA_HOME")
+    doLast {
+        delete("$graalvmHome/jre/tools/audrey")
+    }
+}
+
+task("startServer", JavaExec::class) {
+    description = "Starts the Audrey language server"
+    classpath = java.sourceSets["main"].runtimeClasspath
+    main = "io.rathr.audrey.lsp.AudreyServer"
+}
+
 tasks.withType<Test> {
+    // Ensure that there's no Audrey fat JAR in the tools folder, because we want to load this build.
+    dependsOn("uninstall")
+
     outputs.upToDateWhen { false }
     jvmArgs("-XX:-UseJVMCIClassLoader")
 }

@@ -4,18 +4,6 @@
 [submodule "language_servers/solargraph"]
 	path = language_servers/solargraph
 	url = git@github.com:rathrio/solargraph.git
-[submodule "projects/javascript/node-express-realworld-example-app"]
-	path = projects/javascript/node-express-realworld-example-app
-	url = git@github.com:gothinkster/node-express-realworld-example-app.git
-[submodule "projects/javascript/simple-nodejs-weather-app"]
-	path = projects/javascript/simple-nodejs-weather-app
-	url = git@github.com:bmorelli25/simple-nodejs-weather-app.git
-[submodule "projects/javascript/node-tutorial-2-restful-app"]
-	path = projects/javascript/node-tutorial-2-restful-app
-	url = git@github.com:cwbuecheler/node-tutorial-2-restful-app.git
-[submodule "projects/ruby/optcarrot"]
-	path = projects/ruby/optcarrot
-	url = git@github.com:mame/optcarrot.git
 [submodule "language_servers/ale"]
 	path = language_servers/ale
 	url = git@github.com:rathrio/ale.git

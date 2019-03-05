@@ -16,12 +16,33 @@ public final class Sample {
     private Category category;
 
     private String source;
+    /**
+     * 1-based line number
+     */
     private int sourceLine;
     private int sourceIndex;
     private int sourceLength;
     private CharSequence sourceCharacters;
 
     public Sample() {
+    }
+
+    public Sample(final String identifier,
+                  final String value,
+                  final String metaObject,
+                  final String category,
+                  final String source,
+                  final int sourceLine,
+                  final String rootNodeId) {
+
+        this.identifier = identifier;
+        this.value = value;
+        this.metaObject = metaObject;
+        this.category = Category.valueOf(category.trim().toUpperCase());
+        this.rootNodeId = rootNodeId;
+
+        this.source = source;
+        this.sourceLine = sourceLine;
     }
 
     public Sample(final String identifier,

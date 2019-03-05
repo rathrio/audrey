@@ -11,6 +11,7 @@ import org.jrubyparser.ast.DefsNode;
 import org.jrubyparser.ast.IScope;
 import org.jrubyparser.ast.ModuleNode;
 import org.jrubyparser.ast.ReturnNode;
+import org.jrubyparser.ast.SClassNode;
 import org.jrubyparser.util.NoopVisitor;
 
 import java.util.HashSet;
@@ -23,6 +24,11 @@ public class RubySampleCollector extends NoopVisitor {
     private final int line;
     private final SampleFilter filter;
     private final Stack<String> nesting;
+
+    /**
+     * Whether we are dealing with singleton methods in a class << self definition.
+     */
+    private boolean inSingletonClassDef = false;
 
     /**
      * Whether we actually encountered a relevant node during visiting.
@@ -51,6 +57,16 @@ public class RubySampleCollector extends NoopVisitor {
         nesting.push(iVisited.getCPath().getLexicalName());
         final Object result = super.visitClassNode(iVisited);
         nesting.pop();
+
+        return result;
+    }
+
+    @Override
+    public Object visitSClassNode(final SClassNode iVisited) {
+        final boolean prev = inSingletonClassDef;
+        inSingletonClassDef = true;
+        final Object result = super.visitSClassNode(iVisited);
+        inSingletonClassDef = prev;
 
         return result;
     }
@@ -142,9 +158,10 @@ public class RubySampleCollector extends NoopVisitor {
 
     private void updateFilter(final DefnNode iVisited) {
         foundNode = true;
-        final String methodName = "#" + iVisited.getName();
+        final String delimiter = inSingletonClassDef ? "." : "#";
+        final String methodName = delimiter + iVisited.getName();
         final String rootNodeId = currentNesting() + methodName;
-        AudreyServer.LOG.info("Detected Ruby instance method def: " + rootNodeId);
+        AudreyServer.LOG.info("Detected Ruby method def: " + rootNodeId);
 
         filter.rootNodeId(rootNodeId)
             .startLine(iVisited.getPosition().getStartLine())

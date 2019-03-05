@@ -20,7 +20,7 @@ public class GraalJSSampleCollector extends NodeVisitor<LexicalContext> {
     private final SampleFilter filter;
 
     /**
-     * Is used to lookup the current function when looking and return statements. ReturnNodes don't have parent
+     * Is used to lookup the current function when looking at return statements. ReturnNodes don't have parent
      * references.
      */
     private FunctionNode currentFunctionNode;

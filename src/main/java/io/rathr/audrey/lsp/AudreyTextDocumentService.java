@@ -43,13 +43,13 @@ public class AudreyTextDocumentService implements TextDocumentService {
         final int column = position.getPosition().getCharacter();
 
         final String languageId = documents.get(uri).getLanguageId();
-        final Set<Sample> filterSamples = sampleService(languageId).filterSamples(samples, uri, line, column);
+        final Set<Sample> filteredSamples = sampleService(languageId).filterSamples(samples, uri, line, column);
 
-        if (filterSamples.isEmpty()) {
+        if (filteredSamples.isEmpty()) {
             return EMPTY_HOVER;
         }
 
-        final Hover hover = report.generate(filterSamples, languageId);
+        final Hover hover = report.generate(filteredSamples, languageId);
         return CompletableFuture.completedFuture(hover);
     }
 

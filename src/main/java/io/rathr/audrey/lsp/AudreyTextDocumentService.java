@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Delegates requests to the language specific sample services.
+ * Delegates requests to the language-specific sample services.
  *
  * @see RubySampleService
  * @see GraalJSSampleService

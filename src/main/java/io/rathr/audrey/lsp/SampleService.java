@@ -5,7 +5,8 @@ import io.rathr.audrey.storage.Sample;
 import java.util.Set;
 
 /**
- * A language specific document service.
+ * A language-specific document service that returns relevant {@link Sample}s for source locations, e.g. samples for
+ * a specific method given that method's location.
  */
 public interface SampleService {
     /**

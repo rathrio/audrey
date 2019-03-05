@@ -153,6 +153,60 @@ public class GraalJSSampleServiceTest {
         service.didClose(uri);
     }
 
+    @Test
+    public void testNestedFunctions() {
+        final Path path = path("nested_functions.js");
+        final String uri = path.toUri().toString();
+        final HashSet<Sample> samples = new HashSet<>();
+
+        final Sample outerReturn = new Sample(
+            "",
+            "{name: \"Boris\", age: 18}",
+            "object",
+            "RETURN",
+            path.toString(),
+            1,
+            "outer"
+        );
+        samples.add(outerReturn);
+
+        final Sample innerReturn = new Sample(
+            "",
+            "{name: \"Boris\", age: 18}",
+            "object",
+            "RETURN",
+            path.toString(),
+            2,
+            "inner"
+        );
+        samples.add(innerReturn);
+
+        final Sample innerArg = new Sample(
+            "person",
+            "{name: \"Boris\", age: 17}",
+            "object",
+            "ARGUMENT",
+            path.toString(),
+            2,
+            "inner"
+        );
+        samples.add(innerArg);
+
+        service.didOpen(uri);
+
+        final Set<Sample> outerResults = service.filterSamples(samples, uri, 0, 0);
+        assertTrue(outerResults.contains(outerReturn));
+        assertFalse(outerResults.contains(innerReturn));
+        assertFalse(outerResults.contains(innerArg));
+
+        final Set<Sample> innerResults = service.filterSamples(samples, uri, 1, 15);
+        assertTrue(innerResults.contains(innerArg));
+        assertTrue(innerResults.contains(innerReturn));
+        assertFalse(innerResults.contains(outerReturn));
+
+        service.didClose(uri);
+    }
+
     private Path path(String filename) {
         return Paths.get("src/test/test_sources", filename).toAbsolutePath();
     }

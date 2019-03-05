@@ -4,6 +4,7 @@ import io.rathr.audrey.storage.Sample;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.services.TextDocumentService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,7 +13,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Generates {@link Hover} contents given a set of {@link Sample}s, e.g. a list of parameters annotated with their
+ * types and example values.
+ * <p>
+ * Usage:
+ *
+ * <pre>
+ *     new HoverReport().generate(samples, "javascript") // => Hover contents with code treated as JS.
+ * </pre>
+ */
 class HoverReport {
+    /**
+     * @param samples
+     * @param languageId that can be used as an identifier for fenced code blocks in Markdown, e.g. "ruby" or
+     *                   "javascript".
+     * @return a {@link Hover} that
+     * {@link TextDocumentService#hover} can provide to a client.
+     */
     Hover generate(final Set<Sample> samples, final String languageId) {
         List<Either<String, MarkedString>> contents = new ArrayList<>();
 

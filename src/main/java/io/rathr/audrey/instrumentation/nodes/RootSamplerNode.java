@@ -11,6 +11,8 @@ import io.rathr.audrey.storage.Sample;
 import io.rathr.audrey.storage.SampleStorage;
 
 public final class RootSamplerNode extends SamplerNode {
+    private int i;
+
     public RootSamplerNode(final Audrey audrey,
                            final EventContext context,
                            final TruffleInstrument.Env env,
@@ -39,8 +41,13 @@ public final class RootSamplerNode extends SamplerNode {
             return;
         }
 
+        if (i % 100 != 0) {
+            return;
+        }
+
         audrey.setExtractingSample(true);
 
+        i++;
         final Object metaObject = getMetaObject(result);
         final Sample sample = new Sample(
             null,

@@ -177,6 +177,6 @@ training_set = read_classifications('train_condensed.csv')
 test_set = read_classifications('test.csv')
 
 b do
-  n = ENV['N'] || 999
+  n = ENV['N'] || 99
   classify(k: [1, 3, 5, 10, 15], training_set: training_set, samples: test_set[0..n.to_i], distance_metric: distance_metric)
 end

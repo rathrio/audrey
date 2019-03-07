@@ -21,6 +21,7 @@ import java.util.Iterator;
 public final class StatementSamplerNode extends SamplerNode {
     @CompilerDirectives.CompilationFinal
     FirstStatementState isFirstStatement = FirstStatementState.looking;
+    private int i;
 
     public StatementSamplerNode(final Audrey audrey,
                                 final EventContext context,
@@ -55,12 +56,19 @@ public final class StatementSamplerNode extends SamplerNode {
 
         audrey.setExtractingSample(true);
 
+        if (i % 100 != 0) {
+            exit();
+            return;
+        }
+
         isFirstStatement = FirstStatementState.isFirst;
         final Iterator<Scope> scopeIterator = env.findLocalScopes(instrumentedNode, frame).iterator();
         if (!scopeIterator.hasNext()) {
             exit();
             return;
         }
+
+        i++;
 
         final Scope scope = scopeIterator.next();
 

@@ -23,7 +23,7 @@ public class AudreyCLI {
     @Option(name = "Storage", help = "Use 'in_memory' or 'redis' as storage (default: redis).", category = OptionCategory.USER)
     static final OptionKey<String> STORAGE = new OptionKey<>("redis");
 
-    @Option(name = "SamplingEnabled", help = "Whether to sample instead of extracting everything (default: false)", category = OptionCategory.USER)
+    @Option(name = "EnableSampling", help = "Whether to sample instead of extracting everything (default: false)", category = OptionCategory.USER)
     static final OptionKey<Boolean> SAMPLING_ENABLED = new OptionKey<>(false);
 
     @Option(name = "SamplingStep", help = "How often to extract from a source section, e.g. 10 for every 10th time (default: 10)", category = OptionCategory.USER)

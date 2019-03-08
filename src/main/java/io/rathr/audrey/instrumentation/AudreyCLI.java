@@ -26,10 +26,10 @@ public class AudreyCLI {
     @Option(name = "EnableSampling", help = "Whether to sample instead of extracting everything (default: false)", category = OptionCategory.USER)
     static final OptionKey<Boolean> SAMPLING_ENABLED = new OptionKey<>(false);
 
-    @Option(name = "SamplingStep", help = "How often to extract from a source section, e.g. 10 for every 10th time (default: 10)", category = OptionCategory.USER)
+    @Option(name = "SamplingStep", help = "How often to extract from a source section, e.g. 10 for every 10th time. Only considered when EnableSampling was passed (default: 10)", category = OptionCategory.USER)
     static final OptionKey<Integer> SAMPLING_STEP = new OptionKey<>(10);
 
-    @Option(name = "MaxExtractions", help = "After what amount of extractions to stop instrumenting that source section (default: 50)", category = OptionCategory.USER)
+    @Option(name = "MaxExtractions", help = "After what amount of extractions to stop instrumenting a source section (default: 50)", category = OptionCategory.USER)
     static final OptionKey<Integer> MAX_EXTRACTIONS = new OptionKey<>(50);
 
     @Option(name = "RootPath", help = "Absolute project root path. (default: current directory)", category = OptionCategory.USER)

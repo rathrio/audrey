@@ -29,7 +29,7 @@ public final class StatementSamplerNode extends SamplerNode {
                                 final SampleStorage storage,
                                 final InstrumentationContext instrumentationContext,
                                 final boolean samplingEnabled,
-                                final int samplingRate,
+                                final int samplingStep,
                                 final int maxExtractions) {
 
         super(
@@ -40,7 +40,7 @@ public final class StatementSamplerNode extends SamplerNode {
             storage,
             instrumentationContext,
             samplingEnabled,
-            samplingRate,
+            samplingStep,
             maxExtractions
         );
     }
@@ -75,7 +75,7 @@ public final class StatementSamplerNode extends SamplerNode {
         audrey.setExtractingSample(true);
         isFirstStatement = FirstStatementState.isFirst;
 
-        if (samplingEnabled && entered % samplingRate != 0) {
+        if (samplingEnabled && entered % samplingStep != 0) {
             exit();
             return;
         }

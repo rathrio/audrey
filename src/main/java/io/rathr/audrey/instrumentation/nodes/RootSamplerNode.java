@@ -18,7 +18,7 @@ public final class RootSamplerNode extends SamplerNode {
                            final SampleStorage storage,
                            final InstrumentationContext instrumentationContext,
                            final boolean samplingEnabled,
-                           final Integer samplingRate,
+                           final Integer samplingStep,
                            final Integer maxExtractions) {
 
         super(
@@ -29,7 +29,7 @@ public final class RootSamplerNode extends SamplerNode {
             storage,
             instrumentationContext,
             samplingEnabled,
-            samplingRate,
+            samplingStep,
             maxExtractions
         );
     }
@@ -58,7 +58,7 @@ public final class RootSamplerNode extends SamplerNode {
             return;
         }
 
-        if (samplingEnabled && entered % samplingRate != 0) {
+        if (samplingEnabled && entered % samplingStep != 0) {
             return;
         }
 

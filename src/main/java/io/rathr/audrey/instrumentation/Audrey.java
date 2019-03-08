@@ -33,7 +33,7 @@ public class Audrey implements Closeable {
     private SourceSectionFilter rootSourceSectionFilter;
 
     private boolean samplingEnabled;
-    private Integer samplingRate;
+    private Integer samplingStep;
     private Integer maxExtractions;
 
     /**
@@ -110,7 +110,7 @@ public class Audrey implements Closeable {
                 storage,
                 instrumentationContext,
                 samplingEnabled,
-                samplingRate,
+                samplingStep,
                 maxExtractions
             )
         );
@@ -125,7 +125,7 @@ public class Audrey implements Closeable {
                 storage,
                 instrumentationContext,
                 samplingEnabled,
-                samplingRate,
+                samplingStep,
                 maxExtractions
             )
         );
@@ -141,7 +141,7 @@ public class Audrey implements Closeable {
                            final String storageType,
                            final String pathFilter,
                            final boolean samplingEnabled,
-                           final Integer samplingRate,
+                           final Integer samplingStep,
                            final Integer maxExtractions) {
 
         this.project = new Project(projectId, rootPath);
@@ -163,7 +163,7 @@ public class Audrey implements Closeable {
 
         this.instrumentationContext = new InstrumentationContext();
         this.samplingEnabled = samplingEnabled;
-        this.samplingRate = samplingRate;
+        this.samplingStep = samplingStep;
         this.maxExtractions = maxExtractions;
     }
 }

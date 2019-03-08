@@ -36,7 +36,7 @@ public final class AudreyInstrument extends TruffleInstrument {
             final String storageType = env.getOptions().get(AudreyCLI.STORAGE).toLowerCase();
             final String pathFilter = env.getOptions().get(AudreyCLI.FILTER_PATH);
             final boolean samplingEnabled = env.getOptions().get(AudreyCLI.SAMPLING_ENABLED);
-            final Integer samplingRate = env.getOptions().get(AudreyCLI.SAMPLING_RATE);
+            final Integer samplingStep = env.getOptions().get(AudreyCLI.SAMPLING_STEP);
             final Integer maxExtractions = env.getOptions().get(AudreyCLI.MAX_EXTRACTIONS);
 
             audrey.initialize(
@@ -45,7 +45,7 @@ public final class AudreyInstrument extends TruffleInstrument {
                 storageType,
                 pathFilter,
                 samplingEnabled,
-                samplingRate,
+                samplingStep,
                 maxExtractions
             );
 

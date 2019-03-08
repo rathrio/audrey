@@ -25,7 +25,7 @@ public abstract class SamplerNode extends ExecutionEventNode {
      * Sample instead of extracting everything.
      */
     final boolean samplingEnabled;
-    final int samplingRate;
+    final int samplingStep;
     final int maxExtractions;
 
     protected static final String[] IDENTIFIER_BLACKLIST = {"(self)", "rubytruffle_temp", "this"};
@@ -60,7 +60,7 @@ public abstract class SamplerNode extends ExecutionEventNode {
                        final SampleStorage storage,
                        final InstrumentationContext instrumentationContext,
                        final boolean samplingEnabled,
-                       final int samplingRate,
+                       final int samplingStep,
                        final int maxExtractions) {
 
         this.audrey = audrey;
@@ -76,7 +76,7 @@ public abstract class SamplerNode extends ExecutionEventNode {
         this.rootNodeId = extractRootName(this.instrumentedNode);
         this.languageInfo = getLanguageInfo(languageId);
         this.samplingEnabled = samplingEnabled;
-        this.samplingRate = samplingRate;
+        this.samplingStep = samplingStep;
         this.maxExtractions = maxExtractions;
     }
 

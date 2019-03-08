@@ -21,7 +21,6 @@ import java.util.Iterator;
 public final class StatementSamplerNode extends SamplerNode {
     @CompilerDirectives.CompilationFinal
     FirstStatementState isFirstStatement = FirstStatementState.looking;
-    private int i;
 
     public StatementSamplerNode(final Audrey audrey,
                                 final EventContext context,
@@ -36,6 +35,11 @@ public final class StatementSamplerNode extends SamplerNode {
 
     @Override
     protected void onEnter(final VirtualFrame frame) {
+        if (extractions > MAX_EXTRACTIONS) {
+            // TODO: Find a way to completely remove this sampler node.
+            return;
+        }
+
         if (isFirstStatement == FirstStatementState.looking) {
             if (instrumentationContext.isLookingForFirstStatement()) {
                 isFirstStatement = FirstStatementState.isFirst;
@@ -45,6 +49,7 @@ public final class StatementSamplerNode extends SamplerNode {
         }
         if (isFirstStatement == FirstStatementState.isFirst) {
             handleOnEnter(frame.materialize());
+            extractions++;
         }
     }
 
@@ -55,20 +60,20 @@ public final class StatementSamplerNode extends SamplerNode {
         }
 
         audrey.setExtractingSample(true);
+        isFirstStatement = FirstStatementState.isFirst;
 
-        if (i % 100 != 0) {
+        if (SAMPLING_ENABLED && entered % SAMPLING_RATE != 0) {
             exit();
             return;
         }
 
-        isFirstStatement = FirstStatementState.isFirst;
+        entered++;
+
         final Iterator<Scope> scopeIterator = env.findLocalScopes(instrumentedNode, frame).iterator();
         if (!scopeIterator.hasNext()) {
             exit();
             return;
         }
-
-        i++;
 
         final Scope scope = scopeIterator.next();
 

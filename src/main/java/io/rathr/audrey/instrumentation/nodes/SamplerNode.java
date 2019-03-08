@@ -21,6 +21,13 @@ public abstract class SamplerNode extends ExecutionEventNode {
     private static final Node READ_NODE = Message.READ.createNode();
     private static final Node KEYS_NODE = Message.KEYS.createNode();
 
+    /**
+     * Sample instead of extracting everything.
+     */
+    static boolean SAMPLING_ENABLED = false;
+    static int SAMPLING_RATE = 10;
+    static int MAX_EXTRACTIONS = 100;
+
     protected static final String[] IDENTIFIER_BLACKLIST = {"(self)", "rubytruffle_temp", "this"};
 
     protected final Audrey audrey;
@@ -35,6 +42,16 @@ public abstract class SamplerNode extends ExecutionEventNode {
     protected final String languageId;
     protected final String rootNodeId;
     protected final LanguageInfo languageInfo;
+
+    /**
+     * The amount of times we decided to start the extraction process for this sourceSection.
+     */
+    protected int entered;
+
+    /**
+     * The amount of times we actually extracted samples for this sourceSection.
+     */
+    protected int extractions;
 
     public SamplerNode(final Audrey audrey,
                        final EventContext context,

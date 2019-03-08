@@ -17,7 +17,7 @@ class Person
 end
 
 t = Benchmark.realtime do
-  10_000.times do
+  100_000.times do
     p1 = Person.new('Haidar')
     p2 = Person.new('Boris')
 

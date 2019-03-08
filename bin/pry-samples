@@ -1,10 +1,5 @@
 #!/usr/bin/env ruby
 
-if ARGV.empty?
-  puts "Usage: pry-samples <project ID>"
-  exit
-end
-
 require 'pry'
 require 'redis'
 require 'oj'
@@ -27,7 +22,7 @@ class Sample
   end
 end
 
-project_id = ARGV.first
+project_id = ARGV.first || 'default'
 samples_key = "audrey:#{project_id}:samples"
 
 redis = Redis.new(driver: :hiredis)

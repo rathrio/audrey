@@ -83,7 +83,7 @@ public final class StatementSamplerNode extends SamplerNode {
 
                     if (Arrays.stream(IDENTIFIER_BLACKLIST).anyMatch(identifier::contains)) {
                         // Skip iteration because we don't care about these values.
-                        return;
+                        continue;
                     }
 
                     final Object valueObject = read(variables, identifier);

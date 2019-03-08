@@ -16,9 +16,22 @@ public final class RootSamplerNode extends SamplerNode {
                            final TruffleInstrument.Env env,
                            final Project project,
                            final SampleStorage storage,
-                           final InstrumentationContext instrumentationContext) {
+                           final InstrumentationContext instrumentationContext,
+                           final boolean samplingEnabled,
+                           final Integer samplingRate,
+                           final Integer maxExtractions) {
 
-        super(audrey, context, env, project, storage, instrumentationContext);
+        super(
+            audrey,
+            context,
+            env,
+            project,
+            storage,
+            instrumentationContext,
+            samplingEnabled,
+            samplingRate,
+            maxExtractions
+        );
     }
 
     @Override
@@ -30,7 +43,7 @@ public final class RootSamplerNode extends SamplerNode {
 
     @Override
     protected void onReturnValue(final VirtualFrame frame, final Object result) {
-        if (extractions > MAX_EXTRACTIONS) {
+        if (extractions > maxExtractions) {
             // TODO: Find a way to completely remove this sampler node.
             return;
         }
@@ -45,7 +58,7 @@ public final class RootSamplerNode extends SamplerNode {
             return;
         }
 
-        if (SAMPLING_ENABLED && entered % SAMPLING_RATE != 0) {
+        if (samplingEnabled && entered % samplingRate != 0) {
             return;
         }
 

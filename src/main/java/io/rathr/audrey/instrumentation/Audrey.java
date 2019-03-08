@@ -32,6 +32,10 @@ public class Audrey implements Closeable {
 
     private SourceSectionFilter rootSourceSectionFilter;
 
+    private boolean samplingEnabled;
+    private Integer samplingRate;
+    private Integer maxExtractions;
+
     /**
      * Used to prevent infinite recursions in case a language does an allocation during meta
      * object lookup or toString call.
@@ -104,7 +108,10 @@ public class Audrey implements Closeable {
                 env,
                 project,
                 storage,
-                instrumentationContext
+                instrumentationContext,
+                samplingEnabled,
+                samplingRate,
+                maxExtractions
             )
         );
 
@@ -116,7 +123,10 @@ public class Audrey implements Closeable {
                 env,
                 project,
                 storage,
-                instrumentationContext
+                instrumentationContext,
+                samplingEnabled,
+                samplingRate,
+                maxExtractions
             )
         );
     }
@@ -129,8 +139,10 @@ public class Audrey implements Closeable {
     public void initialize(final String projectId,
                            final String rootPath,
                            final String storageType,
-                           final String samplingStrategy,
-                           final String pathFilter) {
+                           final String pathFilter,
+                           final boolean samplingEnabled,
+                           final Integer samplingRate,
+                           final Integer maxExtractions) {
 
         this.project = new Project(projectId, rootPath);
         this.pathFilter = pathFilter;
@@ -146,22 +158,12 @@ public class Audrey implements Closeable {
                 throw new IllegalArgumentException("Unknown storage type: " + storageType);
         }
 
-        switch (samplingStrategy) {
-            case "all":
-                break;
-            case "none":
-                break;
-            case "random":
-                break;
-            case "temporal":
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown sampling_strategies strategy: " + samplingStrategy);
-        }
-
         this.statementSourceSectionFilter = buildSourceSectionFilter(STATEMENT_TAG);
         this.rootSourceSectionFilter = buildSourceSectionFilter(ROOT_TAG);
 
         this.instrumentationContext = new InstrumentationContext();
+        this.samplingEnabled = samplingEnabled;
+        this.samplingRate = samplingRate;
+        this.maxExtractions = maxExtractions;
     }
 }

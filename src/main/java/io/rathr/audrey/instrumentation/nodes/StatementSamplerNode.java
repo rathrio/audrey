@@ -27,15 +27,28 @@ public final class StatementSamplerNode extends SamplerNode {
                                 final TruffleInstrument.Env env,
                                 final Project project,
                                 final SampleStorage storage,
-                                final InstrumentationContext instrumentationContext) {
+                                final InstrumentationContext instrumentationContext,
+                                final boolean samplingEnabled,
+                                final int samplingRate,
+                                final int maxExtractions) {
 
-        super(audrey, context, env, project, storage, instrumentationContext);
+        super(
+            audrey,
+            context,
+            env,
+            project,
+            storage,
+            instrumentationContext,
+            samplingEnabled,
+            samplingRate,
+            maxExtractions
+        );
     }
 
 
     @Override
     protected void onEnter(final VirtualFrame frame) {
-        if (extractions > MAX_EXTRACTIONS) {
+        if (extractions > maxExtractions) {
             // TODO: Find a way to completely remove this sampler node.
             return;
         }
@@ -62,7 +75,7 @@ public final class StatementSamplerNode extends SamplerNode {
         audrey.setExtractingSample(true);
         isFirstStatement = FirstStatementState.isFirst;
 
-        if (SAMPLING_ENABLED && entered % SAMPLING_RATE != 0) {
+        if (samplingEnabled && entered % samplingRate != 0) {
             exit();
             return;
         }

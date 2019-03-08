@@ -24,9 +24,9 @@ public abstract class SamplerNode extends ExecutionEventNode {
     /**
      * Sample instead of extracting everything.
      */
-    static boolean SAMPLING_ENABLED = false;
-    static int SAMPLING_RATE = 10;
-    static int MAX_EXTRACTIONS = 100;
+    final boolean samplingEnabled;
+    final int samplingRate;
+    final int maxExtractions;
 
     protected static final String[] IDENTIFIER_BLACKLIST = {"(self)", "rubytruffle_temp", "this"};
 
@@ -58,7 +58,10 @@ public abstract class SamplerNode extends ExecutionEventNode {
                        final TruffleInstrument.Env env,
                        final Project project,
                        final SampleStorage storage,
-                       final InstrumentationContext instrumentationContext) {
+                       final InstrumentationContext instrumentationContext,
+                       final boolean samplingEnabled,
+                       final int samplingRate,
+                       final int maxExtractions) {
 
         this.audrey = audrey;
         this.context = context;
@@ -72,6 +75,9 @@ public abstract class SamplerNode extends ExecutionEventNode {
         this.languageId = sourceSection.getSource().getLanguage();
         this.rootNodeId = extractRootName(this.instrumentedNode);
         this.languageInfo = getLanguageInfo(languageId);
+        this.samplingEnabled = samplingEnabled;
+        this.samplingRate = samplingRate;
+        this.maxExtractions = maxExtractions;
     }
 
     protected String extractRootName(final Node instrumentedNode) {

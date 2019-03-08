@@ -396,6 +396,46 @@ public class AudreyTest {
         assertEquals("[1, 3, 5]", returnSample.get().getValue());
     }
 
+    @Test
+    public void testKeywordArgsInRuby() {
+        evalFile("keyword_args.rb", "ruby");
+
+        final Optional<Sample> arg1 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("Object#foo")
+            .identifier("bar")
+            .findFirst();
+
+        assertTrue(arg1.isPresent());
+        assertEquals("String", arg1.get().getMetaObject());
+        assertEquals("\"hi\"", arg1.get().getValue());
+
+        final Optional<Sample> arg2 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("Object#foo")
+            .identifier("baz")
+            .findFirst();
+
+        assertTrue(arg2.isPresent());
+        assertEquals("String", arg2.get().getMetaObject());
+        assertEquals("\"there\"", arg2.get().getValue());
+    }
+
+    @Test
+    public void testDefaultArgsInRuby() {
+        evalFile("default_args.rb", "ruby");
+
+        final Optional<Sample> arg = storage.newSearch()
+            .forArguments()
+            .rootNodeId("Object#foo")
+            .identifier("bar")
+            .findFirst();
+
+        assertTrue(arg.isPresent());
+        assertEquals("String", arg.get().getMetaObject());
+        assertEquals("\"hi\"", arg.get().getValue());
+    }
+
     private Source makeSourceFromFile(String filename, String languageId) {
         return makeSource(readSourceString(filename), languageId);
     }

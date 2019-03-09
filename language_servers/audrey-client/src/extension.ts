@@ -2,8 +2,14 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient';
+import * as child_process from 'child_process';
 
 let client: LanguageClient;
+
+
+async function makeAudreyProcess(): Promise<child_process.ChildProcess> {
+	return child_process.spawn("audrey-ls");
+};
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -13,24 +19,12 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Audrey client initialized.');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	// let disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
-	// 	// The code you place here will be executed every time your command is executed
-
-	// 	// Display a message box to the user
-	// 	vscode.window.showInformationMessage('Hello World!');
-	// });
-
-	// context.subscriptions.push(disposable);
-
-	let serverOptions: ServerOptions = {
-		command: 'audrey-ls',
-	};
-
 	let clientOptions: LanguageClientOptions = {
 		documentSelector: [{ scheme: 'file', language: 'javascript' }, { scheme: 'file', language: 'ruby' }],
+	};
+
+	const serverOptions: ServerOptions = async () => {
+		return makeAudreyProcess();
 	};
 
 	client = new LanguageClient(

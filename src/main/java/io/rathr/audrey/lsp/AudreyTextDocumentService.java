@@ -10,9 +10,12 @@ import org.eclipse.lsp4j.DidSaveTextDocumentParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,7 +30,11 @@ import java.util.concurrent.CompletableFuture;
  */
 public class AudreyTextDocumentService implements TextDocumentService {
     private static final CompletableFuture<Hover> EMPTY_HOVER =
-        CompletableFuture.completedFuture(new Hover(new ArrayList<>()));
+        CompletableFuture.completedFuture(
+            new Hover(
+                new ArrayList<>(Collections.singletonList(Either.forLeft("No run-time examples available")))
+            )
+        );
 
     private final HoverReport report = new HoverReport();
     private Set<Sample> samples = new HashSet<>();

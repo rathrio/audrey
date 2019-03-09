@@ -41,6 +41,7 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
         );
     }
 
+    public static FileHandler FILE_HANDLER;
     public static final Logger LOG = Logger.getLogger(AudreyServer.class.getName());
 
     private final static int DEFAULT_PORT = 8123;
@@ -54,14 +55,14 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
             InputStream in;
             OutputStream out;
 
-            final FileHandler fileHandler = new FileHandler(
+            FILE_HANDLER = new FileHandler(
                 System.getenv("HOME") + "/audrey.log",
                 true
             );
 
             final SimpleFormatter formatter = new SimpleFormatter();
-            fileHandler.setFormatter(formatter);
-            LOG.addHandler(fileHandler);
+            FILE_HANDLER.setFormatter(formatter);
+            LOG.addHandler(FILE_HANDLER);
 
             if (args.length > 0 && args[0].equals("--stdio")) {
                 LOG.info("Listening on STDIN");
@@ -125,6 +126,7 @@ public class AudreyServer implements LanguageServer, LanguageClientAware {
     @Override
     public void exit() {
         LOG.info("Exit");
+        FILE_HANDLER.close();
     }
 
     @Override

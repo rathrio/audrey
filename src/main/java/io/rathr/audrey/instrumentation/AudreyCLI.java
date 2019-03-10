@@ -34,4 +34,7 @@ public class AudreyCLI {
 
     @Option(name = "RootPath", help = "Absolute project root path. (default: current directory)", category = OptionCategory.USER)
     static final OptionKey<String> ROOT_PATH = new OptionKey<>(currentDir());
+
+    @Option(name = "DumpFile", help = "Where to dump a JSON Array of the extracted samples.", category = OptionCategory.USER)
+    static final OptionKey<String> DUMP_FILE = new OptionKey<>("");
 }

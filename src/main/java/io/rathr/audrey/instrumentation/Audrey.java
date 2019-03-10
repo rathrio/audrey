@@ -26,6 +26,7 @@ public class Audrey implements Closeable {
     private SampleStorage storage;
     private String pathFilter;
     private InstrumentationContext instrumentationContext;
+    private String dumpFilePath;
 
     private EventBinding<?> activeRootBinding;
     private EventBinding<?> activeStatementBinding;
@@ -133,7 +134,7 @@ public class Audrey implements Closeable {
 
     @Override
     public void close() {
-        storage.onDispose(env);
+        storage.onDispose(dumpFilePath);
     }
 
     public void initialize(final String projectId,
@@ -142,10 +143,12 @@ public class Audrey implements Closeable {
                            final String pathFilter,
                            final boolean samplingEnabled,
                            final Integer samplingStep,
-                           final Integer maxExtractions) {
+                           final Integer maxExtractions,
+                           final String dumpFilePath) {
 
         this.project = new Project(projectId, rootPath);
         this.pathFilter = pathFilter;
+        this.dumpFilePath = dumpFilePath;
 
         switch (storageType) {
             case "in_memory":

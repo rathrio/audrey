@@ -38,6 +38,7 @@ public final class AudreyInstrument extends TruffleInstrument {
             final boolean samplingEnabled = env.getOptions().get(AudreyCLI.SAMPLING_ENABLED);
             final Integer samplingStep = env.getOptions().get(AudreyCLI.SAMPLING_STEP);
             final Integer maxExtractions = env.getOptions().get(AudreyCLI.MAX_EXTRACTIONS);
+            final String dumpFilePath = env.getOptions().get(AudreyCLI.DUMP_FILE);
 
             audrey.initialize(
                 projectId,
@@ -46,7 +47,8 @@ public final class AudreyInstrument extends TruffleInstrument {
                 pathFilter,
                 samplingEnabled,
                 samplingStep,
-                maxExtractions
+                maxExtractions,
+                dumpFilePath
             );
 
             audrey.enable();

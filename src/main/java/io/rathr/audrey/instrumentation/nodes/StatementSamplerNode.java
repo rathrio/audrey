@@ -48,11 +48,6 @@ public final class StatementSamplerNode extends SamplerNode {
 
     @Override
     protected void onEnter(final VirtualFrame frame) {
-        if (extractions > maxExtractions) {
-            // TODO: Find a way to completely remove this sampler node.
-            return;
-        }
-
         if (isFirstStatement == FirstStatementState.looking) {
             if (instrumentationContext.isLookingForFirstStatement()) {
                 isFirstStatement = FirstStatementState.isFirst;
@@ -61,6 +56,10 @@ public final class StatementSamplerNode extends SamplerNode {
             }
         }
         if (isFirstStatement == FirstStatementState.isFirst) {
+            if (extractions > maxExtractions) {
+                // TODO: Find a way to completely remove this sampler node.
+                return;
+            }
             handleOnEnter(frame.materialize());
             extractions++;
         }

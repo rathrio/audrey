@@ -117,6 +117,7 @@ public final class StatementSamplerNode extends SamplerNode {
 
                     final Sample sample = new Sample(
                         identifier,
+                        index,
                         getString(valueObject),
                         getString(metaObject),
                         "ARGUMENT",

@@ -66,6 +66,20 @@ public class AudreyTest {
     }
 
     @Test
+    public void testSimpleEvalInRuby() {
+        evalFile("simple.rb", "ruby");
+
+        final Optional<Sample> arg = storage.newSearch()
+            .forArguments()
+            .rootNodeId("Object#foo")
+            .identifier("a")
+            .findFirst();
+
+        assertTrue(arg.isPresent());
+        assertEquals("\"bar\"", arg.get().getValue());
+    }
+
+    @Test
     public void testUnambiguousReturnsInJS() {
         evalFile("simple.js", "js");
 
@@ -94,20 +108,6 @@ public class AudreyTest {
     }
 
     @Test
-    public void testSimpleEvalInRuby() {
-        evalFile("simple.rb", "ruby");
-
-        final Optional<Sample> arg = storage.newSearch()
-            .forArguments()
-            .rootNodeId("Object#foo")
-            .identifier("a")
-            .findFirst();
-
-        assertTrue(arg.isPresent());
-        assertEquals("\"bar\"", arg.get().getValue());
-    }
-
-    @Test
     public void testCollectsArgumentsAndReturnValuesInJS() {
         evalFile("add.js", "js");
 
@@ -119,6 +119,8 @@ public class AudreyTest {
 
         assertTrue(arg1.isPresent());
         assertEquals("1", arg1.get().getValue());
+        assertEquals("number", arg1.get().getMetaObject());
+        assertEquals(0, arg1.get().getIdentifierIndex());
 
         final Optional<Sample> arg2 = storage.newSearch()
             .forArguments()
@@ -128,6 +130,8 @@ public class AudreyTest {
 
         assertTrue(arg2.isPresent());
         assertEquals("2", arg2.get().getValue());
+        assertEquals("number", arg2.get().getMetaObject());
+        assertEquals(1, arg2.get().getIdentifierIndex());
 
         final Optional<Sample> returnSample = storage.newSearch()
             .forReturns()
@@ -150,6 +154,8 @@ public class AudreyTest {
 
         assertTrue(arg1.isPresent());
         assertEquals("1", arg1.get().getValue());
+        assertEquals("Integer", arg1.get().getMetaObject());
+        assertEquals(0, arg1.get().getIdentifierIndex());
 
         final Optional<Sample> arg2 = storage.newSearch()
             .forArguments()
@@ -159,6 +165,8 @@ public class AudreyTest {
 
         assertTrue(arg2.isPresent());
         assertEquals("2", arg2.get().getValue());
+        assertEquals("Integer", arg2.get().getMetaObject());
+        assertEquals(1, arg2.get().getIdentifierIndex());
 
         final Optional<Sample> returnSample = storage.newSearch()
             .forReturns()

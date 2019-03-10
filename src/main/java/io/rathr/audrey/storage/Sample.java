@@ -10,6 +10,7 @@ public final class Sample {
     }
 
     private String identifier;
+    private int identifierIndex;
     private String metaObject;
     private String value;
     private String rootNodeId;
@@ -25,6 +26,28 @@ public final class Sample {
     private CharSequence sourceCharacters;
 
     public Sample() {
+    }
+
+    public Sample(final String identifier,
+                  final int identifierIndex,
+                  final String value,
+                  final String metaObject,
+                  final String category,
+                  final SourceSection sourceSection,
+                  final String rootNodeId) {
+
+        this.identifier = identifier;
+        this.identifierIndex = identifierIndex;
+        this.value = value;
+        this.metaObject = metaObject;
+        this.category = Category.valueOf(category.trim().toUpperCase());
+        this.rootNodeId = rootNodeId;
+
+        this.source = sourceSection.getSource().getName();
+        this.sourceLine = sourceSection.getStartLine();
+        this.sourceIndex = sourceSection.getCharIndex();
+        this.sourceLength = sourceSection.getCharLength();
+        this.sourceCharacters = sourceSection.getCharacters();
     }
 
     public Sample(final String identifier,
@@ -45,26 +68,6 @@ public final class Sample {
         this.sourceLine = sourceLine;
     }
 
-    public Sample(final String identifier,
-                  final String value,
-                  final String metaObject,
-                  final String category,
-                  final SourceSection sourceSection,
-                  final String rootNodeId) {
-
-        this.identifier = identifier;
-        this.value = value;
-        this.metaObject = metaObject;
-        this.category = Category.valueOf(category.trim().toUpperCase());
-        this.rootNodeId = rootNodeId;
-
-        this.source = sourceSection.getSource().getName();
-        this.sourceLine = sourceSection.getStartLine();
-        this.sourceIndex = sourceSection.getCharIndex();
-        this.sourceLength = sourceSection.getCharLength();
-        this.sourceCharacters = sourceSection.getCharacters();
-    }
-
     public boolean isArgument() {
         return category.equals(Category.ARGUMENT);
     }
@@ -79,6 +82,14 @@ public final class Sample {
 
     public String getIdentifier() {
         return identifier;
+    }
+
+    public int getIdentifierIndex() {
+        return identifierIndex;
+    }
+
+    public void setIdentifierIndex(final int identifierIndex) {
+        this.identifierIndex = identifierIndex;
     }
 
     public String getValue() {

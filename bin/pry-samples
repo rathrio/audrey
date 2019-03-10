@@ -6,10 +6,11 @@ require 'oj'
 
 class Sample
   attr_reader :identifier, :meta_object, :value, :root_node_id, :category,
-    :source_line, :source_index, :source_length, :source
+    :source_line, :source_index, :source_length, :source, :identifier_index
 
   def initialize(hash)
     @identifier = hash['identifier']
+    @identifier_index = hash['identifierIndex']
     @meta_object = hash.fetch('metaObject')
     @value = hash.fetch('value')
     @root_node_id = hash.fetch('rootNodeId')

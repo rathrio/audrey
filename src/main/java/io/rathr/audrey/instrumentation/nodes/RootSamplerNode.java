@@ -68,6 +68,7 @@ public final class RootSamplerNode extends SamplerNode {
         final Object metaObject = getMetaObject(result);
         final Sample sample = new Sample(
             null,
+            0,
             getString(result),
             getString(metaObject),
             "RETURN",

@@ -11,6 +11,7 @@ public class SampleAdapter extends TypeAdapter<Sample> {
     public void write(final JsonWriter out, final Sample sample) throws IOException {
         out.beginObject();
         out.name("identifier").value(sample.getIdentifier());
+        out.name("identifierIndex").value(sample.getIdentifierIndex());
         out.name("metaObject").value(sample.getMetaObject());
         out.name("value").value(sample.getValue());
         out.name("rootNodeId").value(sample.getRootNodeId());
@@ -59,6 +60,9 @@ public class SampleAdapter extends TypeAdapter<Sample> {
                     break;
                 case "identifier":
                     sample.setIdentifier(in.nextString());
+                    break;
+                case "identifierIndex":
+                    sample.setIdentifierIndex(in.nextInt());
                     break;
             }
         }

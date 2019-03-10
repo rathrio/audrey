@@ -36,6 +36,11 @@ public final class RootSamplerNode extends SamplerNode {
 
     @Override
     protected void onEnter(final VirtualFrame frame) {
+        if (extractions > maxExtractions) {
+            // TODO: Find a way to completely remove this sampler node.
+            return;
+        }
+
         if (CompilerDirectives.inInterpreter()) {
             instrumentationContext.setLookingForFirstStatement(true);
         }

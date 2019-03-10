@@ -1,5 +1,6 @@
 package io.rathr.audrey.instrumentation.nodes;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.instrumentation.EventContext;
 import com.oracle.truffle.api.instrumentation.ExecutionEventNode;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
@@ -51,6 +52,7 @@ public abstract class SamplerNode extends ExecutionEventNode {
     /**
      * The amount of times we actually extracted samples for this sourceSection.
      */
+    @CompilerDirectives.CompilationFinal
     protected int extractions;
 
     public SamplerNode(final Audrey audrey,

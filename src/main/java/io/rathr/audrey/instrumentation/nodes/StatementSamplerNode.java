@@ -93,6 +93,7 @@ public final class StatementSamplerNode extends SamplerNode {
         // been defined at this point of execution. I guess they've been extracted in a semantic analysis
         // step beforehand.
         final TruffleObject variables = (TruffleObject) scope.getVariables();
+        final int frameId = frame.hashCode();
 
         try {
             final TruffleObject keys = getKeys((TruffleObject) scope.getVariables());
@@ -121,7 +122,8 @@ public final class StatementSamplerNode extends SamplerNode {
                         getString(metaObject),
                         "ARGUMENT",
                         sourceSection,
-                        rootNodeId
+                        rootNodeId,
+                        frameId
                     );
 
                     storage.add(sample);

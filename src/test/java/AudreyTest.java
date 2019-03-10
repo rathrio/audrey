@@ -444,6 +444,88 @@ public class AudreyTest {
         assertEquals("\"hi\"", arg.get().getValue());
     }
 
+    @Test
+    public void testArgReturnMappingViaFrameIdInRuby() {
+        evalFile("frame_test.rb", "ruby");
+
+        final Optional<Sample> arg1 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("Object#double")
+            .identifier("x")
+            .value("2")
+            .findFirst();
+
+        assertTrue(arg1.isPresent());
+
+        final int arg1FrameId = arg1.get().getFrameId();
+        final Optional<Sample> return1 = storage.newSearch()
+            .forReturns()
+            .frameId(arg1FrameId)
+            .findFirst();
+
+        assertTrue(return1.isPresent());
+        assertEquals("4", return1.get().getValue());
+
+        final Optional<Sample> arg2 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("Object#double")
+            .identifier("x")
+            .value("3")
+            .findFirst();
+
+        assertTrue(arg2.isPresent());
+
+        final int arg2FrameId = arg2.get().getFrameId();
+        final Optional<Sample> return2 = storage.newSearch()
+            .forReturns()
+            .frameId(arg2FrameId)
+            .findFirst();
+
+        assertTrue(return2.isPresent());
+        assertEquals("6", return2.get().getValue());
+    }
+
+    @Test
+    public void testArgReturnMappingViaFrameIdInJS() {
+        evalFile("frame_test.js", "js");
+
+        final Optional<Sample> arg1 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("double")
+            .identifier("x")
+            .value("2")
+            .findFirst();
+
+        assertTrue(arg1.isPresent());
+
+        final int arg1FrameId = arg1.get().getFrameId();
+        final Optional<Sample> return1 = storage.newSearch()
+            .forReturns()
+            .frameId(arg1FrameId)
+            .findFirst();
+
+        assertTrue(return1.isPresent());
+        assertEquals("4", return1.get().getValue());
+
+        final Optional<Sample> arg2 = storage.newSearch()
+            .forArguments()
+            .rootNodeId("double")
+            .identifier("x")
+            .value("3")
+            .findFirst();
+
+        assertTrue(arg2.isPresent());
+
+        final int arg2FrameId = arg2.get().getFrameId();
+        final Optional<Sample> return2 = storage.newSearch()
+            .forReturns()
+            .frameId(arg2FrameId)
+            .findFirst();
+
+        assertTrue(return2.isPresent());
+        assertEquals("6", return2.get().getValue());
+    }
+
     private Source makeSourceFromFile(String filename, String languageId) {
         return makeSource(readSourceString(filename), languageId);
     }

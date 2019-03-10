@@ -25,6 +25,11 @@ public final class Sample {
     private int sourceLength;
     private CharSequence sourceCharacters;
 
+    /**
+     * Hash code of the frame where this sample was extracted from.
+     */
+    private int frameId;
+
     public Sample() {
     }
 
@@ -34,7 +39,8 @@ public final class Sample {
                   final String metaObject,
                   final String category,
                   final SourceSection sourceSection,
-                  final String rootNodeId) {
+                  final String rootNodeId,
+                  final int frameId) {
 
         this.identifier = identifier;
         this.identifierIndex = identifierIndex;
@@ -48,6 +54,8 @@ public final class Sample {
         this.sourceIndex = sourceSection.getCharIndex();
         this.sourceLength = sourceSection.getCharLength();
         this.sourceCharacters = sourceSection.getCharacters();
+
+        this.frameId = frameId;
     }
 
     public Sample(final String identifier,
@@ -90,6 +98,14 @@ public final class Sample {
 
     public void setIdentifierIndex(final int identifierIndex) {
         this.identifierIndex = identifierIndex;
+    }
+
+    public int getFrameId() {
+        return frameId;
+    }
+
+    public void setFrameId(final int frameId) {
+        this.frameId = frameId;
     }
 
     public String getValue() {

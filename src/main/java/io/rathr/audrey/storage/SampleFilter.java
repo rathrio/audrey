@@ -24,6 +24,7 @@ public class SampleFilter {
     private Integer endLine;
     private String value;
     private String source;
+    private Integer frameId;
 
     public SampleFilter(final Set<Sample> samples) {
         this.samples = samples;
@@ -51,6 +52,11 @@ public class SampleFilter {
 
     public SampleFilter line(final int line) {
         this.line = line;
+        return this;
+    }
+
+    public SampleFilter frameId(final int frameId) {
+        this.frameId = frameId;
         return this;
     }
 
@@ -107,6 +113,10 @@ public class SampleFilter {
 
         if (source != null) {
             stream = stream.filter(sample -> source.endsWith(sample.getSource()));
+        }
+
+        if (frameId != null) {
+            stream = stream.filter(sample -> sample.getFrameId() == frameId);
         }
 
         return stream;

@@ -53,12 +53,12 @@ public final class RootSamplerNode extends SamplerNode {
             return;
         }
 
-        handleOnReturn(result);
+        handleOnReturn(frame.materialize().hashCode(), result);
         extractions++;
     }
 
     @CompilerDirectives.TruffleBoundary
-    private void handleOnReturn(final Object result) {
+    private void handleOnReturn(final int frameId, final Object result) {
         if (audrey.isExtractingSample()) {
             return;
         }
@@ -78,7 +78,8 @@ public final class RootSamplerNode extends SamplerNode {
             getString(metaObject),
             "RETURN",
             sourceSection,
-            rootNodeId
+            rootNodeId,
+            frameId
         );
 
         audrey.setExtractingSample(false);

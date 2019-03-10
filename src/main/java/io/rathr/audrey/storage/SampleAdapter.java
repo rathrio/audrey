@@ -21,6 +21,7 @@ public class SampleAdapter extends TypeAdapter<Sample> {
         out.name("sourceIndex").value(sample.getSourceIndex());
         out.name("sourceLength").value(sample.getSourceLength());
         out.name("sourceCharacters").value(sample.getSourceCharacters().toString());
+        out.name("frameId").value(sample.getFrameId());
         out.endObject();
     }
 
@@ -63,6 +64,9 @@ public class SampleAdapter extends TypeAdapter<Sample> {
                     break;
                 case "identifierIndex":
                     sample.setIdentifierIndex(in.nextInt());
+                    break;
+                case "frameId":
+                    sample.setFrameId(in.nextInt());
                     break;
             }
         }

@@ -52,7 +52,6 @@ public abstract class SamplerNode extends ExecutionEventNode {
     /**
      * The amount of times we actually extracted samples for this sourceSection.
      */
-    @CompilerDirectives.CompilationFinal
     protected int extractions;
 
     public SamplerNode(final Audrey audrey,

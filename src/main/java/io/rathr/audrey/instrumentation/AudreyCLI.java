@@ -23,9 +23,18 @@ public class AudreyCLI {
     @Option(name = "Storage", help = "Use 'in_memory' or 'redis' as storage (default: redis).", category = OptionCategory.USER)
     static final OptionKey<String> STORAGE = new OptionKey<>("redis");
 
-    @Option(name = "Sample", help = "Use 'random', 'temporal', 'all', or 'none' as a sampling strategy (default: all).", category = OptionCategory.USER)
-    static final OptionKey<String> SAMPLE = new OptionKey<>("all");
+    @Option(name = "EnableSampling", help = "Whether to sample instead of extracting everything (default: false)", category = OptionCategory.USER)
+    static final OptionKey<Boolean> SAMPLING_ENABLED = new OptionKey<>(false);
+
+    @Option(name = "SamplingStep", help = "How often to extract from a source section, e.g. 10 for every 10th time. Only considered when EnableSampling was passed (default: 10)", category = OptionCategory.USER)
+    static final OptionKey<Integer> SAMPLING_STEP = new OptionKey<>(10);
+
+    @Option(name = "MaxExtractions", help = "After what amount of extractions to stop instrumenting a source section (default: 50)", category = OptionCategory.USER)
+    static final OptionKey<Integer> MAX_EXTRACTIONS = new OptionKey<>(50);
 
     @Option(name = "RootPath", help = "Absolute project root path. (default: current directory)", category = OptionCategory.USER)
     static final OptionKey<String> ROOT_PATH = new OptionKey<>(currentDir());
+
+    @Option(name = "DumpFile", help = "Where to dump a JSON Array of the extracted samples.", category = OptionCategory.USER)
+    static final OptionKey<String> DUMP_FILE = new OptionKey<>("");
 }

@@ -4,6 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.HashSet;
 import java.util.Set;
 
 public abstract class SampleStorage {
@@ -23,8 +27,16 @@ public abstract class SampleStorage {
 
     }
 
-    public void onDispose(final TruffleInstrument.Env env) {
+    public void onDispose(final String dumpFilePath) {
+        if (dumpFilePath != null && !dumpFilePath.isEmpty()) {
+            writeJson(getSamples(), dumpFilePath);
+        }
 
+        clear();
+    }
+
+    public Set<Sample> getSamples() {
+        return new HashSet<>();
     }
 
     String toJson(final Sample sample) {
@@ -37,5 +49,15 @@ public abstract class SampleStorage {
 
     Sample fromJson(final String json) {
         return GSON.fromJson(json, Sample.class);
+    }
+
+    void writeJson(final Set<Sample> samples, final String dumpFilePath) {
+        try {
+            Writer writer = new FileWriter(dumpFilePath);
+            writer.write(toJson(samples));
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

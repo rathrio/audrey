@@ -26,11 +26,16 @@ public class Audrey implements Closeable {
     private SampleStorage storage;
     private String pathFilter;
     private InstrumentationContext instrumentationContext;
+    private String dumpFilePath;
 
     private EventBinding<?> activeRootBinding;
     private EventBinding<?> activeStatementBinding;
 
     private SourceSectionFilter rootSourceSectionFilter;
+
+    private boolean samplingEnabled;
+    private Integer samplingStep;
+    private Integer maxExtractions;
 
     /**
      * Used to prevent infinite recursions in case a language does an allocation during meta
@@ -104,7 +109,10 @@ public class Audrey implements Closeable {
                 env,
                 project,
                 storage,
-                instrumentationContext
+                instrumentationContext,
+                samplingEnabled,
+                samplingStep,
+                maxExtractions
             )
         );
 
@@ -116,24 +124,31 @@ public class Audrey implements Closeable {
                 env,
                 project,
                 storage,
-                instrumentationContext
+                instrumentationContext,
+                samplingEnabled,
+                samplingStep,
+                maxExtractions
             )
         );
     }
 
     @Override
     public void close() {
-        storage.onDispose(env);
+        storage.onDispose(dumpFilePath);
     }
 
     public void initialize(final String projectId,
                            final String rootPath,
                            final String storageType,
-                           final String samplingStrategy,
-                           final String pathFilter) {
+                           final String pathFilter,
+                           final boolean samplingEnabled,
+                           final Integer samplingStep,
+                           final Integer maxExtractions,
+                           final String dumpFilePath) {
 
         this.project = new Project(projectId, rootPath);
         this.pathFilter = pathFilter;
+        this.dumpFilePath = dumpFilePath;
 
         switch (storageType) {
             case "in_memory":
@@ -146,22 +161,12 @@ public class Audrey implements Closeable {
                 throw new IllegalArgumentException("Unknown storage type: " + storageType);
         }
 
-        switch (samplingStrategy) {
-            case "all":
-                break;
-            case "none":
-                break;
-            case "random":
-                break;
-            case "temporal":
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown sampling_strategies strategy: " + samplingStrategy);
-        }
-
         this.statementSourceSectionFilter = buildSourceSectionFilter(STATEMENT_TAG);
         this.rootSourceSectionFilter = buildSourceSectionFilter(ROOT_TAG);
 
         this.instrumentationContext = new InstrumentationContext();
+        this.samplingEnabled = samplingEnabled;
+        this.samplingStep = samplingStep;
+        this.maxExtractions = maxExtractions;
     }
 }

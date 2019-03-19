@@ -1,20 +1,17 @@
 #!/usr/bin/env ruby
 
-if ARGV.empty?
-  puts "Usage: pry-samples <project ID>"
-  exit
-end
-
 require 'pry'
 require 'redis'
 require 'oj'
 
 class Sample
   attr_reader :identifier, :meta_object, :value, :root_node_id, :category,
-    :source_line, :source_index, :source_length, :source
+    :source_line, :source_index, :source_length, :source, :identifier_index,
+    :frame_id
 
   def initialize(hash)
     @identifier = hash['identifier']
+    @identifier_index = hash['identifierIndex']
     @meta_object = hash.fetch('metaObject')
     @value = hash.fetch('value')
     @root_node_id = hash.fetch('rootNodeId')
@@ -23,11 +20,20 @@ class Sample
     @source_line = hash.fetch('sourceLine')
     @source_index = hash.fetch('sourceIndex')
     @source_length = hash.fetch('sourceLength')
+    @frame_id = hash.fetch('frameId')
     freeze
+  end
+
+  def argument?
+    category == 'ARGUMENT'
+  end
+
+  def return?
+    category == 'RETURN'
   end
 end
 
-project_id = ARGV.first
+project_id = ARGV.first || 'default'
 samples_key = "audrey:#{project_id}:samples"
 
 redis = Redis.new(driver: :hiredis)

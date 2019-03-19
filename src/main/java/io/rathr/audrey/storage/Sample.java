@@ -10,6 +10,7 @@ public final class Sample {
     }
 
     private String identifier;
+    private int identifierIndex;
     private String metaObject;
     private String value;
     private String rootNodeId;
@@ -24,7 +25,37 @@ public final class Sample {
     private int sourceLength;
     private CharSequence sourceCharacters;
 
+    /**
+     * Hash code of the frame where this sample was extracted from.
+     */
+    private int frameId;
+
     public Sample() {
+    }
+
+    public Sample(final String identifier,
+                  final int identifierIndex,
+                  final String value,
+                  final String metaObject,
+                  final String category,
+                  final SourceSection sourceSection,
+                  final String rootNodeId,
+                  final int frameId) {
+
+        this.identifier = identifier;
+        this.identifierIndex = identifierIndex;
+        this.value = value;
+        this.metaObject = metaObject;
+        this.category = Category.valueOf(category.trim().toUpperCase());
+        this.rootNodeId = rootNodeId;
+
+        this.source = sourceSection.getSource().getName();
+        this.sourceLine = sourceSection.getStartLine();
+        this.sourceIndex = sourceSection.getCharIndex();
+        this.sourceLength = sourceSection.getCharLength();
+        this.sourceCharacters = sourceSection.getCharacters();
+
+        this.frameId = frameId;
     }
 
     public Sample(final String identifier,
@@ -45,26 +76,6 @@ public final class Sample {
         this.sourceLine = sourceLine;
     }
 
-    public Sample(final String identifier,
-                  final String value,
-                  final String metaObject,
-                  final String category,
-                  final SourceSection sourceSection,
-                  final String rootNodeId) {
-
-        this.identifier = identifier;
-        this.value = value;
-        this.metaObject = metaObject;
-        this.category = Category.valueOf(category.trim().toUpperCase());
-        this.rootNodeId = rootNodeId;
-
-        this.source = sourceSection.getSource().getName();
-        this.sourceLine = sourceSection.getStartLine();
-        this.sourceIndex = sourceSection.getCharIndex();
-        this.sourceLength = sourceSection.getCharLength();
-        this.sourceCharacters = sourceSection.getCharacters();
-    }
-
     public boolean isArgument() {
         return category.equals(Category.ARGUMENT);
     }
@@ -79,6 +90,22 @@ public final class Sample {
 
     public String getIdentifier() {
         return identifier;
+    }
+
+    public int getIdentifierIndex() {
+        return identifierIndex;
+    }
+
+    public void setIdentifierIndex(final int identifierIndex) {
+        this.identifierIndex = identifierIndex;
+    }
+
+    public int getFrameId() {
+        return frameId;
+    }
+
+    public void setFrameId(final int frameId) {
+        this.frameId = frameId;
     }
 
     public String getValue() {

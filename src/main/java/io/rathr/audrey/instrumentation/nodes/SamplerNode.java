@@ -1,5 +1,6 @@
 package io.rathr.audrey.instrumentation.nodes;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.instrumentation.EventContext;
 import com.oracle.truffle.api.instrumentation.ExecutionEventNode;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
@@ -21,6 +22,13 @@ public abstract class SamplerNode extends ExecutionEventNode {
     private static final Node READ_NODE = Message.READ.createNode();
     private static final Node KEYS_NODE = Message.KEYS.createNode();
 
+    /**
+     * Sample instead of extracting everything.
+     */
+    final boolean samplingEnabled;
+    final int samplingStep;
+    final int maxExtractions;
+
     protected static final String[] IDENTIFIER_BLACKLIST = {"(self)", "rubytruffle_temp", "this"};
 
     protected final Audrey audrey;
@@ -36,12 +44,26 @@ public abstract class SamplerNode extends ExecutionEventNode {
     protected final String rootNodeId;
     protected final LanguageInfo languageInfo;
 
+    /**
+     * The amount of times we decided to start the extraction process for this sourceSection.
+     */
+    protected int entered;
+
+    /**
+     * The amount of times we actually extracted samples for this sourceSection.
+     */
+    @CompilerDirectives.CompilationFinal
+    protected int extractions;
+
     public SamplerNode(final Audrey audrey,
                        final EventContext context,
                        final TruffleInstrument.Env env,
                        final Project project,
                        final SampleStorage storage,
-                       final InstrumentationContext instrumentationContext) {
+                       final InstrumentationContext instrumentationContext,
+                       final boolean samplingEnabled,
+                       final int samplingStep,
+                       final int maxExtractions) {
 
         this.audrey = audrey;
         this.context = context;
@@ -55,6 +77,9 @@ public abstract class SamplerNode extends ExecutionEventNode {
         this.languageId = sourceSection.getSource().getLanguage();
         this.rootNodeId = extractRootName(this.instrumentedNode);
         this.languageInfo = getLanguageInfo(languageId);
+        this.samplingEnabled = samplingEnabled;
+        this.samplingStep = samplingStep;
+        this.maxExtractions = maxExtractions;
     }
 
     protected String extractRootName(final Node instrumentedNode) {

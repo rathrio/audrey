@@ -27,9 +27,22 @@ public final class StatementSamplerNode extends SamplerNode {
                                 final TruffleInstrument.Env env,
                                 final Project project,
                                 final SampleStorage storage,
-                                final InstrumentationContext instrumentationContext) {
+                                final InstrumentationContext instrumentationContext,
+                                final boolean samplingEnabled,
+                                final int samplingStep,
+                                final int maxExtractions) {
 
-        super(audrey, context, env, project, storage, instrumentationContext);
+        super(
+            audrey,
+            context,
+            env,
+            project,
+            storage,
+            instrumentationContext,
+            samplingEnabled,
+            samplingStep,
+            maxExtractions
+        );
     }
 
 
@@ -43,7 +56,12 @@ public final class StatementSamplerNode extends SamplerNode {
             }
         }
         if (isFirstStatement == FirstStatementState.isFirst) {
+            if (extractions > maxExtractions) {
+                // TODO: Find a way to completely remove this sampler node.
+                return;
+            }
             handleOnEnter(frame.materialize());
+            extractions++;
         }
     }
 
@@ -54,8 +72,15 @@ public final class StatementSamplerNode extends SamplerNode {
         }
 
         audrey.setExtractingSample(true);
-
         isFirstStatement = FirstStatementState.isFirst;
+
+        if (samplingEnabled && entered % samplingStep != 0) {
+            exit();
+            return;
+        }
+
+        entered++;
+
         final Iterator<Scope> scopeIterator = env.findLocalScopes(instrumentedNode, frame).iterator();
         if (!scopeIterator.hasNext()) {
             exit();
@@ -68,6 +93,7 @@ public final class StatementSamplerNode extends SamplerNode {
         // been defined at this point of execution. I guess they've been extracted in a semantic analysis
         // step beforehand.
         final TruffleObject variables = (TruffleObject) scope.getVariables();
+        final int frameId = frame.hashCode();
 
         try {
             final TruffleObject keys = getKeys((TruffleObject) scope.getVariables());
@@ -91,11 +117,13 @@ public final class StatementSamplerNode extends SamplerNode {
 
                     final Sample sample = new Sample(
                         identifier,
+                        index,
                         getString(valueObject),
                         getString(metaObject),
                         "ARGUMENT",
                         sourceSection,
-                        rootNodeId
+                        rootNodeId,
+                        frameId
                     );
 
                     storage.add(sample);

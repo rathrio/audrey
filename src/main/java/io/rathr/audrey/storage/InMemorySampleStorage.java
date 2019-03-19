@@ -1,8 +1,5 @@
 package io.rathr.audrey.storage;
 
-import com.oracle.truffle.api.instrumentation.TruffleInstrument;
-
-import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -23,16 +20,6 @@ public final class InMemorySampleStorage extends SampleStorage {
     }
 
     @Override
-    public void onDispose(final TruffleInstrument.Env env) {
-        final PrintStream out = new PrintStream(env.out());
-        out.println(toJson(getSamples()));
-        clear();
-    }
-
-    public Map<String, Set<Sample>> getSampleMap() {
-        return sampleMap;
-    }
-
     public Set<Sample> getSamples() {
         final HashSet<Sample> samples = new HashSet<>();
         sampleMap.values().forEach(samples::addAll);

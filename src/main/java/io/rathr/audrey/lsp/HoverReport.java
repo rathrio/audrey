@@ -8,6 +8,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,12 +57,19 @@ class HoverReport {
                 argumentMap.get(identifier).add(argument);
             });
 
-            argumentMap.forEach((identifier, args) -> {
-                final Sample argSample = args.get(0);
-                final String argMetaObject = argSample.getMetaObject();
-                contents.add(Either.forLeft("(parameter) " + identifier + ": `" + argMetaObject + "`"));
-                contents.add(Either.forRight(new MarkedString(languageId, argSample.getValue())));
-            });
+            argumentMap
+                .entrySet()
+                .stream()
+                .sorted(Comparator.comparingInt(e -> e.getValue().get(0).getIdentifierIndex()))
+                .forEach(entry -> {
+                    final String identifier = entry.getKey();
+                    final List<Sample> args = entry.getValue();
+                    final Sample argSample = args.get(0);
+                    final String argMetaObject = argSample.getMetaObject();
+
+                    contents.add(Either.forLeft("(parameter) " + identifier + ": `" + argMetaObject + "`"));
+                    contents.add(Either.forRight(new MarkedString(languageId, argSample.getValue())));
+                });
         }
 
         if (!returns.isEmpty()) {

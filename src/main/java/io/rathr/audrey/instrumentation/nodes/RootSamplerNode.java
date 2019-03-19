@@ -16,13 +16,31 @@ public final class RootSamplerNode extends SamplerNode {
                            final TruffleInstrument.Env env,
                            final Project project,
                            final SampleStorage storage,
-                           final InstrumentationContext instrumentationContext) {
+                           final InstrumentationContext instrumentationContext,
+                           final boolean samplingEnabled,
+                           final Integer samplingStep,
+                           final Integer maxExtractions) {
 
-        super(audrey, context, env, project, storage, instrumentationContext);
+        super(
+            audrey,
+            context,
+            env,
+            project,
+            storage,
+            instrumentationContext,
+            samplingEnabled,
+            samplingStep,
+            maxExtractions
+        );
     }
 
     @Override
     protected void onEnter(final VirtualFrame frame) {
+        if (extractions > maxExtractions) {
+            // TODO: Find a way to completely remove this sampler node.
+            return;
+        }
+
         if (CompilerDirectives.inInterpreter()) {
             instrumentationContext.setLookingForFirstStatement(true);
         }
@@ -30,25 +48,38 @@ public final class RootSamplerNode extends SamplerNode {
 
     @Override
     protected void onReturnValue(final VirtualFrame frame, final Object result) {
-        handleOnReturn(result);
+        if (extractions > maxExtractions) {
+            // TODO: Find a way to completely remove this sampler node.
+            return;
+        }
+
+        handleOnReturn(frame.materialize().hashCode(), result);
+        extractions++;
     }
 
     @CompilerDirectives.TruffleBoundary
-    private void handleOnReturn(final Object result) {
+    private void handleOnReturn(final int frameId, final Object result) {
         if (audrey.isExtractingSample()) {
+            return;
+        }
+
+        if (samplingEnabled && entered % samplingStep != 0) {
             return;
         }
 
         audrey.setExtractingSample(true);
 
+        entered++;
         final Object metaObject = getMetaObject(result);
         final Sample sample = new Sample(
             null,
+            0,
             getString(result),
             getString(metaObject),
             "RETURN",
             sourceSection,
-            rootNodeId
+            rootNodeId,
+            frameId
         );
 
         audrey.setExtractingSample(false);

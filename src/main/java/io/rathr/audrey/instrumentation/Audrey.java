@@ -5,6 +5,7 @@ import com.oracle.truffle.api.instrumentation.SourceFilter;
 import com.oracle.truffle.api.instrumentation.SourceSectionFilter;
 import com.oracle.truffle.api.instrumentation.StandardTags;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
+import io.rathr.audrey.instrumentation.nodes.RootOnlySamplerNode;
 import io.rathr.audrey.instrumentation.nodes.RootSamplerNode;
 import io.rathr.audrey.instrumentation.nodes.StatementSamplerNode;
 import io.rathr.audrey.storage.InMemorySampleStorage;
@@ -101,24 +102,39 @@ public class Audrey implements Closeable {
     }
 
     public void enable() {
+//        this.activeRootBinding = env.getInstrumenter().attachExecutionEventFactory(
+//            rootSourceSectionFilter,
+//            context -> new RootSamplerNode(
+//                this,
+//                context,
+//                env,
+//                project,
+//                storage,
+//                instrumentationContext,
+//                samplingEnabled,
+//                samplingStep,
+//                maxExtractions
+//            )
+//        );
+//
+//        this.activeStatementBinding = env.getInstrumenter().attachExecutionEventFactory(
+//            statementSourceSectionFilter,
+//            context -> new StatementSamplerNode(
+//                this,
+//                context,
+//                env,
+//                project,
+//                storage,
+//                instrumentationContext,
+//                samplingEnabled,
+//                samplingStep,
+//                maxExtractions
+//            )
+//        );
+
         this.activeRootBinding = env.getInstrumenter().attachExecutionEventFactory(
             rootSourceSectionFilter,
-            context -> new RootSamplerNode(
-                this,
-                context,
-                env,
-                project,
-                storage,
-                instrumentationContext,
-                samplingEnabled,
-                samplingStep,
-                maxExtractions
-            )
-        );
-
-        this.activeStatementBinding = env.getInstrumenter().attachExecutionEventFactory(
-            statementSourceSectionFilter,
-            context -> new StatementSamplerNode(
+            context -> new RootOnlySamplerNode(
                 this,
                 context,
                 env,

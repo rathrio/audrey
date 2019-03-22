@@ -18,19 +18,16 @@ import io.rathr.audrey.storage.SampleStorage;
 import java.util.Arrays;
 import java.util.Iterator;
 
-public final class StatementSamplerNode extends SamplerNode {
-    @CompilerDirectives.CompilationFinal
-    FirstStatementState isFirstStatement = FirstStatementState.looking;
-
-    public StatementSamplerNode(final Audrey audrey,
-                                final EventContext context,
-                                final TruffleInstrument.Env env,
-                                final Project project,
-                                final SampleStorage storage,
-                                final InstrumentationContext instrumentationContext,
-                                final boolean samplingEnabled,
-                                final int samplingStep,
-                                final int maxExtractions) {
+public class RootOnlySamplerNode extends SamplerNode {
+    public RootOnlySamplerNode(final Audrey audrey,
+                           final EventContext context,
+                           final TruffleInstrument.Env env,
+                           final Project project,
+                           final SampleStorage storage,
+                           final InstrumentationContext instrumentationContext,
+                           final boolean samplingEnabled,
+                           final Integer samplingStep,
+                           final Integer maxExtractions) {
 
         super(
             audrey,
@@ -45,24 +42,14 @@ public final class StatementSamplerNode extends SamplerNode {
         );
     }
 
-
     @Override
     protected void onEnter(final VirtualFrame frame) {
-        if (isFirstStatement == FirstStatementState.looking) {
-            if (instrumentationContext.isLookingForFirstStatement()) {
-                isFirstStatement = FirstStatementState.isFirst;
-            } else {
-                isFirstStatement = FirstStatementState.isNotFirst;
-            }
+        if (extractions > maxExtractions) {
+            return;
         }
-        if (isFirstStatement == FirstStatementState.isFirst) {
-            if (extractions > maxExtractions) {
-                // TODO: Find a way to completely remove this sampler node.
-                return;
-            }
-            handleOnEnter(frame.materialize());
-            extractions++;
-        }
+
+        handleOnEnter(frame.materialize());
+        extractions++;
     }
 
     @CompilerDirectives.TruffleBoundary
@@ -72,10 +59,9 @@ public final class StatementSamplerNode extends SamplerNode {
         }
 
         audrey.setExtractingSample(true);
-        isFirstStatement = FirstStatementState.isFirst;
 
         if (samplingEnabled && entered % samplingStep != 0) {
-            exit();
+            audrey.setExtractingSample(false);
             return;
         }
 
@@ -83,23 +69,17 @@ public final class StatementSamplerNode extends SamplerNode {
 
         final Iterator<Scope> scopeIterator = env.findLocalScopes(instrumentedNode, frame).iterator();
         if (!scopeIterator.hasNext()) {
-            exit();
             return;
         }
 
         final Scope scope = scopeIterator.next();
-
-        // NOTE that getVariables will return ALL local variables in this scope, not just the ones that have
-        // been defined at this point of execution. I guess they've been extracted in a semantic analysis
-        // step beforehand.
-        final TruffleObject variables = (TruffleObject) scope.getVariables();
-        final int frameId = frame.hashCode();
+        final TruffleObject arguments = (TruffleObject) scope.getArguments();
 
         try {
-            final TruffleObject keys = getKeys(variables);
+            final TruffleObject keys = getKeys(arguments);
             final int keySize = getSize(keys);
             if (keySize == 0) {
-                exit();
+                audrey.setExtractingSample(false);
                 return;
             }
 
@@ -112,7 +92,7 @@ public final class StatementSamplerNode extends SamplerNode {
                         continue;
                     }
 
-                    final Object valueObject = read(variables, identifier);
+                    final Object valueObject = read(arguments, identifier);
                     final Object metaObject = getMetaObject(valueObject);
 
                     final Sample sample = new Sample(
@@ -123,7 +103,7 @@ public final class StatementSamplerNode extends SamplerNode {
                         "ARGUMENT",
                         sourceSection,
                         rootNodeId,
-                        frameId
+                        -1
                     );
 
                     storage.add(sample);
@@ -134,15 +114,47 @@ public final class StatementSamplerNode extends SamplerNode {
         } catch (UnsupportedMessageException e) {
             e.printStackTrace();
         } finally {
-            exit();
+            audrey.setExtractingSample(false);
         }
     }
 
-    // Should be called when exiting from the extraction process so that flags are reset.
-    private void exit() {
+
+    @Override
+    protected void onReturnValue(final VirtualFrame frame, final Object result) {
+        if (extractions > maxExtractions) {
+            // TODO: Find a way to completely remove this sampler node.
+            return;
+        }
+
+        handleOnReturn(frame.materialize().hashCode(), result);
+        extractions++;
+    }
+
+    @CompilerDirectives.TruffleBoundary
+    private void handleOnReturn(final int frameId, final Object result) {
+        if (audrey.isExtractingSample()) {
+            return;
+        }
+
+        if (samplingEnabled && entered % samplingStep != 0) {
+            return;
+        }
+
+        audrey.setExtractingSample(true);
+
+        final Object metaObject = getMetaObject(result);
+        final Sample sample = new Sample(
+            null,
+            0,
+            getString(result),
+            getString(metaObject),
+            "RETURN",
+            sourceSection,
+            rootNodeId,
+            frameId
+        );
+
         audrey.setExtractingSample(false);
-        // If we just extracted argument samples, let the following event know that we're done with
-        // arguments.
-        instrumentationContext.setLookingForFirstStatement(false);
+        storage.add(sample);
     }
 }

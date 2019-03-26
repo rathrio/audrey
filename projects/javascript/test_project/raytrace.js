@@ -1,5 +1,3 @@
-var t = process.hrtime();
-
 // The ray tracer code in this file is written by Adam Burmister. It
 // is available in its original form from:
 //
@@ -904,6 +902,9 @@ function renderScene(){
     raytracer.renderScene(scene, null, 0);
 }
 
-renderScene();
-t = process.hrtime(t);
-console.log('took %d s %d ms', t[0], t[1] / 1000000)
+while (true) {
+  var t = process.hrtime();
+  renderScene();
+  t = process.hrtime(t);
+  console.log('took %d s %d ms', t[0], t[1] / 1000000)
+}

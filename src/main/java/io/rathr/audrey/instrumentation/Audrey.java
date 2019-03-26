@@ -40,6 +40,8 @@ public class Audrey implements Closeable {
     private Integer samplingStep;
     private Integer maxExtractions;
 
+    private SamplerNodeScheduler samplerNodeScheduler;
+
     /**
      * Used to prevent infinite recursions in case a language does an allocation during meta
      * object lookup or toString call.
@@ -104,12 +106,13 @@ public class Audrey implements Closeable {
     }
 
     public void enable() {
+        samplerNodeScheduler.start();
+
         // Note that this approach currently only works with Truffle languages that expose arguments on root enter.
         if (rootOnly) {
             this.activeRootBinding = env.getInstrumenter().attachExecutionEventFactory(
                 rootSourceSectionFilter,
                 context -> {
-                    final CyclicAssumption cyclicAssumption = new CyclicAssumption("Node enabled");
                     return new RootOnlySamplerNode(
                         this,
                         context,
@@ -119,8 +122,7 @@ public class Audrey implements Closeable {
                         instrumentationContext,
                         samplingEnabled,
                         samplingStep,
-                        maxExtractions,
-                        cyclicAssumption
+                        maxExtractions
                     );
                 }
             );
@@ -161,6 +163,7 @@ public class Audrey implements Closeable {
 
     @Override
     public void close() {
+        samplerNodeScheduler.stop();
         storage.onDispose(dumpFilePath);
     }
 
@@ -198,5 +201,6 @@ public class Audrey implements Closeable {
         this.maxExtractions = maxExtractions;
 
         this.rootOnly = rootOnly;
+        this.samplerNodeScheduler = new SamplerNodeScheduler(5);
     }
 }

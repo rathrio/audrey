@@ -35,8 +35,7 @@ public class RootOnlySamplerNode extends SamplerNode {
                            final InstrumentationContext instrumentationContext,
                            final boolean samplingEnabled,
                            final Integer samplingStep,
-                           final Integer maxExtractions,
-                           final CyclicAssumption cyclicEnabledAssumption) {
+                           final Integer maxExtractions) {
 
         super(
             audrey,
@@ -50,7 +49,7 @@ public class RootOnlySamplerNode extends SamplerNode {
             maxExtractions
         );
 
-        this.cyclicEnabledAssumption = cyclicEnabledAssumption;
+        this.cyclicEnabledAssumption = new CyclicAssumption("Node enabled");
         this.enabled = cyclicEnabledAssumption.getAssumption();
     }
 
@@ -60,14 +59,15 @@ public class RootOnlySamplerNode extends SamplerNode {
             enabled.check();
 
             if (extractions > maxExtractions) {
-                replace(new NullNode());
+                CompilerDirectives.transferToInterpreterAndInvalidate();
+                replace(new DisabledNode(this));
                 return;
             }
 
             handleOnEnter(frame.materialize());
             extractions++;
         } catch (InvalidAssumptionException e) {
-            e.printStackTrace();
+            replace(new DisabledNode(this));
         }
     }
 
@@ -144,14 +144,15 @@ public class RootOnlySamplerNode extends SamplerNode {
             enabled.check();
 
             if (extractions > maxExtractions) {
-                replace(new NullNode());
+                CompilerDirectives.transferToInterpreterAndInvalidate();
+                replace(new DisabledNode(this));
                 return;
             }
 
             handleOnReturn(frame.materialize().hashCode(), result);
             extractions++;
         } catch (InvalidAssumptionException e) {
-            e.printStackTrace();
+            replace(new DisabledNode(this));
         }
     }
 

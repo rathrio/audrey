@@ -1,5 +1,6 @@
 package io.rathr.audrey.instrumentation.nodes;
 
+import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Scope;
 import com.oracle.truffle.api.frame.MaterializedFrame;
@@ -9,6 +10,8 @@ import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.nodes.InvalidAssumptionException;
+import com.oracle.truffle.api.utilities.CyclicAssumption;
 import io.rathr.audrey.instrumentation.Audrey;
 import io.rathr.audrey.instrumentation.InstrumentationContext;
 import io.rathr.audrey.storage.Project;
@@ -19,6 +22,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 public class RootOnlySamplerNode extends SamplerNode {
+    private final CyclicAssumption cyclicEnabledAssumption;
+
+    @CompilerDirectives.CompilationFinal
+    private Assumption enabled;
+
     public RootOnlySamplerNode(final Audrey audrey,
                            final EventContext context,
                            final TruffleInstrument.Env env,
@@ -27,7 +35,8 @@ public class RootOnlySamplerNode extends SamplerNode {
                            final InstrumentationContext instrumentationContext,
                            final boolean samplingEnabled,
                            final Integer samplingStep,
-                           final Integer maxExtractions) {
+                           final Integer maxExtractions,
+                           final CyclicAssumption cyclicEnabledAssumption) {
 
         super(
             audrey,
@@ -40,16 +49,25 @@ public class RootOnlySamplerNode extends SamplerNode {
             samplingStep,
             maxExtractions
         );
+
+        this.cyclicEnabledAssumption = cyclicEnabledAssumption;
+        this.enabled = cyclicEnabledAssumption.getAssumption();
     }
 
     @Override
     protected void onEnter(final VirtualFrame frame) {
-        if (extractions > maxExtractions) {
-            return;
-        }
+        try {
+            enabled.check();
 
-        handleOnEnter(frame.materialize());
-        extractions++;
+            if (extractions > maxExtractions) {
+                return;
+            }
+
+            handleOnEnter(frame.materialize());
+            extractions++;
+        } catch (InvalidAssumptionException e) {
+            e.printStackTrace();
+        }
     }
 
     @CompilerDirectives.TruffleBoundary
@@ -59,8 +77,6 @@ public class RootOnlySamplerNode extends SamplerNode {
         }
 
         audrey.setExtractingSample(true);
-
-//        System.out.println(sourceSectionId);
 
         if (samplingEnabled && entered % samplingStep != 0) {
             audrey.setExtractingSample(false);
@@ -123,12 +139,18 @@ public class RootOnlySamplerNode extends SamplerNode {
 
     @Override
     protected void onReturnValue(final VirtualFrame frame, final Object result) {
-        if (extractions > maxExtractions) {
-            return;
-        }
+        try {
+            enabled.check();
 
-        handleOnReturn(frame.materialize().hashCode(), result);
-        extractions++;
+            if (extractions > maxExtractions) {
+                return;
+            }
+
+            handleOnReturn(frame.materialize().hashCode(), result);
+            extractions++;
+        } catch (InvalidAssumptionException e) {
+            e.printStackTrace();
+        }
     }
 
     @CompilerDirectives.TruffleBoundary

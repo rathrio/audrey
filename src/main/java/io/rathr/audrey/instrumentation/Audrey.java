@@ -5,6 +5,7 @@ import com.oracle.truffle.api.instrumentation.SourceFilter;
 import com.oracle.truffle.api.instrumentation.SourceSectionFilter;
 import com.oracle.truffle.api.instrumentation.StandardTags;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
+import com.oracle.truffle.api.utilities.CyclicAssumption;
 import io.rathr.audrey.instrumentation.nodes.RootOnlySamplerNode;
 import io.rathr.audrey.instrumentation.nodes.RootSamplerNode;
 import io.rathr.audrey.instrumentation.nodes.StatementSamplerNode;
@@ -107,17 +108,21 @@ public class Audrey implements Closeable {
         if (rootOnly) {
             this.activeRootBinding = env.getInstrumenter().attachExecutionEventFactory(
                 rootSourceSectionFilter,
-                context -> new RootOnlySamplerNode(
-                    this,
-                    context,
-                    env,
-                    project,
-                    storage,
-                    instrumentationContext,
-                    samplingEnabled,
-                    samplingStep,
-                    maxExtractions
-                )
+                context -> {
+                    final CyclicAssumption cyclicAssumption = new CyclicAssumption("Node enabled");
+                    return new RootOnlySamplerNode(
+                        this,
+                        context,
+                        env,
+                        project,
+                        storage,
+                        instrumentationContext,
+                        samplingEnabled,
+                        samplingStep,
+                        maxExtractions,
+                        cyclicAssumption
+                    );
+                }
             );
 
             return;

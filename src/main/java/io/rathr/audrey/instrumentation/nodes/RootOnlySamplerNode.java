@@ -60,6 +60,8 @@ public class RootOnlySamplerNode extends SamplerNode {
 
         audrey.setExtractingSample(true);
 
+//        System.out.println(sourceSectionId);
+
         if (samplingEnabled && entered % samplingStep != 0) {
             audrey.setExtractingSample(false);
             return;

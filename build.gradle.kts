@@ -13,9 +13,11 @@ repositories {
 }
 
 dependencies {
+    val graalvmVersion = "rc14"
+
     // Truffle API
-    implementation("org.graalvm.truffle:truffle-api:1.0.0-rc14")
-    implementation("org.graalvm.truffle:truffle-dsl-processor:1.0.0-rc14")
+    implementation("org.graalvm.truffle:truffle-api:1.0.0-$graalvmVersion")
+    implementation("org.graalvm.truffle:truffle-dsl-processor:1.0.0-$graalvmVersion")
 
     // JSON
     implementation("com.google.code.gson:gson:2.8.5")
@@ -27,7 +29,7 @@ dependencies {
     implementation("org.eclipse.lsp4j:org.eclipse.lsp4j:0.6.0")
 
     // For parsing JS
-    implementation("org.graalvm.js:js:1.0.0-rc14")
+    implementation("org.graalvm.js:js:1.0.0-$graalvmVersion")
 
     // For parsing Ruby
     implementation(files("libs/jrubyparser-0.5.5-SNAPSHOT.jar"))

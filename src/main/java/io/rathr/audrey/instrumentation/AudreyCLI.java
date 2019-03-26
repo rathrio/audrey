@@ -37,4 +37,7 @@ public class AudreyCLI {
 
     @Option(name = "DumpFile", help = "Where to dump a JSON Array of the extracted samples.", category = OptionCategory.USER)
     static final OptionKey<String> DUMP_FILE = new OptionKey<>("");
+
+    @Option(name = "RootOnly", help = "Try to extract samples from instrumenting root nodes only (default: false)", category = OptionCategory.USER)
+    static final OptionKey<Boolean> ROOT_ONLY = new OptionKey<>(false);
 }

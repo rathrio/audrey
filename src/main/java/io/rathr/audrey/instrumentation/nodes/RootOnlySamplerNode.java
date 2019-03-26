@@ -122,7 +122,6 @@ public class RootOnlySamplerNode extends SamplerNode {
     @Override
     protected void onReturnValue(final VirtualFrame frame, final Object result) {
         if (extractions > maxExtractions) {
-            // TODO: Find a way to completely remove this sampler node.
             return;
         }
 

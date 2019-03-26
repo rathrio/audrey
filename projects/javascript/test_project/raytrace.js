@@ -906,5 +906,5 @@ for (var i = 0; i < 3000; i++) {
   var t = process.hrtime();
   renderScene();
   t = process.hrtime(t);
-  console.log('took %d s %d ms', t[0], t[1] / 1000000)
+  console.log('%d s %d ms', t[0], t[1] / 1000000)
 }

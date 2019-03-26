@@ -58,11 +58,11 @@ public class RootOnlySamplerNode extends SamplerNode {
         try {
             enabled.check();
 
-            if (extractions > maxExtractions) {
-                CompilerDirectives.transferToInterpreterAndInvalidate();
-                replace(new DisabledNode(this));
-                return;
-            }
+//            if (extractions > maxExtractions) {
+//                CompilerDirectives.transferToInterpreterAndInvalidate();
+//                replace(new DisabledNode(this));
+//                return;
+//            }
 
             handleOnEnter(frame.materialize());
             extractions++;
@@ -143,11 +143,11 @@ public class RootOnlySamplerNode extends SamplerNode {
         try {
             enabled.check();
 
-            if (extractions > maxExtractions) {
-                CompilerDirectives.transferToInterpreterAndInvalidate();
-                replace(new DisabledNode(this));
-                return;
-            }
+//            if (extractions > maxExtractions) {
+//                CompilerDirectives.transferToInterpreterAndInvalidate();
+//                replace(new DisabledNode(this));
+//                return;
+//            }
 
             handleOnReturn(frame.materialize().hashCode(), result);
             extractions++;

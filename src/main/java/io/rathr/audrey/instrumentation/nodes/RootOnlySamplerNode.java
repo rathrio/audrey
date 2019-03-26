@@ -60,6 +60,7 @@ public class RootOnlySamplerNode extends SamplerNode {
             enabled.check();
 
             if (extractions > maxExtractions) {
+                replace(new NullNode());
                 return;
             }
 
@@ -143,6 +144,7 @@ public class RootOnlySamplerNode extends SamplerNode {
             enabled.check();
 
             if (extractions > maxExtractions) {
+                replace(new NullNode());
                 return;
             }
 

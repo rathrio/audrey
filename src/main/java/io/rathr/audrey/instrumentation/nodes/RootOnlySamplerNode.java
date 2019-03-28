@@ -149,7 +149,7 @@ public class RootOnlySamplerNode extends SamplerNode {
 //                return;
 //            }
 
-            handleOnReturn(frame.materialize().hashCode(), result);
+            handleOnReturn(result);
             extractions++;
         } catch (InvalidAssumptionException e) {
             replace(new DisabledNode(this));
@@ -157,7 +157,7 @@ public class RootOnlySamplerNode extends SamplerNode {
     }
 
     @CompilerDirectives.TruffleBoundary
-    private void handleOnReturn(final int frameId, final Object result) {
+    private void handleOnReturn(final Object result) {
         if (audrey.isExtractingSample()) {
             return;
         }
@@ -177,7 +177,7 @@ public class RootOnlySamplerNode extends SamplerNode {
             "RETURN",
             sourceSection,
             rootNodeId,
-            frameId
+            -1
         );
 
         audrey.setExtractingSample(false);

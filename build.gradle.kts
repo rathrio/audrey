@@ -82,6 +82,10 @@ tasks.withType<Test> {
     jvmArgs("-XX:-UseJVMCIClassLoader")
 }
 
+tasks.withType<JavaExec> {
+    jvmArgs("-XX:-UseJVMCIClassLoader")
+}
+
 tasks {
     getByName<JacocoReport>("jacocoTestReport") {
         reports {

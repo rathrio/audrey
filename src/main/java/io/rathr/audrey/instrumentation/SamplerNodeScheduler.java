@@ -1,6 +1,5 @@
 package io.rathr.audrey.instrumentation;
 
-import io.rathr.audrey.instrumentation.nodes.SamplerNode;
 import io.rathr.audrey.instrumentation.nodes.SchedulableNode;
 
 import java.util.Map;
@@ -11,19 +10,40 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class SamplerNodeScheduler {
+    /**
+     * How often to update the current bucket.
+     */
     private final long intervalInSeconds;
     private final ScheduledExecutorService executor;
-    private static final int NUM_BUCKETS = 10;
+
+    /**
+     * In how many buckets to distribute the nodes.
+     */
+    private static final int NUM_BUCKETS = 100;
+
+    /**
+     * The bucket of nodes that are currently enabled.
+     */
     private int currentBucket = 0;
 
-    private final Map<Integer, Set<SamplerNode>> buckets = new ConcurrentHashMap<>();
+    /**
+     * Next bucket to place new nodes in.
+     *
+     * @see #register(SchedulableNode)
+     */
+    private int bucketForNewNodes = 0;
 
-    public SamplerNodeScheduler(long intervalInSeconds) {
+    private final Map<Integer, Set<SchedulableNode>> buckets = new ConcurrentHashMap<>();
+
+    SamplerNodeScheduler(long intervalInSeconds) {
         this.intervalInSeconds = intervalInSeconds;
         this.executor = Executors.newScheduledThreadPool(2);
     }
 
-    public void start() {
+    /**
+     * Starts enabling/disabling nodes with the configured schedule.
+     */
+    void start() {
         executor.scheduleAtFixedRate(() -> {
             final int prevBucket = currentBucket;
             currentBucket = (currentBucket + 1) % NUM_BUCKETS;
@@ -35,21 +55,22 @@ public class SamplerNodeScheduler {
             buckets.get(prevBucket).forEach(SchedulableNode::disable);
 
             System.out.println("==== Enabled bucket " + currentBucket + " with " + buckets.get(currentBucket).size() + " nodes");
-
         }, intervalInSeconds, intervalInSeconds, TimeUnit.SECONDS);
     }
 
-    public void stop() {
+    void stop() {
         executor.shutdownNow();
     }
 
-    private int distBucket = 0;
-
-    public void register(final SamplerNode node) {
-//        final int bucket = node.getSourceSectionId() % NUM_BUCKETS;
-        buckets.computeIfAbsent(distBucket, i -> ConcurrentHashMap.newKeySet());
+    /**
+     * Register a node for scheduling. Note that the node is initially disabled when passed to this method.
+     * @param node the node to enable/disable with the configured schedule.
+     */
+    void register(final SchedulableNode node) {
         node.disable();
-        buckets.get(distBucket).add(node);
-        distBucket = (distBucket + 1) % NUM_BUCKETS;
+
+        buckets.computeIfAbsent(bucketForNewNodes, i -> ConcurrentHashMap.newKeySet());
+        buckets.get(bucketForNewNodes).add(node);
+        bucketForNewNodes = (bucketForNewNodes + 1) % NUM_BUCKETS;
     }
 }

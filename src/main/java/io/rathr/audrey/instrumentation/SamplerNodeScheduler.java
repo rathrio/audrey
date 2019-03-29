@@ -43,10 +43,13 @@ public class SamplerNodeScheduler {
         executor.shutdownNow();
     }
 
+    private int distBucket = 0;
+
     public void register(final SamplerNode node) {
-        final int bucket = node.getSourceSectionId() % NUM_BUCKETS;
-        buckets.computeIfAbsent(bucket, i -> ConcurrentHashMap.newKeySet());
+//        final int bucket = node.getSourceSectionId() % NUM_BUCKETS;
+        buckets.computeIfAbsent(distBucket, i -> ConcurrentHashMap.newKeySet());
         node.disable();
-        buckets.get(bucket).add(node);
+        buckets.get(distBucket).add(node);
+        distBucket = (distBucket + 1) % NUM_BUCKETS;
     }
 }

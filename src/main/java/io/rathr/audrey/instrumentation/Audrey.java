@@ -5,7 +5,6 @@ import com.oracle.truffle.api.instrumentation.SourceFilter;
 import com.oracle.truffle.api.instrumentation.SourceSectionFilter;
 import com.oracle.truffle.api.instrumentation.StandardTags;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
-import com.oracle.truffle.api.utilities.CyclicAssumption;
 import io.rathr.audrey.instrumentation.nodes.RootOnlySamplerNode;
 import io.rathr.audrey.instrumentation.nodes.RootSamplerNode;
 import io.rathr.audrey.instrumentation.nodes.StatementSamplerNode;

@@ -1,6 +1,7 @@
 package io.rathr.audrey.instrumentation.nodes;
 
 import com.oracle.truffle.api.Assumption;
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Scope;
 import com.oracle.truffle.api.frame.MaterializedFrame;
@@ -70,6 +71,7 @@ public class RootOnlySamplerNode extends SamplerNode implements SchedulableNode 
             extractions++;
         } catch (InvalidAssumptionException e) {
             replace(disabledNode);
+            disabledNode.enable();
         }
     }
 
@@ -155,6 +157,7 @@ public class RootOnlySamplerNode extends SamplerNode implements SchedulableNode 
             extractions++;
         } catch (InvalidAssumptionException e) {
             replace(disabledNode);
+            disabledNode.enable();
         }
     }
 

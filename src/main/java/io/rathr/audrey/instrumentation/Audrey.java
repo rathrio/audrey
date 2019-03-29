@@ -113,7 +113,7 @@ public class Audrey implements Closeable {
             this.activeRootBinding = env.getInstrumenter().attachExecutionEventFactory(
                 rootSourceSectionFilter,
                 context -> {
-                    return new RootOnlySamplerNode(
+                    final RootOnlySamplerNode node = new RootOnlySamplerNode(
                         this,
                         context,
                         env,
@@ -124,6 +124,9 @@ public class Audrey implements Closeable {
                         samplingStep,
                         maxExtractions
                     );
+
+                    samplerNodeScheduler.register(node);
+                    return node;
                 }
             );
 

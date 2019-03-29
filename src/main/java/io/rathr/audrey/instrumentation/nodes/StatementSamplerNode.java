@@ -145,4 +145,14 @@ public final class StatementSamplerNode extends SamplerNode {
         // arguments.
         instrumentationContext.setLookingForFirstStatement(false);
     }
+
+    @Override
+    public void enable() {
+
+    }
+
+    @Override
+    public void disable() {
+
+    }
 }

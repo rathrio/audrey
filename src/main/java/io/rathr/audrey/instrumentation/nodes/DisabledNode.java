@@ -22,7 +22,6 @@ class DisabledNode extends ExecutionEventNode {
         this.node = node;
         this.cyclicDisabledAssumption = new CyclicAssumption("Node disabled");
         this.disabled = cyclicDisabledAssumption.getAssumption();
-//        System.out.println("Node disabled for:" + node.sourceSection);
     }
 
     @Override

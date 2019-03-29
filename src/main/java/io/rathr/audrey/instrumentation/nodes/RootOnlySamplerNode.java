@@ -21,8 +21,9 @@ import io.rathr.audrey.storage.SampleStorage;
 import java.util.Arrays;
 import java.util.Iterator;
 
-public class RootOnlySamplerNode extends SamplerNode {
+public class RootOnlySamplerNode extends SamplerNode implements SchedulableNode {
     private final CyclicAssumption cyclicEnabledAssumption;
+    private final DisabledNode disabledNode;
 
     @CompilerDirectives.CompilationFinal
     private Assumption enabled;
@@ -51,6 +52,7 @@ public class RootOnlySamplerNode extends SamplerNode {
 
         this.cyclicEnabledAssumption = new CyclicAssumption("Node enabled");
         this.enabled = cyclicEnabledAssumption.getAssumption();
+        this.disabledNode = new DisabledNode(this);
     }
 
     @Override
@@ -60,14 +62,15 @@ public class RootOnlySamplerNode extends SamplerNode {
 
 //            if (extractions > maxExtractions) {
 //                CompilerDirectives.transferToInterpreterAndInvalidate();
-//                replace(new DisabledNode(this));
+//                disable();
 //                return;
 //            }
 
             handleOnEnter(frame.materialize());
             extractions++;
         } catch (InvalidAssumptionException e) {
-            replace(new DisabledNode(this));
+            disable();
+
         }
     }
 
@@ -152,7 +155,7 @@ public class RootOnlySamplerNode extends SamplerNode {
             handleOnReturn(result);
             extractions++;
         } catch (InvalidAssumptionException e) {
-            replace(new DisabledNode(this));
+            disable();
         }
     }
 
@@ -182,5 +185,14 @@ public class RootOnlySamplerNode extends SamplerNode {
 
         audrey.setExtractingSample(false);
         storage.add(sample);
+    }
+
+    @Override
+    public void enable() {
+    }
+
+    @Override
+    public void disable() {
+        replace(disabledNode);
     }
 }

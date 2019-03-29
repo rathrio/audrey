@@ -32,4 +32,13 @@ class DisabledNode extends ExecutionEventNode {
             replace(node);
         }
     }
+
+    public void enable() {
+        disabled = cyclicDisabledAssumption.getAssumption();
+    }
+
+    // TODO: find a better name. This reenables the actual sampler node by disabling this node.
+    public void disable() {
+        cyclicDisabledAssumption.invalidate();
+    }
 }

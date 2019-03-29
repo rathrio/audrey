@@ -902,7 +902,7 @@ function renderScene(){
     raytracer.renderScene(scene, null, 0);
 }
 
-for (var i = 0; i < 50; i++) {
+for (var i = 0; i < 1000000; i++) {
   var t = process.hrtime();
   renderScene();
   t = process.hrtime(t);

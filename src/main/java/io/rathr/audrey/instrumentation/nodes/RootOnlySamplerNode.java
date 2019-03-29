@@ -69,8 +69,7 @@ public class RootOnlySamplerNode extends SamplerNode implements SchedulableNode 
             handleOnEnter(frame.materialize());
             extractions++;
         } catch (InvalidAssumptionException e) {
-            disable();
-
+            replace(disabledNode);
         }
     }
 
@@ -155,7 +154,7 @@ public class RootOnlySamplerNode extends SamplerNode implements SchedulableNode 
             handleOnReturn(result);
             extractions++;
         } catch (InvalidAssumptionException e) {
-            disable();
+            replace(disabledNode);
         }
     }
 
@@ -189,10 +188,12 @@ public class RootOnlySamplerNode extends SamplerNode implements SchedulableNode 
 
     @Override
     public void enable() {
+        enabled = cyclicEnabledAssumption.getAssumption();
+        disabledNode.disable();
     }
 
     @Override
     public void disable() {
-        replace(disabledNode);
+        cyclicEnabledAssumption.invalidate();
     }
 }

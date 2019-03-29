@@ -204,6 +204,6 @@ public class Audrey implements Closeable {
         this.maxExtractions = maxExtractions;
 
         this.rootOnly = rootOnly;
-        this.samplerNodeScheduler = new SamplerNodeScheduler(5);
+        this.samplerNodeScheduler = new SamplerNodeScheduler(10);
     }
 }

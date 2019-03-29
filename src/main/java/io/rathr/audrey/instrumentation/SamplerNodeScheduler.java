@@ -1,6 +1,7 @@
 package io.rathr.audrey.instrumentation;
 
 import io.rathr.audrey.instrumentation.nodes.SamplerNode;
+import io.rathr.audrey.instrumentation.nodes.SchedulableNode;
 
 import java.util.Map;
 import java.util.Set;
@@ -24,8 +25,17 @@ public class SamplerNodeScheduler {
 
     public void start() {
         executor.scheduleAtFixedRate(() -> {
-//            System.out.println("=== CURRENT BUCKET: " + currentBucket);
+            final int prevBucket = currentBucket;
             currentBucket = (currentBucket + 1) % NUM_BUCKETS;
+
+            buckets.computeIfAbsent(currentBucket, i -> ConcurrentHashMap.newKeySet());
+            buckets.get(currentBucket).forEach(SchedulableNode::enable);
+
+            buckets.computeIfAbsent(prevBucket, i -> ConcurrentHashMap.newKeySet());
+            buckets.get(prevBucket).forEach(SchedulableNode::disable);
+
+            System.out.println("==== Enabled bucket " + currentBucket + " with " + buckets.get(currentBucket).size() + " nodes");
+
         }, intervalInSeconds, intervalInSeconds, TimeUnit.SECONDS);
     }
 

@@ -39,6 +39,7 @@ public class Audrey implements Closeable {
     private Integer samplingStep;
     private Integer maxExtractions;
 
+    private boolean schedulingEnabled;
     private SamplerNodeScheduler samplerNodeScheduler;
 
     /**
@@ -105,7 +106,9 @@ public class Audrey implements Closeable {
     }
 
     public void enable() {
-        samplerNodeScheduler.start();
+        if (schedulingEnabled) {
+            samplerNodeScheduler.start();
+        }
 
         // Note that this approach currently only works with Truffle languages that expose arguments on root enter.
         if (rootOnly) {
@@ -124,7 +127,10 @@ public class Audrey implements Closeable {
                         maxExtractions
                     );
 
-                    samplerNodeScheduler.register(node);
+                    if (schedulingEnabled) {
+                        samplerNodeScheduler.register(node);
+                    }
+
                     return node;
                 }
             );
@@ -177,7 +183,10 @@ public class Audrey implements Closeable {
                            final Integer samplingStep,
                            final Integer maxExtractions,
                            final String dumpFilePath,
-                           final boolean rootOnly) {
+                           final boolean rootOnly,
+                           final boolean schedulingEnabled,
+                           final Integer schedulingInterval,
+                           final Integer schedulingBuckets) {
 
         this.project = new Project(projectId, rootPath);
         this.pathFilter = pathFilter;
@@ -203,6 +212,7 @@ public class Audrey implements Closeable {
         this.maxExtractions = maxExtractions;
 
         this.rootOnly = rootOnly;
-        this.samplerNodeScheduler = new SamplerNodeScheduler(10);
+        this.schedulingEnabled = schedulingEnabled;
+        this.samplerNodeScheduler = new SamplerNodeScheduler(schedulingInterval, schedulingBuckets);
     }
 }

@@ -16,10 +16,12 @@ public class SamplerNodeScheduler {
     private final long intervalInSeconds;
     private final ScheduledExecutorService executor;
 
+    private static final int CORE_POOL_SIZE = 2;
+
     /**
-     * In how many buckets to distribute the nodes.
+     * How many buckets to distribute the nodes in.
      */
-    private static final int NUM_BUCKETS = 100;
+    private final int numBuckets;
 
     /**
      * The bucket of nodes that are currently enabled.
@@ -35,9 +37,10 @@ public class SamplerNodeScheduler {
 
     private final Map<Integer, Set<SchedulableNode>> buckets = new ConcurrentHashMap<>();
 
-    SamplerNodeScheduler(long intervalInSeconds) {
+    SamplerNodeScheduler(long intervalInSeconds, int numBuckets) {
         this.intervalInSeconds = intervalInSeconds;
-        this.executor = Executors.newScheduledThreadPool(2);
+        this.numBuckets = numBuckets;
+        this.executor = Executors.newScheduledThreadPool(CORE_POOL_SIZE);
     }
 
     /**
@@ -46,7 +49,7 @@ public class SamplerNodeScheduler {
     void start() {
         executor.scheduleAtFixedRate(() -> {
             final int prevBucket = currentBucket;
-            currentBucket = (currentBucket + 1) % NUM_BUCKETS;
+            currentBucket = (currentBucket + 1) % numBuckets;
 
             buckets.computeIfAbsent(currentBucket, i -> ConcurrentHashMap.newKeySet());
             buckets.get(currentBucket).forEach(SchedulableNode::enable);
@@ -71,6 +74,6 @@ public class SamplerNodeScheduler {
 
         buckets.computeIfAbsent(bucketForNewNodes, i -> ConcurrentHashMap.newKeySet());
         buckets.get(bucketForNewNodes).add(node);
-        bucketForNewNodes = (bucketForNewNodes + 1) % NUM_BUCKETS;
+        bucketForNewNodes = (bucketForNewNodes + 1) % numBuckets;
     }
 }

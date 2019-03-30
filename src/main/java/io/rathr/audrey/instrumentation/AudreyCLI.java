@@ -29,8 +29,17 @@ public class AudreyCLI {
     @Option(name = "SamplingStep", help = "How often to extract from a source section, e.g. 10 for every 10th time. Only considered when EnableSampling was passed (default: 10)", category = OptionCategory.USER)
     static final OptionKey<Integer> SAMPLING_STEP = new OptionKey<>(10);
 
+    @Option(name = "EnableScheduling", help = "Enable temporal sharding scheduler (default: false)", category = OptionCategory.USER)
+    static final OptionKey<Boolean> SCHEDULING_ENABLED = new OptionKey<>(false);
+
+    @Option(name = "SchedulingInterval", help = "Interval in seconds after which the scheduler updates the source sections to instrument (default: 30)", category = OptionCategory.USER)
+    static final OptionKey<Integer> SCHEDULING_INTERVAL = new OptionKey<>(30);
+
+    @Option(name = "SchedulingBuckets", help = "How many buckets to distribute the nodes in for scheduling (default: 10)", category = OptionCategory.USER)
+    static final OptionKey<Integer> SCHEDULING_BUCKETS = new OptionKey<>(10);
+
     @Option(name = "MaxExtractions", help = "After what amount of extractions to stop instrumenting a source section (default: 50)", category = OptionCategory.USER)
-    static final OptionKey<Integer> MAX_EXTRACTIONS = new OptionKey<>(50);
+    static final OptionKey<Integer> MAX_EXTRACTIONS = new OptionKey<>(1000);
 
     @Option(name = "RootPath", help = "Absolute project root path. (default: current directory)", category = OptionCategory.USER)
     static final OptionKey<String> ROOT_PATH = new OptionKey<>(currentDir());

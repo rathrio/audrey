@@ -902,9 +902,12 @@ function renderScene(){
     raytracer.renderScene(scene, null, 0);
 }
 
+var init = Date.now();
+
 for (var i = 0; i < 1000000; i++) {
   var t = process.hrtime();
   renderScene();
   t = process.hrtime(t);
-  console.log('%d s %d ms', t[0], t[1] / 1000000)
+  var now = Date.now() - init;
+  console.log('%s\t%d', now, (t[0] * 1000) + (t[1] / 1000000))
 }

@@ -38,7 +38,7 @@ public final class RedisSampleStorage extends SampleStorage {
 
     @Override
     public void add(final Sample sample) {
-//        async.sadd(samplesKey, toJson(sample));
+        async.sadd(samplesKey, toJson(sample));
 //        sync.sadd(samplesKey, toJson(sample));
     }
 

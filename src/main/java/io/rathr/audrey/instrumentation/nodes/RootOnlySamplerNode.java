@@ -61,11 +61,11 @@ public class RootOnlySamplerNode extends SamplerNode implements SchedulableNode 
         try {
             enabled.check();
 
-//            if (extractions > maxExtractions) {
-//                CompilerDirectives.transferToInterpreterAndInvalidate();
-//                disable();
-//                return;
-//            }
+            if (extractions > maxExtractions) {
+                CompilerDirectives.transferToInterpreterAndInvalidate();
+                disable();
+                return;
+            }
 
             handleOnEnter(frame.materialize());
             extractions++;
@@ -147,11 +147,11 @@ public class RootOnlySamplerNode extends SamplerNode implements SchedulableNode 
         try {
             enabled.check();
 
-//            if (extractions > maxExtractions) {
-//                CompilerDirectives.transferToInterpreterAndInvalidate();
-//                replace(new DisabledNode(this));
-//                return;
-//            }
+            if (extractions > maxExtractions) {
+                CompilerDirectives.transferToInterpreterAndInvalidate();
+                replace(new DisabledNode(this));
+                return;
+            }
 
             handleOnReturn(result);
             extractions++;

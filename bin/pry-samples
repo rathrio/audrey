@@ -21,6 +21,7 @@ class Sample
     @source_index = hash.fetch('sourceIndex')
     @source_length = hash.fetch('sourceLength')
     @frame_id = hash.fetch('frameId')
+    @hash = hash
     freeze
   end
 
@@ -30,6 +31,10 @@ class Sample
 
   def return?
     category == 'RETURN'
+  end
+
+  def to_h
+    @hash
   end
 end
 

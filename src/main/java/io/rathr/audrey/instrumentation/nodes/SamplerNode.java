@@ -1,6 +1,5 @@
 package io.rathr.audrey.instrumentation.nodes;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.instrumentation.EventContext;
 import com.oracle.truffle.api.instrumentation.ExecutionEventNode;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
@@ -18,7 +17,7 @@ import io.rathr.audrey.instrumentation.InstrumentationContext;
 import io.rathr.audrey.storage.Project;
 import io.rathr.audrey.storage.SampleStorage;
 
-public abstract class SamplerNode extends ExecutionEventNode {
+public abstract class SamplerNode extends ExecutionEventNode implements SchedulableNode {
     private static final Node READ_NODE = Message.READ.createNode();
     private static final Node KEYS_NODE = Message.KEYS.createNode();
 
@@ -132,6 +131,10 @@ public abstract class SamplerNode extends ExecutionEventNode {
             || object instanceof Integer
             || object instanceof Double
             || object instanceof Boolean;
+    }
+
+    public int getSourceSectionId() {
+        return sourceSectionId;
     }
 
     enum FirstStatementState {

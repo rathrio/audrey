@@ -39,6 +39,10 @@ public final class AudreyInstrument extends TruffleInstrument {
             final Integer samplingStep = env.getOptions().get(AudreyCLI.SAMPLING_STEP);
             final Integer maxExtractions = env.getOptions().get(AudreyCLI.MAX_EXTRACTIONS);
             final String dumpFilePath = env.getOptions().get(AudreyCLI.DUMP_FILE);
+            final boolean rootOnly = env.getOptions().get(AudreyCLI.ROOT_ONLY);
+            final Boolean schedulingEnabled = env.getOptions().get(AudreyCLI.SCHEDULING_ENABLED);
+            final Integer schedulingInterval = env.getOptions().get(AudreyCLI.SCHEDULING_INTERVAL);
+            final Integer schedulingBuckets = env.getOptions().get(AudreyCLI.SCHEDULING_BUCKETS);
 
             audrey.initialize(
                 projectId,
@@ -48,7 +52,11 @@ public final class AudreyInstrument extends TruffleInstrument {
                 samplingEnabled,
                 samplingStep,
                 maxExtractions,
-                dumpFilePath
+                dumpFilePath,
+                rootOnly,
+                schedulingEnabled,
+                schedulingInterval,
+                schedulingBuckets
             );
 
             audrey.enable();

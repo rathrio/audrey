@@ -85,4 +85,14 @@ public final class RootSamplerNode extends SamplerNode {
         audrey.setExtractingSample(false);
         storage.add(sample);
     }
+
+    @Override
+    public void enable() {
+
+    }
+
+    @Override
+    public void disable() {
+
+    }
 }

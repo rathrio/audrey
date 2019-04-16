@@ -3,6 +3,8 @@ package io.rathr.audrey.storage;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.api.sync.RedisSetCommands;
+import io.lettuce.core.api.sync.RedisStringCommands;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,6 +15,9 @@ public final class RedisSampleStorage extends SampleStorage {
     private final RedisClient client = RedisClient.create("redis://localhost");
     private final StatefulRedisConnection<String, String> connection = client.connect();
     private final RedisAsyncCommands<String, String> async = connection.async();
+//    private final RedisSetCommands<String, String> sync = connection.sync();
+
+
     private final Project project;
     private final String samplesKey;
     private final String projectKey;
@@ -34,6 +39,7 @@ public final class RedisSampleStorage extends SampleStorage {
     @Override
     public void add(final Sample sample) {
         async.sadd(samplesKey, toJson(sample));
+//        sync.sadd(samplesKey, toJson(sample));
     }
 
     @Override

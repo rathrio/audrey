@@ -5,6 +5,7 @@ import com.oracle.truffle.api.instrumentation.SourceFilter;
 import com.oracle.truffle.api.instrumentation.SourceSectionFilter;
 import com.oracle.truffle.api.instrumentation.StandardTags;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
+import io.rathr.audrey.instrumentation.nodes.RootOnlySamplerNode;
 import io.rathr.audrey.instrumentation.nodes.RootSamplerNode;
 import io.rathr.audrey.instrumentation.nodes.StatementSamplerNode;
 import io.rathr.audrey.storage.InMemorySampleStorage;
@@ -28,6 +29,7 @@ public class Audrey implements Closeable {
     private InstrumentationContext instrumentationContext;
     private String dumpFilePath;
 
+    private boolean rootOnly;
     private EventBinding<?> activeRootBinding;
     private EventBinding<?> activeStatementBinding;
 
@@ -36,6 +38,9 @@ public class Audrey implements Closeable {
     private boolean samplingEnabled;
     private Integer samplingStep;
     private Integer maxExtractions;
+
+    private boolean schedulingEnabled;
+    private SamplerNodeScheduler samplerNodeScheduler;
 
     /**
      * Used to prevent infinite recursions in case a language does an allocation during meta
@@ -101,6 +106,38 @@ public class Audrey implements Closeable {
     }
 
     public void enable() {
+        if (schedulingEnabled) {
+            samplerNodeScheduler.start();
+        }
+
+        // Note that this approach currently only works with Truffle languages that expose arguments on root enter.
+        if (rootOnly) {
+            this.activeRootBinding = env.getInstrumenter().attachExecutionEventFactory(
+                rootSourceSectionFilter,
+                context -> {
+                    final RootOnlySamplerNode node = new RootOnlySamplerNode(
+                        this,
+                        context,
+                        env,
+                        project,
+                        storage,
+                        instrumentationContext,
+                        samplingEnabled,
+                        samplingStep,
+                        maxExtractions
+                    );
+
+                    if (schedulingEnabled) {
+                        samplerNodeScheduler.register(node);
+                    }
+
+                    return node;
+                }
+            );
+
+            return;
+        }
+
         this.activeRootBinding = env.getInstrumenter().attachExecutionEventFactory(
             rootSourceSectionFilter,
             context -> new RootSamplerNode(
@@ -134,6 +171,7 @@ public class Audrey implements Closeable {
 
     @Override
     public void close() {
+        samplerNodeScheduler.stop();
         storage.onDispose(dumpFilePath);
     }
 
@@ -144,7 +182,11 @@ public class Audrey implements Closeable {
                            final boolean samplingEnabled,
                            final Integer samplingStep,
                            final Integer maxExtractions,
-                           final String dumpFilePath) {
+                           final String dumpFilePath,
+                           final boolean rootOnly,
+                           final boolean schedulingEnabled,
+                           final Integer schedulingInterval,
+                           final Integer schedulingBuckets) {
 
         this.project = new Project(projectId, rootPath);
         this.pathFilter = pathFilter;
@@ -168,5 +210,9 @@ public class Audrey implements Closeable {
         this.samplingEnabled = samplingEnabled;
         this.samplingStep = samplingStep;
         this.maxExtractions = maxExtractions;
+
+        this.rootOnly = rootOnly;
+        this.schedulingEnabled = schedulingEnabled;
+        this.samplerNodeScheduler = new SamplerNodeScheduler(schedulingInterval, schedulingBuckets);
     }
 }
